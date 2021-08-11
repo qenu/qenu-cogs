@@ -1,6 +1,6 @@
 import os
 import socket
-import time
+from time import time
 from typing import Literal, Optional
 
 import discord
