@@ -1,2 +1,5 @@
 # qenu-cogs
-Repo for cogs made for Red-DiscordBot Community
+Repo made for [Red](https://github.com/Cog-Creators/Red-DiscordBot), improved by many...
+
+
+
