@@ -48,7 +48,8 @@ class OCR(commands.Cog):
             text = texts[0].description
 
             await hold.delete()
-            await ctx.send(f'Text detected :\n{text}')
+            await ctx.send(embed=discord.Embed(title="OCR Result", description=text)
+)
         except Exception as err:
             await ctx.send(f'Error occured! {err}')
 
