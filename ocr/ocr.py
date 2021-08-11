@@ -15,16 +15,6 @@ class OCR(commands.Cog):
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
-        # self.config = Config.get_conf(
-        #     self,
-        #     identifier=164900704526401545003,
-        #     force_registration=True,
-        # )
-
-        # self.config.register_global(**default_global)
-
-    # async def red_delete_data_for_user(self, *, requester: RequestType, user_id: int) -> None:
-    #     super().red_delete_data_for_user(requester=requester, user_id=user_id)
 
     @commands.command(name='ocr')
     @commands.admin_or_permissions(manage_roles=True)
@@ -32,7 +22,7 @@ class OCR(commands.Cog):
         '''
             Optical Character Recognition (OCR) using Google Cloud | Cloud Vision API
             [p]ocr <image_link>
-            You can use a link to image, or just attach the image with the message
+            You can use a image link, or just attach the image with the message
         '''
         GOOGLE_APPLICATION_CREDENTIALS = await self.bot.get_shared_api_tokens("google_application_credentials")
         if GOOGLE_APPLICATION_CREDENTIALS.get("path") is None:
