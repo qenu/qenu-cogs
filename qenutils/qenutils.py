@@ -51,7 +51,7 @@ class Qenutils(commands.Cog):
 
 
     @commands.command(name='tcping')
-    @commands.admin_or_permissions(manage_server=True)
+    @commands.admin_or_permissions(manage_guild=True)
     async def tcping(self, ctx: commands.Context, host: str, port: int=443):
         '''
             Pings a server with port with bot
