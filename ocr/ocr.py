@@ -7,6 +7,7 @@ from redbot.core.bot import Red
 from redbot.core.config import Config
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
+SNOWFLAKE_THRESHOLD = 2 ** 63
 
 
 class OCR(commands.Cog):
@@ -19,7 +20,7 @@ class OCR(commands.Cog):
 
     @commands.command(name="ocr")
     @commands.admin_or_permissions(manage_roles=True)
-    async def ocr(self, ctx: commands.Context, link: Optional[str]):
+    async def ocr(self, ctx: commands.Context, msg: Optional[str]):
         """
         Optical Character Recognition (OCR) using Google Cloud | Cloud Vision API
         [p]ocr <image_link>
@@ -38,12 +39,20 @@ class OCR(commands.Cog):
         ]
 
         try:
-            if link is None:
+            if msg is None:
                 try:
                     link = ctx.message.attachments[0].url
                 except:
                     await ctx.send_help()
                     return
+            elif len(msg) >= 17 and int(msg) < SNOWFLAKE_THRESHOLD:
+                link = await ctx.channel.fetch_message(msg)
+
+            elif "http" in msg:
+                pass
+            else:
+                await ctx.send("Bad argument")
+                return
 
             hold = await ctx.send("Connecting to Google Cloud Vision API...")
             from google.cloud import vision

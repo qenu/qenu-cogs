@@ -81,8 +81,8 @@ class Qenutils(commands.Cog):
         owo What dis
         """
         reply = (
-            f"received input: {input}"
-            f"input type:     {type(input)}"
+            f"\nreceived input: {input}\n"
+            f"input type:     {type(input)}\n"
             f"input length:   {len(input)}"
         )
         await ctx.send(content=reply)
