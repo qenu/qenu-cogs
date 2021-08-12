@@ -46,7 +46,8 @@ class OCR(commands.Cog):
                     await ctx.send_help()
                     return
             elif len(msg) >= 17 and int(msg) < SNOWFLAKE_THRESHOLD:
-                link = await ctx.channel.fetch_message(msg)
+                message = await ctx.channel.fetch_message(msg)
+                link = message.attachments[0].url
 
             elif "http" in msg:
                 pass
