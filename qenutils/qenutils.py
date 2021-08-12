@@ -75,7 +75,7 @@ class Qenutils(commands.Cog):
     @commands.command(name="whatdis")
     @commands.is_owner()
     async def whatdis(
-        self, ctx: commands.Context, input: Optional[Union[str, discord.Message]]
+        self, ctx: commands.Context, input: Optional[Union[discord.Message, str]]
     ):
         """
         owo What dis
