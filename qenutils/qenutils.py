@@ -1,7 +1,6 @@
-import os
 import socket
 from time import time
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 import discord
 from redbot.core import commands
@@ -9,6 +8,7 @@ from redbot.core.bot import Red
 from redbot.core.config import Config
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
+
 
 class Qenutils(commands.Cog):
     """
@@ -25,13 +25,17 @@ class Qenutils(commands.Cog):
 
         # self.config.register_global(**default_global)
 
-    async def red_delete_data_for_user(self, *, requester: RequestType, user_id: int) -> None:
+    async def red_delete_data_for_user(
+        self, *, requester: RequestType, user_id: int
+    ) -> None:
         super().red_delete_data_for_user(requester=requester, user_id=user_id)
 
-    async def latency_point(self, host: str, port: str, timeout: float = 5, offset: bool = False) -> Optional[float]:
-        '''
-            full credit to : https://github.com/dgzlopes/tcp-latency
-        '''
+    async def latency_point(
+        self, host: str, port: str, timeout: float = 5, offset: bool = False
+    ) -> Optional[float]:
+        """
+        full credit to : https://github.com/dgzlopes/tcp-latency
+        """
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(timeout)
         s_start = time()
@@ -47,20 +51,38 @@ class Qenutils(commands.Cog):
 
         s_runtime = (time() - s_start) * 1000
 
-        return round(float(s_runtime)-130, 2) if offset is False else round(float(s_runtime), 2)
+        return (
+            round(float(s_runtime) - 130, 2)
+            if offset is False
+            else round(float(s_runtime), 2)
+        )
 
-
-    @commands.command(name='tcping')
+    @commands.command(name="tcping")
     @commands.admin_or_permissions(manage_guild=True)
-    async def tcping(self, ctx: commands.Context, host: str, port: int=443):
-        '''
-            Pings a server with port with bot
-            [p]tcping <host> [port]
-            Default port: 443
-        '''
+    async def tcping(self, ctx: commands.Context, host: str, port: int = 443):
+        """
+        Pings a server with port with bot
+        [p]tcping <host> [port]
+        Default port: 443
+        """
         latency = await self.latency_point(host=host, port=port, offset=True)
         await ctx.tick()
         if latency is None:
-            await ctx.send(f'{host} connection timed out!')
+            await ctx.send(f"{host} connection timed out!")
             return
-        await ctx.send(f'{host} responded with {latency:.2f}ms latency.')
+        await ctx.send(f"{host} responded with {latency:.2f}ms latency.")
+
+    @commands.command(name="whatdis")
+    @commands.is_owner()
+    async def whatdis(
+        self, ctx: commands.Context, input: Optional[Union[str, discord.Message]]
+    ):
+        """
+        owo What dis
+        """
+        reply = (
+            f"received input: {input}"
+            f"input type:     {type(input)}"
+            f"input length:   {len(input)}"
+        )
+        await ctx.send(content=reply)

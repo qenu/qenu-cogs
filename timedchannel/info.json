@@ -1,0 +1,15 @@
+{
+    "name": "TimedChannel",
+    "short": "TimedChannel",
+    "description": "Set a channel so the messages will be timed for deletion",
+    "end_user_data_statement": "this cog does not store or save any user data",
+    "author": "qenu",
+    "required_cogs": {},
+    "requirements": [
+    ],
+    "tags": "utility",
+    "min_bot_version": "3.3.10",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG"
+}
