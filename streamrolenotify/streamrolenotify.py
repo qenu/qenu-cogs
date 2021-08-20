@@ -49,9 +49,7 @@ class Streamrolenotify(commands.Cog):
             )
 
         user = after
-        time_from = datetime.utcnow() - timedelta(minutes=1)
-
-        await asyncio.sleep(2.5)
+        time_from = datetime.utcnow() - timedelta(seconds=1)
 
         try:
             action = await guild.audit_logs(
@@ -67,14 +65,19 @@ class Streamrolenotify(commands.Cog):
             pass
 
         else:
-            channel = guild.get_channel(channel_id=await self.config.guild(guild).channel())
-            await channel.send(f"{user.name} has started streaming!")
+            if action:
+                channel = guild.get_channel(channel_id=await self.config.guild(guild).channel())
+                await channel.send(f"{user.name} has started streaming!")
 
     @commands.group(name="streamrolenotify")
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def streamrolenotify(self, ctx: commands.Context):
         """"""
+        pass
+
+    @streamrolenotify.command()
+    async def status(self, ctx: commands.Context):
 
         config = await self.config.guild(ctx.guild).all()
 
@@ -115,47 +118,3 @@ class Streamrolenotify(commands.Cog):
 
         else:
             await ctx.send("invalid channel id")
-
-
-    @streamrolenotify.command()
-    async def test(self, ctx: commands.Context, user: discord.Member):
-
-        await ctx.send("L123")
-
-
-        guild: discord.Guild = user.guild
-
-        if not await self.config.guild(guild).toggle():
-            return
-
-        if not guild.me.guild_permissions.view_audit_log:
-            return log.info(
-                "Unable to verify reason, Missing permissions to check audit log!"
-            )
-
-        await ctx.send("L136")
-
-        time_from = datetime.utcnow() - timedelta(minutes=1)
-
-        await asyncio.sleep(2.5)
-
-        try:
-            action = await guild.audit_logs(
-                action=discord.AuditLogAction.member_role_update, after=time_from
-            ).find(
-                lambda e: e.target.id == user.id
-                and e.reason == self.stream_start
-                and time_from < e.created_at
-            )
-            await ctx.send("L150")
-
-        except discord.Forbidden:
-            pass
-        except discord.HTTPException:
-            pass
-
-        else:
-            await ctx.send("L158")
-
-            channel = guild.get_channel(channel_id=await self.config.guild(guild).channel())
-            await channel.send(f"{user.name} has started streaming!")
