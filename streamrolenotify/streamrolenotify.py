@@ -34,7 +34,7 @@ class Streamrolenotify(commands.Cog):
 
         self.config.register_guild(**default_guild)
 
-    @commands.Cog.listener
+    @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
 
         guild: discord.Guild = after.guild
