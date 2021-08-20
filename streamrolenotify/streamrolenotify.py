@@ -78,12 +78,13 @@ class Streamrolenotify(commands.Cog):
 
     @streamrolenotify.command()
     async def status(self, ctx: commands.Context):
+        """show current settings on streamrolenotify"""
 
         config = await self.config.guild(ctx.guild).all()
 
         embed = discord.Embed(color=ctx.author.color, title="Streamrole Notification Settings")
-        embed.add_field(name="Status", value=config['toggle'])
-        embed.add_field(name="Channel", value=config['channel'])
+        embed.add_field(name="Status", value=f"{'Enabled' if config['toggle'] else 'Disabled'}")
+        embed.add_field(name="Channel", value=ctx.guild.get_channel(config['channel']).mention)
 
         await ctx.send(embed=embed)
 
