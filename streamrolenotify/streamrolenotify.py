@@ -90,7 +90,7 @@ class Streamrolenotify(commands.Cog):
         await ctx.send(f"Streamrole notification has been {'enabled' if state else 'disabled'}.")
 
         if state and await self.config.guild(guild).channel() == None:
-            await self.channel(ctx, ctx.channel.id)
+            await self.channel(ctx, str(ctx.channel.id))
 
     @streamrolenotify.command()
     async def channel(self, ctx: commands.Context, channel_id: Optional[str] = None):
