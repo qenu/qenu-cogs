@@ -85,13 +85,16 @@ class Streamrolenotify(commands.Cog):
         await ctx.send(embed=embed)
 
     @streamrolenotify.command()
-    async def toggle(self, ctx: commands.Context):
+    async def toggle(self, ctx: commands.Context, on_off: Optional[str] = None):
         """Toggles on/off notification
-        Usage: [p]streamrolenotify toggle
+        Usage: [p]streamrolenotify toggle <on_off>
         """
         guild: discord.Guild = ctx.guild
 
-        state = not await self.config.guild(guild).toggle()
+        if on_off is None:
+            state = not await self.config.guild(guild).toggle()
+        else:
+            state = False if on_off.lower() == "off" else True
 
         await self.config.guild(guild).toggle.set(state)
 
@@ -107,7 +110,7 @@ class Streamrolenotify(commands.Cog):
         SNOWFLAKE_THRESHOLD = 2 ** 63
         if channel_id.isnumeric() and len(channel_id) >= 17 and int(channel_id) < SNOWFLAKE_THRESHOLD:
             guild: discord.Guild = ctx.guild
-            await self.config.guild(guild).toggle.set(ctx.channel.id)
+            await self.config.guild(guild).channel.set(ctx.channel.id)
             await ctx.send(f"Streamrole Notification Channel has been set to {ctx.channel.mention}")
 
         else:
