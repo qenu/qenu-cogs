@@ -50,6 +50,8 @@ class Streamrolenotify(commands.Cog):
         user = after
         time_from = datetime.utcnow() - timedelta(minutes=1)
 
+        await time.sleep(2.5)
+
         try:
             action = await guild.audit_logs(
                 action=discord.AuditLogAction.member_role_update, after=time_from
