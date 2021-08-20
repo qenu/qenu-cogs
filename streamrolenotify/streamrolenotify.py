@@ -3,6 +3,7 @@ from typing import Literal, Optional
 import time
 from datetime import datetime, timedelta
 import logging
+import asyncio
 
 import discord
 from redbot.core import commands
@@ -50,7 +51,7 @@ class Streamrolenotify(commands.Cog):
         user = after
         time_from = datetime.utcnow() - timedelta(minutes=1)
 
-        await time.sleep(2.5)
+        await asyncio.sleep(2.5)
 
         try:
             action = await guild.audit_logs(
