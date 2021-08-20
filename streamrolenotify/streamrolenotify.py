@@ -120,6 +120,9 @@ class Streamrolenotify(commands.Cog):
     @streamrolenotify.command()
     async def test(self, ctx: commands.Context, user: discord.Member):
 
+        await ctx.send("L123")
+
+
         guild: discord.Guild = user.guild
 
         if not await self.config.guild(guild).toggle():
@@ -129,6 +132,8 @@ class Streamrolenotify(commands.Cog):
             return log.info(
                 "Unable to verify reason, Missing permissions to check audit log!"
             )
+
+        await ctx.send("L136")
 
         time_from = datetime.utcnow() - timedelta(minutes=1)
 
@@ -142,11 +147,15 @@ class Streamrolenotify(commands.Cog):
                 and e.reason == self.stream_start
                 and time_from < e.created_at
             )
+            await ctx.send("L150")
+
         except discord.Forbidden:
             pass
         except discord.HTTPException:
             pass
 
         else:
+            await ctx.send("L158")
+
             channel = guild.get_channel(channel_id=await self.config.guild(guild).channel())
             await channel.send(f"{user.name} has started streaming!")
