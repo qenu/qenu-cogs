@@ -68,8 +68,6 @@ class Streamrolenotify(commands.Cog):
 
         else:
             channel = guild.get_channel(channel_id=await self.config.guild(guild).channel())
-            # message = await self.config.guild(guild).message()
-
             await channel.send(f"{user.name} has started streaming!")
 
     @commands.group(name="streamrolenotify")
@@ -77,7 +75,14 @@ class Streamrolenotify(commands.Cog):
     @commands.admin_or_permissions(manage_guild=True)
     async def streamrolenotify(self, ctx: commands.Context):
         """"""
-        pass
+
+        config = await self.config.guild(ctx.guild).all()
+
+        embed = discord.Embed(color=ctx.author.color, title="Streamrole Notification Settings")
+        embed.add_field(name="Status", value=config['toggle'])
+        embed.add_field(name="Channel", value=config['channel'])
+
+        await ctx.send(embed=embed)
 
     @streamrolenotify.command()
     async def toggle(self, ctx: commands.Context):
@@ -107,3 +112,38 @@ class Streamrolenotify(commands.Cog):
 
         else:
             await ctx.send("invalid channel id")
+
+
+    @streamrolenotify.command()
+    async def test(self, ctx: commands.Context, user: discord.Member):
+
+        guild: discord.Guild = user.guild
+
+        if not await self.config.guild(guild).toggle():
+            return
+
+        if not guild.me.guild_permissions.view_audit_log:
+            return log.info(
+                "Unable to verify reason, Missing permissions to check audit log!"
+            )
+
+        time_from = datetime.utcnow() - timedelta(minutes=1)
+
+        await asyncio.sleep(2.5)
+
+        try:
+            action = await guild.audit_logs(
+                action=discord.AuditLogAction.member_role_update, after=time_from
+            ).find(
+                lambda e: e.target.id == user.id
+                and e.reason == self.stream_start
+                and time_from < e.created_at
+            )
+        except discord.Forbidden:
+            pass
+        except discord.HTTPException:
+            pass
+
+        else:
+            channel = guild.get_channel(channel_id=await self.config.guild(guild).channel())
+            await channel.send(f"{user.name} has started streaming!")
