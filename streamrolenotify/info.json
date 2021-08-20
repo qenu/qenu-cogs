@@ -3,13 +3,13 @@
     "short": "streamrolenotify",
     "description": "add-on cog to tmerc-cogs' streamrole",
     "end_user_data_statement": "this cog does not store or save any user data",
-    "author": "qenu",
+    "author": ["qenu"],
     "required_cogs": {
         "streamrole" : "https://github.com/qenu/tmerc-cogs/"
     },
     "requirements": [
     ],
-    "tags": "utility",
+    "tags": ["utility"],
     "min_bot_version": "3.3.10",
     "hidden": false,
     "disabled": false,
