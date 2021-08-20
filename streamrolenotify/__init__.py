@@ -6,4 +6,4 @@ from .streamrolenotify import Streamrolenotify
 
 
 async def setup(bot: Red) -> None:
-    bot.add_cog(streamrolenotify(bot))
+    bot.add_cog(Streamrolenotify(bot))
