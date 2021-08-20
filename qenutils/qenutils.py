@@ -62,7 +62,7 @@ class Qenutils(commands.Cog):
     async def tcping(self, ctx: commands.Context, host: str, port: int = 443):
         """
         Pings a server with port with bot
-        [p]tcping <host> [port]
+        [p]tcping [host] <port>
         Default port: 443
         """
         latency = await self.latency_point(host=host, port=port, offset=True)
