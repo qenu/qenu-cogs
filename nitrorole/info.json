@@ -1,11 +1,11 @@
 {
-    "name": "Streamrole Notification",
-    "short": "streamrolenotify",
-    "description": "add-on cog to tmerc-cogs' streamrole",
+    "name": "Nitro Booster role",
+    "short": "nitrorole",
+    "description": "add-on cog to Fixator10-Cogs' personalroles",
     "end_user_data_statement": "this cog does not store or save any user data",
     "author": ["qenu"],
     "required_cogs": {
-        "streamrole" : "https://github.com/qenu/tmerc-cogs/"
+        "personalroles" : "https://github.com/fixator10/Fixator10-Cogs"
     },
     "requirements": [
     ],
