@@ -87,16 +87,14 @@ class Qenutils(commands.Cog):
         )
         await ctx.send(content=reply)
 
-    @commands.command()
+    @commands.command(name="nqn")
     @commands.guild_only()
-    async def nqn(ctx: commands.Context, emoji_name: str):
+    async def nqn(self, ctx: commands.Context, emoji_name: str):
         """nqn emote from this guild"""
         pseudo = ctx.author
         webhook = await ctx.channel.create_webhook(name="nqn")
-        emoji = discord.utils.get(ctx.guild.emojis, name = emoji_name)
+        emoji = discord.utils.get(ctx.guild.emojis, name=emoji_name)
         await webhook.send(
-            content = emoji,
-            username = pseudo.display_name,
-            avatar_url = pseudo.avatar_url
-            )
+            content=emoji, username=pseudo.display_name, avatar_url=pseudo.avatar_url
+        )
         await webhook.delete()
