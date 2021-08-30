@@ -89,7 +89,7 @@ class Qenutils(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def nqn(ctx, emoji_name: str):
+    async def nqn(ctx: commands.Context, emoji_name: str):
         """nqn emote from this guild"""
         pseudo = ctx.author
         webhook = await ctx.channel.create_webhook(name="nqn")
