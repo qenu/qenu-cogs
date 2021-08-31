@@ -87,7 +87,7 @@ class Qenutils(commands.Cog):
         )
         await ctx.send(content=reply)
 
-    async def nqn_webhook(self, channel: discord.TextChannel) -> Optional[discord.WebHook]:
+    async def nqn_webhook(self, channel: discord.TextChannel) -> Optional[discord.Webhook]:
         return discord.utils.get(await channel.webhooks(), name="nqn")
 
     @commands.command(name="nqn")
