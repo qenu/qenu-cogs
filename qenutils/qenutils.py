@@ -116,6 +116,7 @@ class Qenutils(commands.Cog):
         await ctx.send(f"{len(whs)} webhooks found.")
         if len(whs) != 0:
             for wh in whs:
-                await wh.delete()
+                if wh.name == "nqn":
+                    await wh.delete()
         await ctx.send('Remove nqn process ended.')
 
