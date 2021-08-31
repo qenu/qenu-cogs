@@ -87,15 +87,32 @@ class Qenutils(commands.Cog):
         )
         await ctx.send(content=reply)
 
+    async def nqn_webhook(self, channel: discord.TextChannel) -> Optional[discord.WebHook]:
+        return discord.utils.get(await channel.webhooks(), name="nqn")
+
     @commands.command(name="nqn")
     @commands.guild_only()
     @commands.bot_has_permissions(manage_webhooks=True)
     async def nqn(self, ctx: commands.Context, emoji_name: str):
         """nqn emote from this guild"""
         pseudo = ctx.author
-        webhook = await ctx.channel.create_webhook(name="nqn")
+        if webhook := self.nqn_webhook(ctx.channel) is None:
+            webhook = await ctx.channel.create_webhook(name="nqn")
         emoji = discord.utils.get(ctx.guild.emojis, name=emoji_name)
         await webhook.send(
             content=emoji, username=pseudo.display_name, avatar_url=pseudo.avatar_url
         )
-        await webhook.delete()
+
+
+    @commands.command(name="rmnqn")
+    @commands.guild_only()
+    @commands.bot_has_permissions(manage_webhooks=True)
+    async def rmnqn(self, ctx: commands.Context):
+        """remove all webhooks with the name nqn"""
+        whs = await ctx.channel.webhooks()
+        await ctx.send(f"{len(whs)} webhooks found.")
+        if len(whs) != 0:
+            for wh in whs:
+                await wh.delete()
+        await ctx.send('Remove nqn process ended.')
+
