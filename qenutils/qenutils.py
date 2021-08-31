@@ -131,7 +131,7 @@ class Qenutils(commands.Cog):
     @commands.command(name="repost")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def repost(self, ctx: commands.Context, channel: discord.TextChannel, message_id: int, post_title: str ):
+    async def repost(self, ctx: commands.Context, channel: discord.TextChannel, message_id: str, post_title: str ):
         """"""
         if len(message_id) >= 17 and int(message_id) < SNOWFLAKE_THRESHOLD:
             message = await ctx.channel.fetch_message(message_id)
