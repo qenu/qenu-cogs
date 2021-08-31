@@ -8,6 +8,7 @@ from redbot.core.bot import Red
 from redbot.core.config import Config
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
+SNOWFLAKE_THRESHOLD = 2 ** 63
 
 
 class Qenutils(commands.Cog):
@@ -126,3 +127,18 @@ class Qenutils(commands.Cog):
                     count += 1
                     await wh.delete()
         await ctx.send(f"Remove nqn process ended. {count} webhooks were removed.")
+
+    @commands.command(name="repost")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def repost(self, ctx: commands.Context, channel: discord.TextChannel, message_id: int, post_title: str ):
+        """"""
+        if len(message_id) >= 17 and int(message_id) < SNOWFLAKE_THRESHOLD:
+            message = await ctx.channel.fetch_message(message_id)
+            emb = discord.Embed(
+                title = post_title,
+                description = message
+            )
+            await channel.send(embed=emb)
+        else:
+            await ctx.send("Error in message id")
