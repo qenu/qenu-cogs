@@ -137,7 +137,7 @@ class Qenutils(commands.Cog):
             message = await ctx.channel.fetch_message(message_id)
             emb = discord.Embed(
                 title = post_title,
-                description = message
+                description = message.content
             )
             await channel.send(embed=emb)
         else:
