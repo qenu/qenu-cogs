@@ -104,10 +104,8 @@ class Qenutils(commands.Cog):
             await ctx.send(f'Emoji "{emoji_name}" not found.')
             return
 
-        if (webhook := self.nqn_webhook(ctx.channel)) is None:
+        if (webhook := await self.nqn_webhook(ctx.channel)) is None:
             webhook = await ctx.channel.create_webhook(name="nqn")
-
-        await ctx.send(f"type {type(webhook)}, item : {webhook}")
 
         await webhook.send(
             content=emoji, username=pseudo.display_name, avatar_url=pseudo.avatar_url
