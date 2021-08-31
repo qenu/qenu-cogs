@@ -87,7 +87,9 @@ class Qenutils(commands.Cog):
         )
         await ctx.send(content=reply)
 
-    async def nqn_webhook(self, channel: discord.TextChannel) -> Optional[discord.Webhook]:
+    async def nqn_webhook(
+        self, channel: discord.TextChannel
+    ) -> Optional[discord.Webhook]:
         return discord.utils.get(await channel.webhooks(), name="nqn")
 
     @commands.command(name="nqn")
@@ -100,12 +102,11 @@ class Qenutils(commands.Cog):
             webhook = await ctx.channel.create_webhook(name="nqn")
         emoji = discord.utils.get(ctx.guild.emojis, name=emoji_name)
         if emoji is None:
-            await ctx.send(f"Emoji \"{emoji_name}\" not found.")
+            await ctx.send(f'Emoji "{emoji_name}" not found.')
             return
         await webhook.send(
             content=emoji, username=pseudo.display_name, avatar_url=pseudo.avatar_url
         )
-
 
     @commands.command(name="rmnqn")
     @commands.guild_only()
@@ -115,8 +116,9 @@ class Qenutils(commands.Cog):
         whs = await ctx.channel.webhooks()
         await ctx.send(f"{len(whs)} webhooks found.")
         if len(whs) != 0:
+            count = 0
             for wh in whs:
                 if wh.name == "nqn":
+                    count += 1
                     await wh.delete()
-        await ctx.send('Remove nqn process ended.')
-
+        await ctx.send(f"Remove nqn process ended. {count} webhooks were removed.")
