@@ -98,12 +98,15 @@ class Qenutils(commands.Cog):
     async def nqn(self, ctx: commands.Context, emoji_name: str):
         """nqn emote from this guild"""
         pseudo = ctx.author
-        if webhook := self.nqn_webhook(ctx.channel) is None:
-            webhook = await ctx.channel.create_webhook(name="nqn")
+
         emoji = discord.utils.get(ctx.guild.emojis, name=emoji_name)
         if emoji is None:
             await ctx.send(f'Emoji "{emoji_name}" not found.')
             return
+
+        if (webhook := self.nqn_webhook(ctx.channel)) is None:
+            webhook = await ctx.channel.create_webhook(name="nqn")
+
         await webhook.send(
             content=emoji, username=pseudo.display_name, avatar_url=pseudo.avatar_url
         )
