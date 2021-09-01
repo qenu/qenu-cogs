@@ -23,6 +23,7 @@ class Qenutils(commands.Cog):
             identifier=164900704526401545003,
             force_registration=True,
         )
+        self.repost_channel = None
 
         # self.config.register_global(**default_global)
 
@@ -131,14 +132,24 @@ class Qenutils(commands.Cog):
     @commands.command(name="repost")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def repost(self, ctx: commands.Context, channel: discord.TextChannel, message_id: str, post_title: str ):
-        """"""
+    async def repost(self, ctx: commands.Context, message_id: str, post_title: str ):
+        """reposts a message to a different channel"""
+        if self.repost_channel is None:
+            await ctx.send("Repost channel has not been set, use [p]repostset to setup channel.")
         if len(message_id) >= 17 and int(message_id) < SNOWFLAKE_THRESHOLD:
             message = await ctx.channel.fetch_message(message_id)
             emb = discord.Embed(
                 title = post_title,
                 description = message.content
             )
-            await channel.send(embed=emb)
+            await self.repost_channel.send(embed=emb)
         else:
             await ctx.send("Error in message id")
+
+    @commands.command(name="repostset")
+    @commands.guild_only()
+    @commands.has_permission(administrator=True)
+    async def repostset(self, ctx: commands.Context, channel: Optional[discord.TextChannel]):
+        """sets the channel to repost to, leave blank to unset"""
+        self.repost_channel = channel
+        await ctx.send(f"Repost channel has been {'set to {channel}' if channel else 'unset'}.")
