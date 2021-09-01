@@ -1,14 +1,18 @@
 import socket
 from time import time
 from typing import Literal, Optional, Union
+import re
 
 import discord
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
+from redbot.core.utils.chat_formatting import humanize_list
+
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 SNOWFLAKE_THRESHOLD = 2 ** 63
+SUPPORT_SERVER = "https://discord.gg/XTrZX5EcdR"
 
 
 class Qenutils(commands.Cog):
@@ -155,3 +159,34 @@ class Qenutils(commands.Cog):
         """sets the channel to repost to, leave blank to unset"""
         self.repost_channel = channel
         await ctx.send(f"Repost channel has been {f'set to {channel}' if channel else 'unset'}.")
+
+
+    # stolen from kaogurai, thanks https://github.com/kaogurai/cogs
+    @commands.Cog.listener()
+    async def on_message_without_command(self, message: discord.Message):
+        if message.author.bot:
+            return
+        if not message.guild:
+            return
+        if not message.channel.permissions_for(message.guild.me).send_messages:
+            return
+        if await self.bot.allowed_by_whitelist_blacklist(who=message.author) is False:
+            return
+        if not re.compile(rf"^<@!?{self.bot.user.id}>$").match(message.content):
+            return
+        prefixes = await self.bot.get_prefix(message.channel)
+        prefixes.remove(f"<@!{self.bot.user.id}> ")
+        sorted_prefixes = sorted(prefixes, key=len)
+        if len(sorted_prefixes) > 500:
+            return
+        embed = discord.Embed(
+            colour=await self.bot.get_embed_colour(message.channel),
+            description=f"""
+                **Hey there!** <a:bounce:778449468717531166>
+                My prefixes in this server are {humanize_list(prefixes)}
+                You can type `{sorted_prefixes[0]}help` to view all commands!
+                Need some help? Join my [support server!]({SUPPORT_SERVER})
+                Looking to invite me? [Click here!]({await self.invite_url()})
+            """,
+        )
+        await message.channel.send(embed=embed)
