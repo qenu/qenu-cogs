@@ -13,6 +13,7 @@ from redbot.core.utils.chat_formatting import humanize_list
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 SNOWFLAKE_THRESHOLD = 2 ** 63
 SUPPORT_SERVER = "https://discord.gg/XTrZX5EcdR"
+INVITE_URL = "https://discord.com/oauth2/authorize?client_id=361249607520354306&scope=bot&permissions=805314614"
 
 
 class Qenutils(commands.Cog):
@@ -186,7 +187,7 @@ class Qenutils(commands.Cog):
                 My prefixes in this server are {humanize_list(prefixes)}
                 You can type `{sorted_prefixes[0]}help` to view all commands!
                 Need some help? Join my [support server!]({SUPPORT_SERVER})
-                Looking to invite me? [Click here!]({await self.invite_url()})
+                Looking to invite me? [Click here!]({INVITE_URL})
             """,
         )
         await message.channel.send(embed=embed)
