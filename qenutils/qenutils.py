@@ -183,7 +183,7 @@ class Qenutils(commands.Cog):
         embed = discord.Embed(
             colour=await self.bot.get_embed_colour(message.channel),
             description=f"""
-                **Hey there!** <:eyes_nami:652251609765511200>
+                **Hey there!**
                 My prefixes in this server are {humanize_list(prefixes)}
                 You can type `{sorted_prefixes[0]}help` to view all commands!
                 Need some help? Join my [support server!]({SUPPORT_SERVER})
