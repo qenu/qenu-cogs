@@ -184,8 +184,10 @@ class Qenutils(commands.Cog):
             colour=await self.bot.get_embed_colour(message.channel),
             description=f"""
                 **Hey there!**
+                ---
                 My prefixes in this server are {humanize_list(prefixes)}
                 You can type `{sorted_prefixes[0]}help` to view all commands!
+
                 Need some help? Join my [support server!]({SUPPORT_SERVER})
                 Looking to invite me? [Click here!]({INVITE_URL})
             """,
