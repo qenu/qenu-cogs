@@ -117,7 +117,7 @@ class Qenutils(commands.Cog):
         await webhook.send(
             content=emoji, username=pseudo.display_name, avatar_url=pseudo.avatar_url
         )
-        await ctx.message.delete()
+        # await ctx.message.delete()
 
     @commands.command(name="rmnqn")
     @commands.guild_only()
