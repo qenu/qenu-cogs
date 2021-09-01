@@ -148,7 +148,7 @@ class Qenutils(commands.Cog):
 
     @commands.command(name="repostset")
     @commands.guild_only()
-    @commands.has_permission(administrator=True)
+    @commands.has_permissions(administrator=True)
     async def repostset(self, ctx: commands.Context, channel: Optional[discord.TextChannel]):
         """sets the channel to repost to, leave blank to unset"""
         self.repost_channel = channel
