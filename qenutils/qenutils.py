@@ -152,4 +152,4 @@ class Qenutils(commands.Cog):
     async def repostset(self, ctx: commands.Context, channel: Optional[discord.TextChannel]):
         """sets the channel to repost to, leave blank to unset"""
         self.repost_channel = channel
-        await ctx.send(f"Repost channel has been {'set to {channel}' if channel else 'unset'}.")
+        await ctx.send(f"Repost channel has been {f'set to {channel}' if channel else 'unset'}.")
