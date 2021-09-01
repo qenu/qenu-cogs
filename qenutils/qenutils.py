@@ -140,7 +140,8 @@ class Qenutils(commands.Cog):
             message = await ctx.channel.fetch_message(message_id)
             emb = discord.Embed(
                 title = post_title,
-                description = message.content
+                description = message.content,
+                timestamp = message.created_at,
             )
             await self.repost_channel.send(embed=emb)
         else:
