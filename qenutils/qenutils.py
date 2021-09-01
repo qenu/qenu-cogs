@@ -132,10 +132,11 @@ class Qenutils(commands.Cog):
     @commands.command(name="repost")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def repost(self, ctx: commands.Context, message_id: str, post_title: str ):
+    async def repost(self, ctx: commands.Context, message_id: str, post_title: str):
         """reposts a message to a different channel"""
         if self.repost_channel is None:
             await ctx.send("Repost channel has not been set, use [p]repostset to setup channel.")
+            return
         if len(message_id) >= 17 and int(message_id) < SNOWFLAKE_THRESHOLD:
             message = await ctx.channel.fetch_message(message_id)
             emb = discord.Embed(
