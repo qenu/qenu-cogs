@@ -140,14 +140,16 @@ class Qenutils(commands.Cog):
     async def repost(self, ctx: commands.Context, message_id: str, post_title: str):
         """reposts a message to a different channel"""
         if self.repost_channel is None:
-            await ctx.send("Repost channel has not been set, use [p]repostset to setup channel.")
+            await ctx.send(
+                "Repost channel has not been set, use [p]repostset to setup channel."
+            )
             return
         if len(message_id) >= 17 and int(message_id) < SNOWFLAKE_THRESHOLD:
             message = await ctx.channel.fetch_message(message_id)
             emb = discord.Embed(
-                title = post_title,
-                description = message.content,
-                timestamp = message.created_at,
+                title=post_title,
+                description=message.content,
+                timestamp=message.created_at,
             )
             await self.repost_channel.send(embed=emb)
         else:
@@ -156,11 +158,14 @@ class Qenutils(commands.Cog):
     @commands.command(name="repostset")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def repostset(self, ctx: commands.Context, channel: Optional[discord.TextChannel]):
+    async def repostset(
+        self, ctx: commands.Context, channel: Optional[discord.TextChannel]
+    ):
         """sets the channel to repost to, leave blank to unset"""
         self.repost_channel = channel
-        await ctx.send(f"Repost channel has been {f'set to {channel}' if channel else 'unset'}.")
-
+        await ctx.send(
+            f"Repost channel has been {f'set to {channel}' if channel else 'unset'}."
+        )
 
     # stolen from kaogurai, thanks https://github.com/kaogurai/cogs
     @commands.Cog.listener()
@@ -193,3 +198,4 @@ class Qenutils(commands.Cog):
             """,
         )
         await message.channel.send(embed=embed)
+

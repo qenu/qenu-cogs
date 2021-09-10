@@ -1,10 +1,12 @@
 import os
-from typing import Literal, Optional
+from typing import Literal, Optional, Type
 
 import discord
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
+from google.cloud import vision
+
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 SNOWFLAKE_THRESHOLD = 2 ** 63
@@ -56,7 +58,6 @@ class OCR(commands.Cog):
                 return
 
             hold = await ctx.send("Connecting to Google Cloud Vision API...")
-            from google.cloud import vision
 
             client = vision.ImageAnnotatorClient()
             response = client.annotate_image(
@@ -69,7 +70,7 @@ class OCR(commands.Cog):
 
             await hold.delete()
             await ctx.send(embed=discord.Embed(title="OCR Result", description=text))
-        except Exception as err:
+        except TypeError as err:
             await ctx.send(f"Error occured! {err}")
 
     @commands.group(name="ocrset")
