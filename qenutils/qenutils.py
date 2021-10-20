@@ -198,4 +198,3 @@ class Qenutils(commands.Cog):
             """,
         )
         await message.channel.send(embed=embed)
-
