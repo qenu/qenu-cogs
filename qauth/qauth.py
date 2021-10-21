@@ -412,7 +412,7 @@ class Qauth(commands.Cog):
         except asyncio.TimeoutError:
             return await ctx.reply(content="Request Timed out", mention_author=False)
         else:
-            if self.timebasedOTP(secret=secret, code=code.content):
+            if self.timebasedOTP(secret=secret, code=str(code.content)):
                 return await ctx.reply("OTP verified!", mention_author=False)
             else:
                 return await ctx.reply("Invalid OTP.", mention_author=False)
