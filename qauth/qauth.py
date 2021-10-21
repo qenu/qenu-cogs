@@ -212,8 +212,8 @@ class Qauth(commands.Cog):
             emb.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
             if not status:
                 emb.add_field(
-                    name="qauth register",
-                    value="(dm only) Use this command via dm to start using qauth.",
+                    name="[p]qauth register",
+                    value="(dm only)\nUse this command via dm to start using qauth.",
                     inline=False,
                 )
             return await ctx.send(embed=emb)
@@ -228,7 +228,7 @@ class Qauth(commands.Cog):
                     "**Qauth Register**\n"
                     "---\n"
                     "You are about to create a key for qauth,\n"
-                    "please make sure you are ready so save your key safely\n"
+                    "please make sure you are ready to save your key safely\n"
                     "as the key could **not** be reditributed.\n"
                     "if you ever lost your key code, you would have to contact the owner for it.\n"
                     "\n"
@@ -239,7 +239,7 @@ class Qauth(commands.Cog):
         )
 
         def check_agree(message):
-            return message.content.lower == "agree"
+            return message.content.lower == "agree" and message.channel == ctx.channel
 
         try:
             await self.bot.wait_for("message", check=check_agree, timeout=180.0)
