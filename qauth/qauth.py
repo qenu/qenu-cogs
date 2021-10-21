@@ -239,7 +239,7 @@ class Qauth(commands.Cog):
         )
 
         def check_agree(message):
-            return message.content.lower == "agree" and message.channel == ctx.channel
+            return message.content.lower() == "agree" and message.channel == ctx.channel
 
         try:
             await self.bot.wait_for("message", check=check_agree, timeout=180.0)
