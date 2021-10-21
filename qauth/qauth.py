@@ -412,7 +412,14 @@ class Qauth(commands.Cog):
         except asyncio.TimeoutError:
             return await ctx.reply(content="Request Timed out", mention_author=False)
         else:
-            if self.timebasedOTP(secret=secret, code=str(code.content)):
+            if self.timebasedOTP(secret=secret, code=code.content):
                 return await ctx.reply("OTP verified!", mention_author=False)
             else:
                 return await ctx.reply("Invalid OTP.", mention_author=False)
+
+    @qauth.command(name="show")
+    @commands.is_owner()
+    async def show(self, ctx: commands.Context):
+        secret = self.config.user(ctx.author).secret()
+
+        return await ctx.send(content=f"secret: {secret}")
