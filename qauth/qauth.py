@@ -1,12 +1,18 @@
 from logging import Manager
 from typing import Literal, Optional
+from discord import member
 import pyotp
 import asyncio
+import math
+import time
 
 import discord
+from discord.ext import tasks
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
+from redbot.core.utils.chat_formatting import pagify
+from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
@@ -25,10 +31,12 @@ class Qauth(commands.Cog):
         )
 
         default_user = {"secret": ""}
-        default_guild = {"enabled": [], "allowed": [], "timeout": 30, "role_id": 0}
+        default_guild = {"allowed": [], "timeout": 300, "role_id": 0}
+        default_global = {"qauth": []}
 
         self.config.register_user(**default_user)
         self.config.register_guild(**default_guild)
+        self.config.register_global(**default_global)
 
     async def red_delete_data_for_user(
         self, *, requester: RequestType, user_id: int
@@ -36,80 +44,104 @@ class Qauth(commands.Cog):
         # TODO: Replace this with the proper end user datapip removal handling.
         super().red_delete_data_for_user(requester=requester, user_id=user_id)
 
+    async def quath_add(self, *, user: discord.User, guild: discord.Guild, time: int):
+        async with self.config.quath() as quath:
+            _guild = quath.get(guild.id, None)
+            if isinstance(_guild, type(None)):
+                # create if not exist
+                quath[guild.id] = {}
+            quath[guild.id][user.id] = time
+
+    async def quath_remove(self, *, user: discord.User, guild: discord.Guild):
+        async with self.config.quath() as quath:
+            del quath[guild.id][user.id]
+            if len(quath[guild.id]) == 0:
+                del quath[guild.id]
+
     @commands.command(name="qauthorize", aliases=["qa", "su"])
     @commands.guild_only()
     async def qauthorize(self, ctx: commands.Context):
         """ """
-        async with self.config.guild(ctx.guild) as guild:
-            role_id = guild["role_id"]
-            if role_id == 0:
-                return await ctx.reply(
-                    content=(
-                        "Guild perm role has not been configured, or has been reseted.\n"
-                        "Set the perm role via `[p]qauth role <@role>`"
-                    )
-                )
-            if isinstance(ctx.guild.get_role(role_id), type(None)):
-                await self._set_role(guild=ctx.guild, role_id=0)
-                return await ctx.reply(
-                    content=(
-                        "Configured Role is invalid, reseting to default settings.\n"
-                        "Set the perm role via `[p]qauth role <@role>`"
-                    )
-                )
-            if ctx.author not in guild["allowed"]:
-                return await ctx.reply(
-                    content="You do not have permission to do that.",
-                    mention_author=False,
-                )
-
-            if ctx.author in guild["enabled"]:
-                # run remove process
-                return await ctx.reply(
-                    content="Your role has been removed.", mention_author=False
-                )
-
-        async with self.config.user(ctx.author) as userdata:
-            if userdata["secret"] == "":
-                return await ctx.reply(
-                    content="An error must've occured, you haven't been registered yet.",
-                    mention_author=False,
-                )
-            guild_message = await ctx.reply(
-                content="I have received your request, please check your dms.",
+        member = ctx.author
+        role_id = await self.config.guild(ctx.guild).role_id()
+        if role_id == 0:
+            return await ctx.reply(
+                content=(
+                    "Guild perm role has not been configured, or has been reseted.\n"
+                    "Set the perm role via `[p]qauth role <@role>`"
+                ),
                 mention_author=False,
             )
-            author_dm = await ctx.author.dm_channel
-            if isinstance(author_dm, type(None)):
-                author_dm = await ctx.author.create_dm()
-
-            otpinfo = discord.Embed(
-                description=(
-                    "**OTP verification**\n"
-                    "---\n"
-                    f"guild id: {ctx.guild.id}\n"
-                    f"request from: #{ctx.channel.name}\n"
-                    f"request time: <t:{int(ctx.message.created_at.timestamp)}:R>\n"
-                    "\n"
-                    "please respond with your code on your authenticator"
-                )
+        role = ctx.guild.get_role(role_id)
+        if not isinstance(role, discord.Role):
+            await self._set_role(guild=ctx.guild, role_id=0)
+            return await ctx.reply(
+                content=(
+                    "Configured Role is invalid, reseting to default settings.\n"
+                    "Set the perm role via `[p]qauth role <@role>`"
+                ),
+                mention_author=False,
             )
-            otpinfo.set_author(
-                name=f"from **{ctx.guild.name}**", icon_url=ctx.guild.icon_url
-            )
-            otpinfo.set_footer(
-                text="if you somehow lost your code, please contact the bot owner"
+        if member.id not in await self.config.guild(ctx.guild).allowed():
+            return await ctx.reply(
+                content="You do not have permission to do that.",
+                mention_author=False,
             )
 
-            await author_dm.send(embed=otpinfo)
+        if member.id in await self.config.qauth()[ctx.guild.id]:
+            # disable
+            await member.remove_roles(role, reason="qauth role remove on demand")
+            await self.quath_remove(user=member, guild=ctx.guild)
+            return await ctx.reply(
+                content="Your role has been removed.", mention_author=False
+            )
 
-            result = await self.validate_attempts(user=ctx.author, user_dm=author_dm)
+        if await self.config.user(ctx.author).secret() == "":
+            return await ctx.reply(
+                content="An error must've occured, you haven't been registered yet.",
+                mention_author=False,
+            )
+        guild_message = await ctx.reply(
+            content="I have received your request, please check your dms.",
+            mention_author=False,
+        )
+        author_dm = await member.dm_channel
+        if isinstance(author_dm, type(None)):
+            author_dm = await member.create_dm()
 
-            if result:
-                # run add process
-                return await guild_message.edit()
-            else:
-                return await guild_message.edit("Auth failed.", mention_author=False)
+        otpinfo = discord.Embed(
+            description=(
+                "**OTP verification**\n"
+                "---\n"
+                f"guild id: {ctx.guild.id}\n"
+                f"request from: #{ctx.channel.name}\n"
+                f"request time: <t:{int(ctx.message.created_at.timestamp)}:R>\n"
+                "\n"
+                "please respond with your code on your authenticator"
+            ),
+            color=await ctx.embed_color(),
+        )
+        otpinfo.set_author(
+            name=f"from **{ctx.guild.name}**", icon_url=ctx.guild.icon_url
+        )
+        otpinfo.set_footer(
+            text="if you somehow lost your code, please contact the bot owner"
+        )
+
+        await author_dm.send(embed=otpinfo)
+
+        result = await self.validate_attempts(user=member._user, user_dm=author_dm)
+
+        if result:
+            # enable
+            await member.add_roles(role, reason="qauth role verified")
+            timeout = await self.config.guild(ctx.guild).timeout()
+            timeout = int(time.time() + timeout) if timeout != -1 else timeout
+            await self.quath_add(user=member, guild=ctx.guild, time=timeout)
+            return await guild_message.edit()
+
+        else:
+            return await guild_message.edit("Auth failed.", mention_author=False)
 
     async def validate_attempts(
         self, *, user: discord.user, user_dm: discord.Channel, attempt: int = 3
@@ -128,13 +160,16 @@ class Qauth(commands.Cog):
                     secret=await self.config.user(user).secret(), code=code
                 ):
                     await user_dm.send(
-                        embed=discord.Embed(description="code verified.")
+                        embed=discord.Embed(
+                            description="code verified.", color=discord.Color.green()
+                        )
                     )
                     return True
                 else:
                     await user_dm.send(
                         embed=discord.Embed(
-                            description=f"wrong code. please try again...\n {attempt}/3 remaining attpemts."
+                            description=f"wrong code. please try again...\n {attempt}/3 remaining attpemts.",
+                            color=discord.Color.red(),
                         )
                     )
                     attempt -= 1
@@ -159,12 +194,6 @@ class Qauth(commands.Cog):
         await user.send(content=secret, delete_after=30.0)
         return await ctx.tick()
 
-    async def member_enable(self):
-        pass  # add process
-
-    async def member_disable(self):
-        pass  # remove process
-
     @commands.group(name="qauth")
     @commands.has_permissions(manage_roles=True)
     async def qauth(self, ctx: commands.Context):
@@ -172,6 +201,12 @@ class Qauth(commands.Cog):
         if ctx.invoked_subcommand is None:
             pass
             # show embed current settings here
+
+    @qauth.command(name="register")
+    @commands.dm_only()
+    async def register(self, ctx: commands.Content):
+        """"""
+        pass
 
     async def _set_role(self, *, guild: discord.Guild, role_id: int) -> None:
         """sets the role with config"""
@@ -181,15 +216,20 @@ class Qauth(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def set_role(self, ctx: commands.Context, role: discord.Role):
         """set the role given on verification"""
-        pass
+        return await self._set_role(guild=ctx.guild, role_id=role.id)
 
     @qauth.command(name="timeout")
     @commands.has_permissions(administrator=True)
     async def set_timeout(self, ctx: commands.Context, seconds: int):
         """
         set the timeout seconds for temporary role, -1 to disable timeout
-        default timeout is 30 seconds
+        default timeout is 300 seconds, timeout cannot be shorter than 60 seconds
         """
+        if seconds != -1 and seconds >= 60:
+            return await ctx.reply(
+                content="Time out must be either -1 or more than 5 seconds.",
+                mention_author=False,
+            )
         await self.config.guild(ctx.guild).timeout.set(seconds)
         return await ctx.reply(
             content=f"The timeout for {ctx.guild.name} has been set to {seconds} seconds.",
@@ -199,16 +239,91 @@ class Qauth(commands.Cog):
     @qauth.command(name="add")
     @commands.has_permissions(administrator=True)
     async def user_add(self, ctx: commands.Context, user: discord.User):
-        """adds a user to the list for perms"""
-        pass
+        """adds a user to the qauth list"""
+        async with self.config.guild(ctx.guild) as guild:
+            if user.id in guild["allowed"]:
+                return await ctx.reply(
+                    content=f"{user}({user.id}) is already in qauth list",
+                    mention_author=False,
+                )
+            guild["allowed"].append(user.id)
+        reply = f"I have added {user}({user.id}) to qauth list"
+        if await self.config.user(user).secret() == "":
+            await user.send(
+                embed=discord.Embed(
+                    description=(
+                        "**You have been invited to use Qauth**\n"
+                        "---\n"
+                        f"<t:{ctx.message.created_at.timestamp()}:R>\n"
+                        f"from: {ctx.author}\n"
+                        f"in: {ctx.guild.name} ({ctx.guild.id})\n"
+                        "\n"
+                        "to start the registration, type `[p]qauth register` in dms"
+                    ),
+                    color=await ctx.embed_color(),
+                )
+            )
+            reply += (
+                f"\n\nSince {user.name} hasn't setup their auth key, "
+                "I have dmd them the instructions to register.\n"
+                "They will **not** be able to use this command before registering."
+            )
+        return ctx.reply(content=reply, mention_author=False)
 
     @qauth.command(name="remove")
     @commands.has_permissions(administrator=True)
     async def user_remove(self, ctx: commands.Context, user: discord.User):
-        """removes a user from the list for perms"""
-        pass
+        """removes a user from the qauth list"""
+        async with self.config.guild(ctx.guild) as guild:
+            if user.id not in guild["allowed"]:
+                return await ctx.reply(
+                    content=f"{user}({user.id}) was not in qauth list",
+                    mention_author=False,
+                )
+            guild["allowed"].remove(user.id)
+        return await ctx.reply(
+            content=f"I have removed {user}({user.id}) from  qauth list",
+            mention_author=False,
+        )
 
     @qauth.command(name="list")
     async def list_guild(self, ctx: commands.Context):
         """check the users that are able to gain perms"""
-        pass
+        allowed = await self.config.guild(ctx.guild).allowed()
+
+        message = ""
+        for member_id in allowed:
+            message += f"{'+' if member_id in await self.config.qauth()[ctx.guild.id] else '-'} {ctx.guild.get_member(member_id)}\n"
+
+        embeds = []
+        pages = 1
+        for page in pagify(message, delims=["\n"], page_length=100):
+            emb = discord.Embed(
+                colour=await ctx.embed_colour(),
+                title=f"{ctx.guild.name} qauth members",
+                description=page,
+            )
+            emb.set_footer(text=f"Page {pages}/{(math.ceil(len(message) / 100))}")
+            pages += 1
+            embeds.append(emb)
+
+        await menu(ctx, embeds, DEFAULT_CONTROLS)
+
+    @tasks.loop(seconds=10)
+    async def role_check(self):
+        now = time.time()
+        async with self.config.qauth() as qauth:
+            for guild in qauth:
+                role = await self.config.guild(guild).role_id()
+                removal = []
+                for user in qauth[guild]:
+                    if (timeout := qauth[guild][user]) != -1 and timeout <= now:
+                        removal.append(user)
+                for user in removal:
+                    await self.bot.get_or_fetch_member(
+                        guild=guild, member_id=user
+                    ).remove_roles(
+                        await self.bot.get_guild(guild).get_role(role),
+                        reason="qauth role remove on timeout",
+                    )
+                    del qauth[user]
