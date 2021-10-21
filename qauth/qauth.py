@@ -416,10 +416,3 @@ class Qauth(commands.Cog):
                 return await ctx.reply("OTP verified!", mention_author=False)
             else:
                 return await ctx.reply("Invalid OTP.", mention_author=False)
-
-    @qauth.command(name="show")
-    @commands.is_owner()
-    async def show(self, ctx: commands.Context):
-        secret = await self.config.user(ctx.author).secret()
-
-        return await ctx.send(content=f"secret: {secret}")
