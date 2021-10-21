@@ -216,6 +216,8 @@ class Qauth(commands.Cog):
                     inline=False,
                 )
             return await ctx.send(embed=emb)
+        elif ctx.invoked_with == "qauth":
+            return
 
     @qauth.command(name="register")
     @commands.dm_only()
