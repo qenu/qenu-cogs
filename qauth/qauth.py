@@ -400,7 +400,7 @@ class Qauth(commands.Cog):
 
     @qauth.command(name="test")
     async def test(self, ctx: commands.Context):
-        secret = self.config.user(ctx.author).secret()
+        secret = await self.config.user(ctx.author).secret()
 
         await ctx.send(content="Please enter your OTP code.")
 
@@ -420,6 +420,6 @@ class Qauth(commands.Cog):
     @qauth.command(name="show")
     @commands.is_owner()
     async def show(self, ctx: commands.Context):
-        secret = self.config.user(ctx.author).secret()
+        secret = await self.config.user(ctx.author).secret()
 
         return await ctx.send(content=f"secret: {secret}")
