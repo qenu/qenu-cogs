@@ -147,7 +147,7 @@ class Qauth(commands.Cog):
             return await guild_message.edit("Auth failed.", mention_author=False)
 
     async def validate_attempts(
-        self, *, user: discord.user, user_dm: discord.Channel, attempt: int = 3
+        self, *, user: discord.user, user_dm: discord.TextChannel, attempt: int = 3
     ) -> bool:
         while attempt > 0:
 
