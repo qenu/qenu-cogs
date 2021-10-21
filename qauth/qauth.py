@@ -195,7 +195,7 @@ class Qauth(commands.Cog):
         )
         return await ctx.tick()
 
-    @commands.group(name="qauth")
+    @commands.group(name="qauth",invoke_without_command=True)
     async def qauth(self, ctx: commands.Context):
         """settings and infos about Qauth"""
         if ctx.invoked_subcommand is None:
@@ -216,8 +216,7 @@ class Qauth(commands.Cog):
                     inline=False,
                 )
             return await ctx.send(embed=emb)
-        elif ctx.invoked_with == "qauth":
-            return
+
 
     @qauth.command(name="register")
     @commands.dm_only()
