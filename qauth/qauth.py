@@ -220,7 +220,7 @@ class Qauth(commands.Cog):
 
     @qauth.command(name="register")
     @commands.dm_only()
-    async def register(self, ctx: commands.Content):
+    async def register(self, ctx: commands.Context):
         """register for qauth"""
         await ctx.send(
             embed=discord.Embed(
