@@ -196,7 +196,6 @@ class Qauth(commands.Cog):
         return await ctx.tick()
 
     @commands.group(name="qauth")
-    @commands.has_permissions(manage_roles=True)
     async def qauth(self, ctx: commands.Context):
         """settings and infos about Qauth"""
         if ctx.invoked_subcommand is None:
@@ -208,6 +207,7 @@ class Qauth(commands.Cog):
                     f"({ctx.author.id})\n",
                     f"Status: {'R' if status else 'Not r'}egistered\n",
                 ),
+                color = await ctx.embed_color()
             )
             emb.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
             if not status:
