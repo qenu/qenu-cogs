@@ -203,8 +203,7 @@ class Qauth(commands.Cog):
             emb = discord.Embed(
                 title="Qauth discord Authenticator",
                 description=(
-                    f"Name: {ctx.author}\n"
-                    f"({ctx.author.id})\n"
+                    f"Name: {ctx.author} • ({ctx.author.id})\n"
                     f"Status: {'R' if status else 'Not r'}egistered\n"
                 ),
                 color=await ctx.embed_color(),
