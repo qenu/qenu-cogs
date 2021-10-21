@@ -399,7 +399,7 @@ class Qauth(commands.Cog):
                     del qauth[user]
 
     @qauth.command(name="test")
-    async def test(self, ctx: commands.Context, code: str):
+    async def test(self, ctx: commands.Context):
         secret = self.config.user(ctx.author).secret()
 
         await ctx.send(content="Please enter your OTP code.")
