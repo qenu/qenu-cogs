@@ -220,6 +220,7 @@ class Qauth(commands.Cog):
 
     @qauth.command(name="register")
     @commands.dm_only()
+    @commands.max_concurrency(1)
     async def register(self, ctx: commands.Context):
         """register for qauth"""
         await ctx.send(
