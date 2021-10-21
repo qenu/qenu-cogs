@@ -1,6 +1,7 @@
 from logging import Manager
 from typing import Literal, Optional
 from discord import member
+from discord.flags import MessageFlags
 import pyotp
 import asyncio
 import math
@@ -38,6 +39,8 @@ class Qauth(commands.Cog):
         self.config.register_guild(**default_guild)
         self.config.register_global(**default_global)
 
+        self.role_check.start()
+
     async def red_delete_data_for_user(
         self, *, requester: RequestType, user_id: int
     ) -> None:
@@ -61,7 +64,7 @@ class Qauth(commands.Cog):
     @commands.command(name="qauthorize", aliases=["qa", "su"])
     @commands.guild_only()
     async def qauthorize(self, ctx: commands.Context):
-        """ """
+        """toggle priviledges"""
         member = ctx.author
         role_id = await self.config.guild(ctx.guild).role_id()
         if role_id == 0:
@@ -185,28 +188,93 @@ class Qauth(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def resetotp(self, ctx: Optional[commands.Context], *, user: discord.User):
-        """assigns user a new secret"""
-        secret = self.create_secret()
-        await self.config.user(user).secret.set(secret)
+        """removes user secret"""
+        await self.config.user(user).secret.set("")
         await user.send(
-            content=f"Your Auth Key has been reseted, please save your new key somewhere safe.\nYou have 30 seconds to do so..."
+            content=f"Your Auth Key has been reseted, you can now re-register for a new key."
         )
-        await user.send(content=secret, delete_after=30.0)
         return await ctx.tick()
 
     @commands.group(name="qauth")
     @commands.has_permissions(manage_roles=True)
     async def qauth(self, ctx: commands.Context):
-        """ """
+        """settings and infos about Qauth"""
         if ctx.invoked_subcommand is None:
-            pass
-            # show embed current settings here
+            status = (await self.config.user(ctx.author).secret()) != ""
+            emb = discord.Embed(
+                title="Qauth discord Authenticator",
+                description=(
+                    f"Name: {ctx.author}\n",
+                    f"({ctx.author.id})\n",
+                    f"Status: {'R' if status else 'Not r'}egistered\n",
+                ),
+            )
+            emb.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+            if not status:
+                emb.add_field(
+                    name="qauth register",
+                    value="(dm only) Use this command via dm to start using qauth.",
+                    inline=False,
+                )
+            return await ctx.send(embed=emb)
 
     @qauth.command(name="register")
     @commands.dm_only()
     async def register(self, ctx: commands.Content):
-        """"""
-        pass
+        """register for qauth"""
+        await ctx.send(
+            embed=discord.Embed(
+                description=(
+                    "**Qauth Register**\n",
+                    "---\n",
+                    "You are about to create a key for qauth,\n",
+                    "please make sure you are ready so save your key safely\n",
+                    "as the key could **not** be reditributed.\n",
+                    "if you ever lost your key code, you would have to contact the owner for it.\n",
+                    "\n",
+                    "Please type `agree` once you are ready!",
+                ),
+                color=await ctx.embed_color(),
+            )
+        )
+
+        def check_agree(message):
+            return message.content.lower == "agree"
+
+        try:
+            await self.bot.wait_for("message", check=check_agree, timeout=180.0)
+        except asyncio.TimeoutError:
+            return await ctx.send(
+                content="Request Timed out, please do `[p]qauth register` again once you're ready!"
+            )
+
+        secret = self.create_secret()
+        with_code = await ctx.send(
+            embed=discord.Embed(
+                description=(
+                    "**Your OTP Key code**\n",
+                    f"{secret}\n",
+                    "----\n",
+                    "after entering the key code to your prefered app,\n",
+                    "please respond with your 6-digits otp to finish register.",
+                )
+            )
+        )
+
+        def verify(message):
+            return self.timebasedOTP(secret=secret, code=message.content)
+
+        try:
+            await self.bot.wait_for("message", check=verify, timeout=60.0)
+        except asyncio.TimeoutError:
+            await with_code.delete()
+            return await ctx.send(
+                content="Request Timed out, please do `[p]qauth register` again once you're ready!"
+            )
+        else:
+            await with_code.delete()
+            await self.config.user(ctx.author).secret.set(secret)
+            await ctx.send("Your qauth has been successfully registered!")
 
     async def _set_role(self, *, guild: discord.Guild, role_id: int) -> None:
         """sets the role with config"""
