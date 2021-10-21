@@ -15,6 +15,8 @@ from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import pagify
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 
+import qauth
+
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
 
@@ -195,7 +197,7 @@ class Qauth(commands.Cog):
         )
         return await ctx.tick()
 
-    @commands.group(name="qauth",invoke_without_command=True)
+    @commands.group(name="qauth", invoke_without_command=True)
     async def qauth(self, ctx: commands.Context):
         """settings and infos about Qauth"""
         if ctx.invoked_subcommand is None:
@@ -216,7 +218,6 @@ class Qauth(commands.Cog):
                     inline=False,
                 )
             return await ctx.send(embed=emb)
-
 
     @qauth.command(name="register")
     @commands.dm_only()
@@ -396,3 +397,22 @@ class Qauth(commands.Cog):
                         reason="qauth role remove on timeout",
                     )
                     del qauth[user]
+
+    @qauth.command(name="test")
+    async def test(self, ctx: commands.Context, code: str):
+        secret = self.config.user(ctx.author).secret()
+
+        await ctx.send(content="Please enter your OTP code.")
+
+        def verify(message):
+            return len(message.content) == 6 and message.author == ctx.author and message.channel == ctx.channel
+
+        try:
+            code = await self.bot.wait_for("message", check=verify, timeout=60.0)
+        except asyncio.TimeoutError:
+            return await ctx.reply(content="Request Timed out", mention_author=False)
+        else:
+            if self.timebasedOTP(secret=secret, code=code.content):
+                return await ctx.reply("OTP verified!", mention_author=False)
+            else:
+                return await ctx.reply("Invalid OTP.", mention_author=False)
