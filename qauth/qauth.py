@@ -118,7 +118,7 @@ class Qauth(commands.Cog):
                 "---\n"
                 f"guild id: {ctx.guild.id}\n"
                 f"request from: #{ctx.channel.name}\n"
-                f"request time: <t:{int(ctx.message.created_at.timestamp)}:R>\n"
+                f"request time: <t:{int(ctx.message.created_at.timestamp())}:R>\n"
                 "\n"
                 "please respond with your code on your authenticator"
             ),
@@ -203,11 +203,11 @@ class Qauth(commands.Cog):
             emb = discord.Embed(
                 title="Qauth discord Authenticator",
                 description=(
-                    f"Name: {ctx.author}\n",
-                    f"({ctx.author.id})\n",
-                    f"Status: {'R' if status else 'Not r'}egistered\n",
+                    f"Name: {ctx.author}\n"
+                    f"({ctx.author.id})\n"
+                    f"Status: {'R' if status else 'Not r'}egistered\n"
                 ),
-                color = await ctx.embed_color()
+                color=await ctx.embed_color(),
             )
             emb.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
             if not status:
@@ -225,14 +225,14 @@ class Qauth(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 description=(
-                    "**Qauth Register**\n",
-                    "---\n",
-                    "You are about to create a key for qauth,\n",
-                    "please make sure you are ready so save your key safely\n",
-                    "as the key could **not** be reditributed.\n",
-                    "if you ever lost your key code, you would have to contact the owner for it.\n",
-                    "\n",
-                    "Please type `agree` once you are ready!",
+                    "**Qauth Register**\n"
+                    "---\n"
+                    "You are about to create a key for qauth,\n"
+                    "please make sure you are ready so save your key safely\n"
+                    "as the key could **not** be reditributed.\n"
+                    "if you ever lost your key code, you would have to contact the owner for it.\n"
+                    "\n"
+                    "Please type `agree` once you are ready!"
                 ),
                 color=await ctx.embed_color(),
             )
@@ -252,11 +252,11 @@ class Qauth(commands.Cog):
         with_code = await ctx.send(
             embed=discord.Embed(
                 description=(
-                    "**Your OTP Key code**\n",
-                    f"{secret}\n",
-                    "----\n",
-                    "after entering the key code to your prefered app,\n",
-                    "please respond with your 6-digits otp to finish register.",
+                    "**Your OTP Key code**\n"
+                    f"{secret}\n"
+                    "----\n"
+                    "after entering the key code to your prefered app,\n"
+                    "please respond with your 6-digits otp to finish register."
                 )
             )
         )
