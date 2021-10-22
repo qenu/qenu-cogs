@@ -139,10 +139,10 @@ class Qauth(commands.Cog):
             timeout = await self.config.guild(ctx.guild).timeout()
             timeout = int(time.time() + timeout) if timeout != -1 else timeout
             await self.auth_add(user=member, guild=ctx.guild, time=timeout)
-            return await guild_message.edit(content="Auth Verified.")
+            return await guild_message.edit(content="Auth Verified.", mention_author=False)
 
         else:
-            return await guild_message.edit(content="Auth failed.")
+            return await guild_message.edit(content="Auth failed.", mention_author=False)
 
     async def validate_attempts(
         self, *, user: discord.user, user_dm: discord.TextChannel, attempt: int = 3
@@ -162,7 +162,7 @@ class Qauth(commands.Cog):
                 ):
                     await user_dm.send(
                         embed=discord.Embed(
-                            description="code verified.", color=discord.Color.green()
+                            description="Code verified.", color=discord.Color.green()
                         )
                     )
                     return True
@@ -170,7 +170,7 @@ class Qauth(commands.Cog):
                     attempt -= 1
                     await user_dm.send(
                         embed=discord.Embed(
-                            description=f"wrong code. please try again...\n {attempt}/3 remaining attpemts.",
+                            description=f"Wrong code. please try again...\n {attempt}/3 remaining attpemts.",
                             color=discord.Color.red(),
                         )
                     )
