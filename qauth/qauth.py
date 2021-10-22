@@ -89,7 +89,7 @@ class Qauth(commands.Cog):
             )
 
         auth = await self.config._qauth()
-        if (not isinstance(auth.get(ctx.guild.id, None), type(None))) and member.id in await auth[ctx.guild.id]:
+        if (not isinstance(auth.get(ctx.guild.id, None), type(None))) and str(member.id) in auth[ctx.guild.id]:
             # disable
             await member.remove_roles(role, reason="qauth role remove on demand")
             await self.auth_remove(user=member, guild=ctx.guild)
@@ -167,13 +167,19 @@ class Qauth(commands.Cog):
                     )
                     return True
                 else:
-                    attempt -= 1
                     await user_dm.send(
                         embed=discord.Embed(
                             description=f"Wrong code. please try again...\n {attempt}/3 remaining attpemts.",
                             color=discord.Color.red(),
                         )
                     )
+                    attempt -= 1
+        await user_dm.send(
+            embed=discord.Embed(
+                    description="Maximum attempts exceeded, Terminating process.",
+                    color=discord.Color.red(),
+            )
+        )
         return False
 
     def create_secret(self) -> str:
@@ -360,8 +366,9 @@ class Qauth(commands.Cog):
         allowed = await self.config.guild(ctx.guild).allowed()
 
         message = ""
+        auth = await self.config._qauth()
         for member_id in allowed:
-            message += f"{'+' if member_id in await self.config._qauth()[ctx.guild.id] else '-'} {ctx.guild.get_member(member_id)}\n"
+            message += f"{'+' if member_id in auth[ctx.guild.id] else '-'} {ctx.guild.get_member(member_id)}\n"
 
         embeds = []
         pages = 1
