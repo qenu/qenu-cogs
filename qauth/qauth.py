@@ -30,7 +30,7 @@ class Qauth(commands.Cog):
 
         default_user = {"secret": ""}
         default_guild = {"allowed": [], "timeout": 300, "role_id": 0}
-        default_global = {"qauth": {}}
+        default_global = {"_qauth": {}}
 
         self.config.register_user(**default_user)
         self.config.register_guild(**default_guild)
@@ -45,7 +45,7 @@ class Qauth(commands.Cog):
         super().red_delete_data_for_user(requester=requester, user_id=user_id)
 
     async def auth_add(self, *, user: discord.User, guild: discord.Guild, time: int):
-        async with self.config.qauth() as auth:
+        async with self.config._qauth() as auth:
             _guild = auth.get(guild.id, None)
             if isinstance(_guild, type(None)):
                 # create if not exist
@@ -53,7 +53,7 @@ class Qauth(commands.Cog):
             auth[guild.id][user.id] = time
 
     async def auth_remove(self, *, user: discord.User, guild: discord.Guild):
-        async with self.config.qauth() as auth:
+        async with self.config._qauth() as auth:
             del auth[guild.id][user.id]
             if len(auth[guild.id]) == 0:
                 del auth[guild.id]
@@ -88,7 +88,7 @@ class Qauth(commands.Cog):
                 mention_author=False,
             )
 
-        auth = await self.config.qauth()
+        auth = await self.config._qauth()
         if (not isinstance(auth.get(ctx.guild.id, None), type(None))) and member.id in await auth[ctx.guild.id]:
             # disable
             await member.remove_roles(role, reason="qauth role remove on demand")
@@ -362,7 +362,7 @@ class Qauth(commands.Cog):
 
         message = ""
         for member_id in allowed:
-            message += f"{'+' if member_id in await self.config.qauth()[ctx.guild.id] else '-'} {ctx.guild.get_member(member_id)}\n"
+            message += f"{'+' if member_id in await self.config._qauth()[ctx.guild.id] else '-'} {ctx.guild.get_member(member_id)}\n"
 
         embeds = []
         pages = 1
@@ -381,7 +381,7 @@ class Qauth(commands.Cog):
     @tasks.loop(seconds=10)
     async def role_check(self):
         now = time.time()
-        async with self.config.qauth() as auth:
+        async with self.config._qauth() as auth:
             for guild in auth:
                 role = await self.config.guild(guild).role_id()
                 removal = []
