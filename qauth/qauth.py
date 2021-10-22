@@ -239,8 +239,13 @@ class Qauth(commands.Cog):
                     value="(dm only)\nUse this command via dm to start using qauth.",
                     inline=False,
                 )
-            else:
-                pass
+
+            emb.add_field(name="list", value="view all members on server allow list", inline=True)
+            emb.add_field(name="add", value="adds a member to server allow list", inline=True)
+            emb.add_field(name="remove", value="removes a member from server allow list", inline=True)
+            emb.add_field(name="role", value="configure the server perm role", inline=True)
+            emb.add_field(name="timeout", value="configure the timeout duration for role", inline=True)
+
             return await ctx.send(embed=emb)
 
 
