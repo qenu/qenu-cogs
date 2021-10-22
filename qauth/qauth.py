@@ -213,13 +213,36 @@ class Qauth(commands.Cog):
                 color=await ctx.embed_color(),
             )
             emb.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+            if not isinstance(ctx.guild, type(None)):
+                role_id = await self.config.guild(ctx.guild).role_id()
+                role = ctx.guild.get_role(role_id)
+
+                if isinstance(role, discord.Role):
+                    role_status = f"Role: {role.mention}"
+                else:
+                    role_status = "Role not configured."
+
+                member = await self.config.guild(ctx.guild).allowed()
+
+                emb.add_field(
+                    name=f"{ctx.guild.name} config",
+                    value=(
+                        f"{role_status}\n"
+                        f"Allowed: {len(member)}"
+                        ),
+                    inline=False
+                )
+
             if not status:
                 emb.add_field(
                     name="[p]qauth register",
                     value="(dm only)\nUse this command via dm to start using qauth.",
                     inline=False,
                 )
+            else:
+                pass
             return await ctx.send(embed=emb)
+
 
     @qauth.command(name="register")
     @commands.dm_only()
