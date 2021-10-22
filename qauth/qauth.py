@@ -337,7 +337,7 @@ class Qauth(commands.Cog):
                 "I have dmd them the instructions to register.\n"
                 "They will **not** be able to use this command before registering."
             )
-        return ctx.reply(content=reply, mention_author=False)
+        return await ctx.reply(content=reply, mention_author=False)
 
     @qauth.command(name="remove")
     @commands.has_permissions(administrator=True)
