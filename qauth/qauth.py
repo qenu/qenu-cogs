@@ -89,7 +89,7 @@ class Qauth(commands.Cog):
             )
 
         qauth = await self.config.qauth()
-        if member.id in await qauth[ctx.guild.id]:
+        if member.id in qauth[ctx.guild.id]:
             # disable
             await member.remove_roles(role, reason="qauth role remove on demand")
             await self.quath_remove(user=member, guild=ctx.guild)
