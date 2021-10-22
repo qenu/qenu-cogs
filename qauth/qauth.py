@@ -88,7 +88,8 @@ class Qauth(commands.Cog):
                 mention_author=False,
             )
 
-        if member.id in await self.config.qauth()[ctx.guild.id]:
+        qauth = await self.config.qauth()
+        if member.id in await qauth[ctx.guild.id]:
             # disable
             await member.remove_roles(role, reason="qauth role remove on demand")
             await self.quath_remove(user=member, guild=ctx.guild)
@@ -314,7 +315,8 @@ class Qauth(commands.Cog):
                 )
             guild["allowed"].append(user.id)
         reply = f"I have added {user}({user.id}) to qauth list"
-        if await self.config.user(user).secret() == "":
+        secret = await self.config.user(user).secret()
+        if secret == "":
             await user.send(
                 embed=discord.Embed(
                     description=(
@@ -348,7 +350,7 @@ class Qauth(commands.Cog):
                 )
             guild["allowed"].remove(user.id)
         return await ctx.reply(
-            content=f"I have removed {user}({user.id}) from  qauth list",
+            content=f"I have removed {user}({user.id}) from qauth list",
             mention_author=False,
         )
 
