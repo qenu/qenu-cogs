@@ -1,7 +1,4 @@
-from logging import Manager
 from typing import Literal, Optional
-from discord import member
-from discord.flags import MessageFlags
 import pyotp
 import asyncio
 import math
@@ -14,8 +11,6 @@ from redbot.core.bot import Red
 from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import pagify
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
-
-import qauth
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
@@ -286,7 +281,8 @@ class Qauth(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def set_role(self, ctx: commands.Context, role: discord.Role):
         """set the role given on verification"""
-        return await self._set_role(guild=ctx.guild, role_id=role.id)
+        await self._set_role(guild=ctx.guild, role_id=role.id)
+        return await ctx.tick()
 
     @qauth.command(name="timeout")
     @commands.has_permissions(administrator=True)
@@ -310,7 +306,7 @@ class Qauth(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def user_add(self, ctx: commands.Context, user: discord.User):
         """adds a user to the qauth list"""
-        async with self.config.guild(ctx.guild) as guild:
+        async with self.config.guild(ctx.guild).all() as guild:
             if user.id in guild["allowed"]:
                 return await ctx.reply(
                     content=f"{user}({user.id}) is already in qauth list",
@@ -344,7 +340,7 @@ class Qauth(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def user_remove(self, ctx: commands.Context, user: discord.User):
         """removes a user from the qauth list"""
-        async with self.config.guild(ctx.guild) as guild:
+        async with self.config.guild(ctx.guild).all() as guild:
             if user.id not in guild["allowed"]:
                 return await ctx.reply(
                     content=f"{user}({user.id}) was not in qauth list",
@@ -405,7 +401,11 @@ class Qauth(commands.Cog):
         await ctx.send(content="Please enter your OTP code.")
 
         def verify(message):
-            return len(message.content) == 6 and message.author == ctx.author and message.channel == ctx.channel
+            return (
+                len(message.content) == 6
+                and message.author == ctx.author
+                and message.channel == ctx.channel
+            )
 
         try:
             code = await self.bot.wait_for("message", check=verify, timeout=60.0)
