@@ -89,7 +89,7 @@ class Qauth(commands.Cog):
             )
 
         auth = await self.config._qauth()
-        if (not isinstance(auth.get(ctx.guild.id, None), type(None))) and str(member.id) in auth[str(ctx.guild.id)]:
+        if (not isinstance(auth.get(str(ctx.guild.id), None), type(None))) and str(member.id) in auth[str(ctx.guild.id)]:
             # disable
             await member.remove_roles(role, reason="qauth role remove on demand")
             await self.auth_remove(user=member, guild=ctx.guild)
@@ -377,8 +377,12 @@ class Qauth(commands.Cog):
         for page in pagify(message, delims=["\n"], page_length=100):
             emb = discord.Embed(
                 colour=await ctx.embed_colour(),
-                title=f"{ctx.guild.name} qauth members",
-                description=page,
+                title=f"{ctx.guild.name} auth list",
+                description=(
+                    "```diff"
+                    f"{page}"
+                    "```"
+                    ),
             )
             emb.set_footer(text=f"Page {pages}/{(math.ceil(len(message) / 100))}")
             pages += 1
