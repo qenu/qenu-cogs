@@ -379,7 +379,7 @@ class Qauth(commands.Cog):
                 colour=await ctx.embed_colour(),
                 title=f"{ctx.guild.name} auth list",
                 description=(
-                    "```diff"
+                    "```diff\n"
                     f"{page}"
                     "```"
                     ),
