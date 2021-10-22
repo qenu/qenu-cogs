@@ -30,7 +30,7 @@ class Qauth(commands.Cog):
 
         default_user = {"secret": ""}
         default_guild = {"allowed": [], "timeout": 300, "role_id": 0}
-        default_global = {"qauth": []}
+        default_global = {"qauth": {}}
 
         self.config.register_user(**default_user)
         self.config.register_guild(**default_guild)
@@ -89,7 +89,7 @@ class Qauth(commands.Cog):
             )
 
         qauth = await self.config.qauth()
-        if member.id in qauth[ctx.guild.id]:
+        if (not isinstance(qauth.get(ctx.guild.id, None), type(None))) and member.id in await qauth[ctx.guild.id]:
             # disable
             await member.remove_roles(role, reason="qauth role remove on demand")
             await self.quath_remove(user=member, guild=ctx.guild)
@@ -139,7 +139,8 @@ class Qauth(commands.Cog):
             timeout = await self.config.guild(ctx.guild).timeout()
             timeout = int(time.time() + timeout) if timeout != -1 else timeout
             await self.quath_add(user=member, guild=ctx.guild, time=timeout)
-            return await guild_message.edit()
+            return await guild_message.edit("Auth Verified.", mention_author=False)
+            ###
 
         else:
             return await guild_message.edit("Auth failed.", mention_author=False)
