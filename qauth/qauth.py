@@ -367,8 +367,10 @@ class Qauth(commands.Cog):
 
         message = ""
         auth = await self.config._qauth()
+        if isinstance(auth.get(str(ctx.guild.id)), type(None)):
+            return await ctx.reply(content="empty list", mention_author=False)
         for member_id in allowed:
-            message += f"{'+' if member_id in auth[ctx.guild.id] else '-'} {ctx.guild.get_member(member_id)}\n"
+            message += f"{'+' if member_id in auth[str(ctx.guild.id)] else '-'} {ctx.guild.get_member(member_id)}\n"
 
         embeds = []
         pages = 1
