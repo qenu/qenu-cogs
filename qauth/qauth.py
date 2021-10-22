@@ -44,19 +44,19 @@ class Qauth(commands.Cog):
         # TODO: Replace this with the proper end user datapip removal handling.
         super().red_delete_data_for_user(requester=requester, user_id=user_id)
 
-    async def qauth_add(self, *, user: discord.User, guild: discord.Guild, time: int):
-        async with self.config.qauth() as qauth:
-            _guild = qauth.get(guild.id, None)
+    async def auth_add(self, *, user: discord.User, guild: discord.Guild, time: int):
+        async with self.config.qauth() as auth:
+            _guild = auth.get(guild.id, None)
             if isinstance(_guild, type(None)):
                 # create if not exist
-                qauth[guild.id] = {}
-            qauth[guild.id][user.id] = time
+                auth[guild.id] = {}
+            auth[guild.id][user.id] = time
 
-    async def qauth_remove(self, *, user: discord.User, guild: discord.Guild):
-        async with self.config.qauth() as qauth:
-            del qauth[guild.id][user.id]
-            if len(qauth[guild.id]) == 0:
-                del qauth[guild.id]
+    async def auth_remove(self, *, user: discord.User, guild: discord.Guild):
+        async with self.config.qauth() as auth:
+            del auth[guild.id][user.id]
+            if len(auth[guild.id]) == 0:
+                del auth[guild.id]
 
     @commands.command(name="qauthorize", aliases=["qa", "su"])
     @commands.guild_only()
@@ -88,11 +88,11 @@ class Qauth(commands.Cog):
                 mention_author=False,
             )
 
-        qauth = await self.config.qauth()
-        if (not isinstance(qauth.get(ctx.guild.id, None), type(None))) and member.id in await qauth[ctx.guild.id]:
+        auth = await self.config.qauth()
+        if (not isinstance(auth.get(ctx.guild.id, None), type(None))) and member.id in await auth[ctx.guild.id]:
             # disable
             await member.remove_roles(role, reason="qauth role remove on demand")
-            await self.qauth_remove(user=member, guild=ctx.guild)
+            await self.auth_remove(user=member, guild=ctx.guild)
             return await ctx.reply(
                 content="Your role has been removed.", mention_author=False
             )
@@ -138,7 +138,7 @@ class Qauth(commands.Cog):
             await member.add_roles(role, reason="qauth role verified")
             timeout = await self.config.guild(ctx.guild).timeout()
             timeout = int(time.time() + timeout) if timeout != -1 else timeout
-            await self.qauth_add(user=member, guild=ctx.guild, time=timeout)
+            await self.auth_add(user=member, guild=ctx.guild, time=timeout)
             return await guild_message.edit("Auth Verified.", mention_author=False)
             ###
 
@@ -195,7 +195,7 @@ class Qauth(commands.Cog):
         return await ctx.tick()
 
     @commands.group(name="qauth", invoke_without_command=True)
-    async def _qauth(self, ctx: commands.Context):
+    async def qauth(self, ctx: commands.Context):
         """settings and infos about Qauth"""
         if ctx.invoked_subcommand is None:
             status = (await self.config.user(ctx.author).secret()) != ""
@@ -216,7 +216,7 @@ class Qauth(commands.Cog):
                 )
             return await ctx.send(embed=emb)
 
-    @_qauth.command(name="register")
+    @qauth.command(name="register")
     @commands.dm_only()
     @commands.max_concurrency(1)
     async def register(self, ctx: commands.Context):
@@ -279,14 +279,14 @@ class Qauth(commands.Cog):
         """sets the role with config"""
         return await self.config.guild(guild).role_id.set(role_id)
 
-    @_qauth.command(name="role")
+    @qauth.command(name="role")
     @commands.has_permissions(administrator=True)
     async def set_role(self, ctx: commands.Context, role: discord.Role):
         """set the role given on verification"""
         await self._set_role(guild=ctx.guild, role_id=role.id)
         return await ctx.tick()
 
-    @_qauth.command(name="timeout")
+    @qauth.command(name="timeout")
     @commands.has_permissions(administrator=True)
     async def set_timeout(self, ctx: commands.Context, seconds: int):
         """
@@ -304,7 +304,7 @@ class Qauth(commands.Cog):
             mention_author=False,
         )
 
-    @_qauth.command(name="add")
+    @qauth.command(name="add")
     @commands.has_permissions(administrator=True)
     async def user_add(self, ctx: commands.Context, user: discord.User):
         """adds a user to the qauth list"""
@@ -339,7 +339,7 @@ class Qauth(commands.Cog):
             )
         return ctx.reply(content=reply, mention_author=False)
 
-    @_qauth.command(name="remove")
+    @qauth.command(name="remove")
     @commands.has_permissions(administrator=True)
     async def user_remove(self, ctx: commands.Context, user: discord.User):
         """removes a user from the qauth list"""
@@ -355,7 +355,7 @@ class Qauth(commands.Cog):
             mention_author=False,
         )
 
-    @_qauth.command(name="list")
+    @qauth.command(name="list")
     async def list_guild(self, ctx: commands.Context):
         """check the users that are able to gain perms"""
         allowed = await self.config.guild(ctx.guild).allowed()
@@ -381,12 +381,12 @@ class Qauth(commands.Cog):
     @tasks.loop(seconds=10)
     async def role_check(self):
         now = time.time()
-        async with self.config.qauth() as qauth:
-            for guild in qauth:
+        async with self.config.qauth() as auth:
+            for guild in auth:
                 role = await self.config.guild(guild).role_id()
                 removal = []
-                for user in qauth[guild]:
-                    if (timeout := qauth[guild][user]) != -1 and timeout <= now:
+                for user in auth[guild]:
+                    if (timeout := auth[guild][user]) != -1 and timeout <= now:
                         removal.append(user)
                 for user in removal:
                     await self.bot.get_or_fetch_member(
@@ -395,9 +395,9 @@ class Qauth(commands.Cog):
                         await self.bot.get_guild(guild).get_role(role),
                         reason="qauth role remove on timeout",
                     )
-                    del qauth[user]
+                    del auth[user]
 
-    @_qauth.command(name="test")
+    @qauth.command(name="test")
     async def test(self, ctx: commands.Context):
         secret = await self.config.user(ctx.author).secret()
 
