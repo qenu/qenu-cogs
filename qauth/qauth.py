@@ -106,7 +106,7 @@ class Qauth(commands.Cog):
             content="I have received your request, please check your dms.",
             mention_author=False,
         )
-        author_dm = await member.dm_channel
+        author_dm = member.dm_channel
         if isinstance(author_dm, type(None)):
             author_dm = await member.create_dm()
 
