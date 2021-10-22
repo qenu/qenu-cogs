@@ -46,17 +46,17 @@ class Qauth(commands.Cog):
 
     async def auth_add(self, *, user: discord.User, guild: discord.Guild, time: int):
         async with self.config._qauth() as auth:
-            _guild = auth.get(guild.id, None)
+            _guild = auth.get(str(guild.id), None)
             if isinstance(_guild, type(None)):
                 # create if not exist
-                auth[guild.id] = {}
-            auth[guild.id][user.id] = time
+                auth[str(guild.id)] = {}
+            auth[str(guild.id)][str(user.id)] = time
 
     async def auth_remove(self, *, user: discord.User, guild: discord.Guild):
         async with self.config._qauth() as auth:
-            del auth[guild.id][user.id]
-            if len(auth[guild.id]) == 0:
-                del auth[guild.id]
+            del auth[str(guild.id)][str(user.id)]
+            if len(auth[str(guild.id)]) == 0:
+                del auth[str(guild.id)]
 
     @commands.command(name="qauthorize", aliases=["qa", "su"])
     @commands.guild_only()
@@ -89,7 +89,7 @@ class Qauth(commands.Cog):
             )
 
         auth = await self.config._qauth()
-        if (not isinstance(auth.get(ctx.guild.id, None), type(None))) and str(member.id) in auth[ctx.guild.id]:
+        if (not isinstance(auth.get(ctx.guild.id, None), type(None))) and str(member.id) in auth[str(ctx.guild.id)]:
             # disable
             await member.remove_roles(role, reason="qauth role remove on demand")
             await self.auth_remove(user=member, guild=ctx.guild)
