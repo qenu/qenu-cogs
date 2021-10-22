@@ -139,17 +139,16 @@ class Qauth(commands.Cog):
             timeout = await self.config.guild(ctx.guild).timeout()
             timeout = int(time.time() + timeout) if timeout != -1 else timeout
             await self.auth_add(user=member, guild=ctx.guild, time=timeout)
-            return await guild_message.edit("Auth Verified.", mention_author=False)
-            ###
+            return await guild_message.edit(content="Auth Verified.")
 
         else:
-            return await guild_message.edit("Auth failed.", mention_author=False)
+            return await guild_message.edit(content="Auth failed.")
 
     async def validate_attempts(
         self, *, user: discord.user, user_dm: discord.TextChannel, attempt: int = 3
     ) -> bool:
+        secret = await self.config.user(user).secret()
         while attempt > 0:
-
             def validate(message):
                 return len(message.content) == 6 and message.channel == user_dm
 
@@ -159,7 +158,7 @@ class Qauth(commands.Cog):
                 return await user_dm.send(content="Request timeout.")
             else:
                 if self.timebasedOTP(
-                    secret=await self.config.user(user).secret(), code=code
+                    secret=secret, code=code.content
                 ):
                     await user_dm.send(
                         embed=discord.Embed(
@@ -168,13 +167,13 @@ class Qauth(commands.Cog):
                     )
                     return True
                 else:
+                    attempt -= 1
                     await user_dm.send(
                         embed=discord.Embed(
                             description=f"wrong code. please try again...\n {attempt}/3 remaining attpemts.",
                             color=discord.Color.red(),
                         )
                     )
-                    attempt -= 1
         return False
 
     def create_secret(self) -> str:
