@@ -21,6 +21,9 @@ SNOWFLAKE_THRESHOLD = 2 ** 63
 class Qenutils(commands.Cog):
     """
     Personal utility cogs from and for qenu
+
+    onping
+    todo
     """
 
     def __init__(self, bot: Red) -> None:
@@ -113,9 +116,11 @@ class Qenutils(commands.Cog):
             return
         if await self.bot.allowed_by_whitelist_blacklist(who=message.author) is False:
             return
+        if not isinstance(message, discord.Message):
+            return
         if not re.compile(rf"^<@!?{self.bot.user.id}>$").match(message.content):
             return
-        prefixes = await self.bot.get_prefix(message.channel)
+        prefixes = await self.bot.get_prefix(message)
         prefixes.remove(f"<@!{self.bot.user.id}> ")
         sorted_prefixes = sorted(prefixes, key=len)
         if len(sorted_prefixes) > 500:
