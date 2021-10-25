@@ -52,31 +52,6 @@ class Qenutils(commands.Cog):
         permissions = discord.Permissions(perms_int)
         return discord.utils.oauth_url(app_info.id, permissions, scopes=scopes)
 
-    async def nqn_webhook(
-        self, channel: discord.TextChannel
-    ) -> Optional[discord.Webhook]:
-        return discord.utils.get(await channel.webhooks(), name="nqn")
-
-    @commands.command(name="nqn")
-    @commands.guild_only()
-    @commands.bot_has_permissions(manage_webhooks=True)
-    async def nqn(self, ctx: commands.Context, emoji_name: str):
-        """nqn emote from this guild"""
-        pseudo = ctx.author
-
-        emoji = discord.utils.get(ctx.guild.emojis, name=emoji_name)
-        if emoji is None:
-            await ctx.send(f'Emoji "{emoji_name}" not found.')
-            return
-
-        if (webhook := await self.nqn_webhook(ctx.channel)) is None:
-            webhook = await ctx.channel.create_webhook(name="nqn")
-
-        await webhook.send(
-            content=emoji, username=pseudo.display_name, avatar_url=pseudo.avatar_url
-        )
-        await ctx.message.delete()
-
     @commands.group(name="onping")
     @commands.is_owner()
     async def on_bot_ping(self, ctx: commands.Context):
