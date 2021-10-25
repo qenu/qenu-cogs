@@ -1,0 +1,20 @@
+{
+    "name": "Tcping",
+    "short": "check server latency with bot ",
+    "description": "checks server latency from bot ",
+    "end_user_data_statement": "This cog does not store any data.",
+    "install_msg": "Thanks for installing I guess? This cog doesn't do much, it just pings the server and shows a number",
+    "author": [
+        "qenu"
+    ],
+    "required_cogs": {},
+    "requirements": [],
+    "tags": [
+        "utility",
+        "fun"
+    ],
+    "min_bot_version": "3.3.10",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG"
+}

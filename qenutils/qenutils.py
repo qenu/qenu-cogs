@@ -12,9 +12,6 @@ from redbot.core.utils.chat_formatting import humanize_list
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 SNOWFLAKE_THRESHOLD = 2 ** 63
-# SUPPORT_SERVER = "https://discord.gg/BXAa6yskzU"
-# INVITE_URL = "https://discord.com/oauth2/authorize?client_id=361249607520354306&scope=bot&permissions=805314614"
-
 
 class Qenutils(commands.Cog):
     """
@@ -36,33 +33,6 @@ class Qenutils(commands.Cog):
 
         self.config.register_global(**default_global)
 
-    async def latency_point(
-        self, host: str, port: str, timeout: float = 5, offset: bool = False
-    ) -> Optional[float]:
-        """
-        full credit to : https://github.com/dgzlopes/tcp-latency
-        """
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(timeout)
-        s_start = time()
-
-        try:
-            s.connect((host, int(port)))
-            s.shutdown(socket.SHUT_RD)
-
-        except socket.timeout:
-            return None
-        except OSError:
-            return None
-
-        s_runtime = (time() - s_start) * 1000
-
-        return (
-            round(float(s_runtime) - 130, 2)
-            if offset is False
-            else round(float(s_runtime), 2)
-        )
-
     async def _invite_url(self) -> str:
         """
         Generates the invite URL for the bot.
@@ -81,25 +51,6 @@ class Qenutils(commands.Cog):
         perms_int = data["invite_perm"]
         permissions = discord.Permissions(perms_int)
         return discord.utils.oauth_url(app_info.id, permissions, scopes=scopes)
-
-    @commands.command(name="tcping")
-    async def tcping(self, ctx: commands.Context, host: str, port: int = 443):
-        """
-        Pings a server with port with bot
-        [p]tcping [host] <port>
-        Default port: 443
-        """
-        latency = await self.latency_point(host=host, port=port, offset=True)
-        await ctx.tick()
-        if latency is None:
-            await ctx.send(f"{host} connection timed out!")
-            return
-        await ctx.reply(
-            embed=discord.Embed(
-                description=f"{host} responded with {latency:.2f}ms latency."
-            ),
-            mention_author=False,
-        )
 
     async def nqn_webhook(
         self, channel: discord.TextChannel
