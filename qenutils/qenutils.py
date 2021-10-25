@@ -1,21 +1,25 @@
-import socket
 from time import time
-from typing import Literal, Optional, Union
-import re
+from datetime import datetime
+from typing import Literal, Optional
+import math
+
 
 import discord
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import humanize_list
+from redbot.core.utils.chat_formatting import pagify
+from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 SNOWFLAKE_THRESHOLD = 2 ** 63
 
+
 class Qenutils(commands.Cog):
     """
-    Utility cogs from qenu
+    Personal utility cogs from and for qenu
     """
 
     def __init__(self, bot: Red) -> None:
@@ -30,8 +34,12 @@ class Qenutils(commands.Cog):
             "server_link": "",
             "invite_link": False,
         }
+        default_user = {
+            "todo": [],  # list of dicts
+        }
 
         self.config.register_global(**default_global)
+        self.config.register_user(**default_user)
 
     async def _invite_url(self) -> str:
         """
@@ -55,12 +63,12 @@ class Qenutils(commands.Cog):
     @commands.group(name="onping")
     @commands.is_owner()
     async def on_bot_ping(self, ctx: commands.Context):
-        """sets the support server or invite link on ping"""
+        """Sets the support server or invite link on ping"""
         pass
 
     @on_bot_ping.command(name="invite")
     async def show_invite(self, ctx: commands.Context, on_off: Optional[bool]):
-        """choose to show or not show the invite"""
+        """Choose to show or not show the invite"""
         if on_off is None:
             settings = await self.config.invite_link()
             return await ctx.reply(
@@ -81,7 +89,7 @@ class Qenutils(commands.Cog):
 
     @on_bot_ping.command(name="server")
     async def set_server(self, ctx: commands.Context, invite_link: Optional[str]):
-        """sets bots support server, leave blank to unset"""
+        """Sets bots support server, leave blank to unset"""
         if invite_link is None:
             await self.config.server_link.set("")
         else:
@@ -133,3 +141,67 @@ class Qenutils(commands.Cog):
             description=descript,
         )
         await message.reply(embed=embed, mention_author=False)
+
+    @commands.command(name="todo")
+    async def qenu_todo(self, ctx: commands.Context, *, text: Optional[str]):
+        """Personal todo list, append a message to add to it"""
+        if text is None:
+            message = ""
+            todo = await self.config.user(ctx.author).todo()
+            if len(todo) == 0:
+                message += "```\n Nothing to see here, head empty.\nuwu```"
+            else:
+                for index, item in enumerate(todo):
+                    message += f"[{index+1:02d}.]({item['link']}) **{item['text'].capitalize()}** • <t:{item['timestamp']}:R>\n"
+            embeds = []
+            pages = 1
+            for page in pagify(message, delims=["\n"], page_length=1000):
+                e = discord.Embed(
+                    color=await ctx.embed_color(),
+                    description=(f"{page}"),
+                )
+                e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
+                e.set_footer(text=f"Page {pages}/{(math.ceil(len(message) / 1000))}")
+                pages += 1
+                embeds.append(e)
+
+            await menu(ctx, embeds, DEFAULT_CONTROLS)
+
+        else:
+            d = {}
+            d["link"] = ctx.message.jump_url
+            d["text"] = text
+            d["timestamp"] = int(ctx.message.created_at.timestamp())
+
+            async with self.config.user(ctx.author).todo() as todo:
+                todo.append(d.copy())
+
+            e = discord.Embed(
+                title="Added todo",
+                description=f"{text}\n\n<t:{int(ctx.message.created_at.timestamp())}:F>",
+            )
+            e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
+
+            await ctx.reply(embed=e, mention_author=False)
+
+    @commands.command(name="rmdo")
+    async def qenu_remove_todo(self, ctx: commands.Context, *, index: int):
+        """Remove from todo list with index"""
+        async with self.config.user(ctx.author).todo() as todo:
+            if len(todo) < index:
+                return await ctx.reply(
+                    embed=discord.Embed(
+                        title="Invalid index.", color=await ctx.embed_color()
+                    ),
+                    mention_author=False,
+                )
+            item = todo.pop(index - 1)
+            message = item["text"]
+            timestamp = item["timestamp"]
+            jump_url = item["link"]
+            e = discord.Embed(
+                title="Removed todo",
+                description=f"{message} • <t:{timestamp}:F>\n[Original Message]({jump_url})",
+                color=await ctx.embed_color(),
+            )
+            return await ctx.reply(embed=e, mention_author=False)
