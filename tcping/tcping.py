@@ -48,14 +48,15 @@ class Tcping(commands.Cog):
         [p]tcping [host] <port>
         Default port: 443
         """
-        latency = await self.latency_point(host=host, port=port, offset=True)
+        latency = await self.latency_point(host=host, port=port)
         await ctx.tick()
         if latency is None:
             await ctx.send(f"{host} connection timed out!")
             return
         await ctx.reply(
             embed=discord.Embed(
-                description=f"{host} responded with {latency:.2f}ms latency."
+                description=f"{host} responded with {latency:.2f}ms latency.",
+                color = await ctx.embed_color()
             ),
             mention_author=False,
         )
