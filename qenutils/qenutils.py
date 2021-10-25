@@ -12,8 +12,8 @@ from redbot.core.utils.chat_formatting import humanize_list
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 SNOWFLAKE_THRESHOLD = 2 ** 63
-SUPPORT_SERVER = "https://discord.gg/XTrZX5EcdR"
-INVITE_URL = "https://discord.com/oauth2/authorize?client_id=361249607520354306&scope=bot&permissions=805314614"
+# SUPPORT_SERVER = "https://discord.gg/BXAa6yskzU"
+# INVITE_URL = "https://discord.com/oauth2/authorize?client_id=361249607520354306&scope=bot&permissions=805314614"
 
 
 class Qenutils(commands.Cog):
@@ -25,17 +25,16 @@ class Qenutils(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(
             self,
-            identifier=164900704526401545003,
+            identifier=0x4ACED80C50E0BBDF,
             force_registration=True,
         )
-        self.repost_channel = None
 
-        # self.config.register_global(**default_global)
+        default_global = {
+            "server_link": "",
+            "invite_link": "",
+        }
 
-    async def red_delete_data_for_user(
-        self, *, requester: RequestType, user_id: int
-    ) -> None:
-        super().red_delete_data_for_user(requester=requester, user_id=user_id)
+        self.config.register_global(**default_global)
 
     async def latency_point(
         self, host: str, port: str, timeout: float = 5, offset: bool = False
@@ -65,7 +64,6 @@ class Qenutils(commands.Cog):
         )
 
     @commands.command(name="tcping")
-    @commands.admin_or_permissions(manage_guild=True)
     async def tcping(self, ctx: commands.Context, host: str, port: int = 443):
         """
         Pings a server with port with bot
@@ -102,7 +100,7 @@ class Qenutils(commands.Cog):
         await webhook.send(
             content=emoji, username=pseudo.display_name, avatar_url=pseudo.avatar_url
         )
-        # await ctx.message.delete()
+        await ctx.message.delete()
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message):
@@ -121,16 +119,23 @@ class Qenutils(commands.Cog):
         sorted_prefixes = sorted(prefixes, key=len)
         if len(sorted_prefixes) > 500:
             return
-        embed = discord.Embed(
-            colour=await self.bot.get_embed_colour(message.channel),
-            description=f"""
+
+        descript = f"""
                 **Hey there!**
                 ---
                 My prefixes in this server are {humanize_list(prefixes)}
                 You can type `{sorted_prefixes[0]}help` to view all commands!
 
-                Need some help? Join my [support server!]({SUPPORT_SERVER})
-                Looking to invite me? [Click here!]({INVITE_URL})
-            """,
+                """
+
+        if (link := await self.config.server_link()) != "":
+            descript += f"\nNeed some help? Join my [support server!]({link})"
+
+        if (link := await self.config.invite_link()) != "":
+            descript += f"\nLooking to invite me? [Click here!]({link})"
+
+        embed = discord.Embed(
+            colour=await self.bot.get_embed_colour(message.channel),
+            description=descript,
         )
         await message.channel.send(embed=embed)

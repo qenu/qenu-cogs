@@ -89,7 +89,9 @@ class Qauth(commands.Cog):
             )
 
         auth = await self.config._qauth()
-        if (not isinstance(auth.get(str(ctx.guild.id), None), type(None))) and str(member.id) in auth[str(ctx.guild.id)]:
+        if (not isinstance(auth.get(str(ctx.guild.id), None), type(None))) and str(
+            member.id
+        ) in auth[str(ctx.guild.id)]:
             # disable
             await member.remove_roles(role, reason="qauth role remove on demand")
             await self.auth_remove(user=member, guild=ctx.guild)
@@ -139,16 +141,21 @@ class Qauth(commands.Cog):
             timeout = await self.config.guild(ctx.guild).timeout()
             timeout = int(time.time() + timeout) if timeout != -1 else timeout
             await self.auth_add(user=member, guild=ctx.guild, time=timeout)
-            return await guild_message.edit(content="Auth Verified.", mention_author=False)
+            return await guild_message.edit(
+                content="Auth Verified.", mention_author=False
+            )
 
         else:
-            return await guild_message.edit(content="Auth failed.", mention_author=False)
+            return await guild_message.edit(
+                content="Auth failed.", mention_author=False
+            )
 
     async def validate_attempts(
         self, *, user: discord.user, user_dm: discord.TextChannel, attempt: int = 3
     ) -> bool:
         secret = await self.config.user(user).secret()
         while attempt > 0:
+
             def validate(message):
                 return len(message.content) == 6 and message.channel == user_dm
 
@@ -157,9 +164,7 @@ class Qauth(commands.Cog):
             except asyncio.TimeoutError:
                 return await user_dm.send(content="Request timeout.")
             else:
-                if self.timebasedOTP(
-                    secret=secret, code=code.content
-                ):
+                if self.timebasedOTP(secret=secret, code=code.content):
                     await user_dm.send(
                         embed=discord.Embed(
                             description="Code verified.", color=discord.Color.green()
@@ -176,8 +181,8 @@ class Qauth(commands.Cog):
                     )
         await user_dm.send(
             embed=discord.Embed(
-                    description="Maximum attempts exceeded, Terminating process.",
-                    color=discord.Color.red(),
+                description="Maximum attempts exceeded, Terminating process.",
+                color=discord.Color.red(),
             )
         )
         return False
@@ -226,11 +231,8 @@ class Qauth(commands.Cog):
 
                 emb.add_field(
                     name=f"{ctx.guild.name} config",
-                    value=(
-                        f"{role_status}\n"
-                        f"Allowed: {len(member)}"
-                        ),
-                    inline=False
+                    value=(f"{role_status}\n" f"Allowed: {len(member)}"),
+                    inline=False,
                 )
 
             if not status:
@@ -240,14 +242,27 @@ class Qauth(commands.Cog):
                     inline=False,
                 )
 
-            emb.add_field(name="list", value="view all members on server allow list", inline=True)
-            emb.add_field(name="add", value="adds a member to server allow list", inline=True)
-            emb.add_field(name="remove", value="removes a member from server allow list", inline=True)
-            emb.add_field(name="role", value="configure the server perm role", inline=True)
-            emb.add_field(name="timeout", value="configure the timeout duration for role", inline=True)
+            emb.add_field(
+                name="list", value="view all members on server allow list", inline=True
+            )
+            emb.add_field(
+                name="add", value="adds a member to server allow list", inline=True
+            )
+            emb.add_field(
+                name="remove",
+                value="removes a member from server allow list",
+                inline=True,
+            )
+            emb.add_field(
+                name="role", value="configure the server perm role", inline=True
+            )
+            emb.add_field(
+                name="timeout",
+                value="configure the timeout duration for role",
+                inline=True,
+            )
 
             return await ctx.send(embed=emb)
-
 
     @qauth.command(name="register")
     @commands.dm_only()
@@ -406,11 +421,7 @@ class Qauth(commands.Cog):
             emb = discord.Embed(
                 colour=await ctx.embed_colour(),
                 title=f"{ctx.guild.name} auth list",
-                description=(
-                    "```diff\n"
-                    f"{page}"
-                    "```"
-                    ),
+                description=("```diff\n" f"{page}" "```"),
             )
             emb.set_footer(text=f"Page {pages}/{(math.ceil(len(message) / 100))}")
             pages += 1
