@@ -17,17 +17,17 @@ class Notquitenitro(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(
             self,
-            identifier=0x2957690346da936b,
+            identifier=0x2957690346DA936B,
             force_registration=True,
         )
 
-        default_guild = {
-            "nqn" : False
-        }
+        default_guild = {"nqn": False}
 
         self.config.register_guild(**default_guild)
 
-    async def red_delete_data_for_user(self, *, requester: RequestType, user_id: int) -> None:
+    async def red_delete_data_for_user(
+        self, *, requester: RequestType, user_id: int
+    ) -> None:
         # TODO: Replace this with the proper end user data removal handling.
         super().red_delete_data_for_user(requester=requester, user_id=user_id)
 
@@ -55,4 +55,3 @@ class Notquitenitro(commands.Cog):
             content=emoji, username=pseudo.display_name, avatar_url=pseudo.avatar_url
         )
         await ctx.message.delete()
-

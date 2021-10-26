@@ -11,15 +11,15 @@ RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
 class Tcping(commands.Cog):
     """
-    check server latency with bot 
+    check server latency with bot
     """
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-
     async def latency_point(
-        self, host: str, port: str, timeout: float = 5) -> Optional[float]:
+        self, host: str, port: str, timeout: float = 5
+    ) -> Optional[float]:
         """
         full credit to : https://github.com/dgzlopes/tcp-latency
         """
@@ -40,7 +40,6 @@ class Tcping(commands.Cog):
 
         return round(float(s_runtime), 2)
 
-
     @commands.command(name="tcping")
     async def tcping(self, ctx: commands.Context, host: str, port: int = 443):
         """
@@ -56,7 +55,7 @@ class Tcping(commands.Cog):
         await ctx.reply(
             embed=discord.Embed(
                 description=f"{host} responded with {latency:.2f}ms latency.",
-                color = await ctx.embed_color()
+                color=await ctx.embed_color(),
             ),
             mention_author=False,
         )
