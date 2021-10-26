@@ -204,7 +204,8 @@ class Qenutils(commands.Cog):
     async def qenu_remove_todo(self, ctx: commands.Context, *, index: int):
         """Remove from todo list with index"""
         if index < 0:
-            return await ctx.reply(
+            return await replying(
+                ctx,
                 embed=discord.Embed(
                     description="Invalid index.", color=await ctx.embed_color()
                 ),
