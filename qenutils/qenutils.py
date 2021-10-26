@@ -187,6 +187,7 @@ class Qenutils(commands.Cog):
             e = discord.Embed(
                 title="Added todo",
                 description=f"{text}\n\n<t:{int(ctx.message.created_at.timestamp())}:F>",
+                color=await ctx.embed_color(),
             )
             e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
 
