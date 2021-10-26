@@ -1,4 +1,5 @@
 from typing import Literal, Optional
+from datetime import timezone
 import math
 import re
 import asyncio
@@ -179,14 +180,14 @@ class Qenutils(commands.Cog):
             d = {}
             d["link"] = ctx.message.jump_url
             d["text"] = text
-            d["timestamp"] = int(ctx.message.created_at.timestamp())
+            d["timestamp"] = int(ctx.message.created_at.replace(tzinfo=timezone.utc).timestamp())
 
             async with self.config.user(ctx.author).todo() as todo:
                 todo.append(d.copy())
 
             e = discord.Embed(
                 title="Added todo",
-                description=f"{text}\n\n<t:{int(ctx.message.created_at.timestamp())}:F>",
+                description=f"{text}\n\n<t:{int(ctx.message.created_at.replace(tzinfo=timezone.utc).timestamp())}:F>",
                 color=await ctx.embed_color(),
             )
             e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
