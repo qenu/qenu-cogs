@@ -197,11 +197,18 @@ class Qenutils(commands.Cog):
     @commands.command(name="rmdo")
     async def qenu_remove_todo(self, ctx: commands.Context, *, index: int):
         """Remove from todo list with index"""
+        if index < 0:
+            return await ctx.reply(
+                embed=discord.Embed(
+                    description="Invalid index.", color=await ctx.embed_color()
+                ),
+                mention_author=False,
+            )
         async with self.config.user(ctx.author).todo() as todo:
             if len(todo) < index:
                 return await ctx.reply(
                     embed=discord.Embed(
-                        title="Invalid index.", color=await ctx.embed_color()
+                        description="Invalid index.", color=await ctx.embed_color()
                     ),
                     mention_author=False,
                 )
