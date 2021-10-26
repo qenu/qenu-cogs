@@ -248,8 +248,7 @@ class Qenutils(commands.Cog):
         """Sets a note with a keyword"""
         async with self.config.vault() as vault:
             if not isinstance(vault.get(keyword, None), type(None)):
-                msg = await replying(
-                    ctx,
+                msg = await ctx.reply(
                     embed=discord.Embed(
                         description=f"`{keyword}` currently in use, do you want to overwrite it?",
                         color=await ctx.embed_color(),

@@ -27,7 +27,7 @@ async def replying(
         reaction, user = await ctx.bot.wait_for(
             "reaction_add",
             timeout=30.0,
-            check=lambda reaction, user: user == ctx.author
+            check=lambda reaction, user: user.id == ctx.author.id
             and str(reaction.emoji) == CROSS_MRK
             and reaction.message.id == response.id,
         )
