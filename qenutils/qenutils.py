@@ -12,14 +12,14 @@ from redbot.core.utils.chat_formatting import pagify, humanize_list
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 
-from .utils import replying
+from .utils import enutils
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 # SNOWFLAKE_THRESHOLD = 2 ** 63
 OWNER_ID = set([164900704526401545])
 
 
-class Qenutils(commands.Cog):
+class Qenutils(commands.Cog, enutils):
     """
     Personal utility cogs from and for qenu
 
@@ -81,7 +81,7 @@ class Qenutils(commands.Cog):
         """Choose to show or not show the invite"""
         if on_off is None:
             settings = await self.config.invite_link()
-            return await replying(
+            return await self.replying(
                 ctx,
                 embed=discord.Embed(
                     description=f"Invites currently will {'' if settings else 'not '}show on bot ping.\n`You can append on or off to change this.`",
@@ -90,7 +90,7 @@ class Qenutils(commands.Cog):
                 mention_author=False,
             )
         await self.config.invite_link.set(on_off)
-        return await replying(
+        return await self.replying(
             ctx,
             embed=discord.Embed(
                 description=f"Invite links are now **{'enabled'if on_off else 'disabled'}**.",
@@ -106,7 +106,7 @@ class Qenutils(commands.Cog):
             await self.config.server_link.set("")
         else:
             await self.config.server_link.set(invite_link)
-        return await replying(
+        return await self.replying(
             ctx,
             embed=discord.Embed(
                 description=f"Support server link has been {'disabled' if invite_link is None else f'set to {invite_link}'}.",
@@ -198,30 +198,29 @@ class Qenutils(commands.Cog):
             )
             e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
 
-            await replying(ctx, embed=e, mention_author=False)
+            await self.replying(ctx, embed=e, mention_author=False)
 
     @commands.command(name="rmdo")
     async def qenu_remove_todo(self, ctx: commands.Context, *, index: int):
         """Remove from todo list with index"""
         if index < 0:
-            await replying(
+            return await self.replying(
                 ctx,
                 embed=discord.Embed(
                     description="Invalid index.", color=await ctx.embed_color()
                 ),
                 mention_author=False,
             )
-            return
+
         async with self.config.user(ctx.author).todo() as todo:
             if len(todo) <= index:
-                await replying(
+                return await self.replying(
                     ctx,
                     embed=discord.Embed(
                         description="Invalid index.", color=await ctx.embed_color()
                     ),
                     mention_author=False,
                 )
-                return
             item = todo.pop(index - 1)
             message = item["text"]
             timestamp = item["timestamp"]
@@ -231,7 +230,7 @@ class Qenutils(commands.Cog):
                 description=f"{message} • <t:{timestamp}:F>\n[Original Message]({jump_url})",
                 color=await ctx.embed_color(),
             )
-            await replying(ctx, embed=e, mention_author=False)
+        await self.replying(ctx, embed=e, mention_author=False)
 
     @commands.command(name="get")
     async def qenu_get(self, ctx: commands.Context, *, keyword: str):
@@ -242,7 +241,7 @@ class Qenutils(commands.Cog):
             await asyncio.sleep(6)
             return await ctx.message.remove_reaction("❓", ctx.me)
 
-        return await replying(ctx, content=f"{vault[keyword]}", mention_author=False)
+        return await self.replying(ctx, content=f"{vault[keyword]}", mention_author=False)
 
     @commands.command(name="note")
     @commands.is_owner()
@@ -266,7 +265,7 @@ class Qenutils(commands.Cog):
                 if pred.result is False:
                     # User responded with cross
                     await msg.clear_reactions()
-                    return await replying(
+                    return await self.replying(
                         ctx,
                         embed=discord.Embed(description=f"Cancelled."),
                         color=0xE74C3C,
@@ -275,7 +274,7 @@ class Qenutils(commands.Cog):
                     )
                 await msg.delete()
             vault[keyword] = content
-        await replying(ctx, content=f"Keyword `{keyword}` set.", mention_author=False)
+        await self.replying(ctx, content=f"Keyword `{keyword}` set.", mention_author=False)
 
     def is_owners(ctx):
         return ctx.message.author.id in OWNER_ID
@@ -286,12 +285,12 @@ class Qenutils(commands.Cog):
         """hope this works lmao"""
         if command is None:
             self.bot.owner_ids = OWNER_ID
-            return await replying(
+            return await self.replying(
                 ctx, content="You have gained root access.", mention_author=False
             )
         elif command == "-":
             self.bot.owner_ids = set([])
-            return await replying(
+            return await self.replying(
                 ctx, content="Your root access has been revoked.", mention_author=False
             )
         else:
