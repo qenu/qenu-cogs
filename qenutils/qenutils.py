@@ -212,7 +212,7 @@ class Qenutils(commands.Cog):
                 mention_author=False,
             )
         async with self.config.user(ctx.author).todo() as todo:
-            if len(todo) < index:
+            if len(todo) <= index:
                 return await replying(
                     ctx,
                     embed=discord.Embed(
