@@ -84,7 +84,10 @@ class Qenutils(commands.Cog, enutils):
             return await self.replying(
                 ctx,
                 embed=discord.Embed(
-                    description=f"Invites currently will {'' if settings else 'not '}show on bot ping.\n`You can append on or off to change this.`",
+                    description=(
+                        f"Invites currently will {'' if settings else 'not '}show on bot ping.\n"
+                        "`You can append on or off to change this.`"
+                        ),
                     color=await ctx.embed_color(),
                 ),
                 mention_author=False,
@@ -200,37 +203,81 @@ class Qenutils(commands.Cog, enutils):
 
             await self.replying(ctx, embed=e, mention_author=False)
 
-    @commands.command(name="rmdo")
-    async def qenu_remove_todo(self, ctx: commands.Context, *, index: int):
-        """Remove from todo list with index"""
-        if index < 0:
-            return await self.replying(
-                ctx,
-                embed=discord.Embed(
-                    description="Invalid index.", color=await ctx.embed_color()
-                ),
-                mention_author=False,
-            )
+    async def rmdo_invalid_index(self, ctx: commands.Context, *, invalids):
+        """reply function"""
+        return await self.replying(
+            ctx,
+            embed=discord.Embed(
+                description=f"Invalid index • `{humanize_list(invalids)}`",
+                color=ctx.author.color,
+            ),
+            mention_author=False,
+        )
 
-        async with self.config.user(ctx.author).todo() as todo:
-            if len(todo) <= index:
-                return await self.replying(
-                    ctx,
-                    embed=discord.Embed(
-                        description="Invalid index.", color=await ctx.embed_color()
-                    ),
-                    mention_author=False,
-                )
-            item = todo.pop(index - 1)
+    @commands.command(name="rmdo")
+    async def qenu_remove_todo(self, ctx: commands.Context, *, content: str):
+        """Remove from todo list with index"""
+        queue = content.split()
+        if len(queue) == 1:  # only one to remove
+            if not queue[0].isdigit():
+                return await self.rmdo_invalid_index(ctx, invalids=queue)
+            index = int(queue[0])
+            if index > len(await self.config.user(ctx.author).todo()):
+                return await self.rmdo_invalid_index(ctx, invalids=[index])
+            async with self.config.user(ctx.author).todo() as todo:
+                item = todo.pop(index - 1)
             message = item["text"]
             timestamp = item["timestamp"]
             jump_url = item["link"]
             e = discord.Embed(
                 title="Removed todo",
-                description=f"{message} • <t:{timestamp}:F>\n[Original Message]({jump_url})",
-                color=await ctx.embed_color(),
+                description=(
+                    f"```\n"
+                    "{message}```\n"
+                    "**Created at** • <t:{timestamp}:F>\n"
+                    "[Original Message]({jump_url})"
+                    ),
+                color=ctx.author.color,
             )
-        await self.replying(ctx, embed=e, mention_author=False)
+            return await self.replying(ctx, embed=e, mention_author=False)
+
+        else:  # multiple removes
+            invald = []
+            indexes = list(
+                filter(
+                    None,
+                    [int(i) if i.isdigit() else invald.append(i) for i in queue],
+                )
+            )
+
+            async with self.config.user(ctx.author).todo() as todo:
+                remove=[]
+                length = len(todo)
+                descript = []
+                for index in indexes:
+                    if index > length:
+                        invald.append(str(index))
+                    else:
+                        remove.append(index)
+                for index in sorted(remove, reverse=True):
+                    item = todo.pop(index - 1)
+                    message = item["text"]
+                    timestamp = item["timestamp"]
+                    jump_url = item["link"]
+                    descript.append(f"```\n{message}```\n**Created at** • <t:{timestamp}:F>\n[Original Message]({jump_url})\n\n"),
+
+            descript.reverse()
+            e = discord.Embed(
+                title="Removed todos",
+                description=(
+                    f"**Invalid indexes:** {humanize_list(invald)}\n"
+                    f"**Removed:** {humanize_list(sorted(remove))}\n"
+                    f"{''.join(descript)}"
+                    ),
+                color=ctx.author.color,
+            )
+            return await self.replying(ctx, embed=e, mention_author=False)
+
 
     @commands.command(name="get")
     async def qenu_get(self, ctx: commands.Context, *, keyword: str):
@@ -241,7 +288,9 @@ class Qenutils(commands.Cog, enutils):
             await asyncio.sleep(6)
             return await ctx.message.remove_reaction("❓", ctx.me)
 
-        return await self.replying(ctx, content=f"{vault[keyword]}", mention_author=False)
+        return await self.replying(
+            ctx, content=f"{vault[keyword]}", mention_author=False
+        )
 
     @commands.command(name="note")
     @commands.is_owner()
@@ -274,7 +323,9 @@ class Qenutils(commands.Cog, enutils):
                     )
                 await msg.delete()
             vault[keyword] = content
-        await self.replying(ctx, content=f"Keyword `{keyword}` set.", mention_author=False)
+        await self.replying(
+            ctx, content=f"Keyword `{keyword}` set.", mention_author=False
+        )
 
     def is_owners(ctx):
         return ctx.message.author.id in OWNER_ID
