@@ -5,8 +5,6 @@ from redbot.core import commands
 
 CROSS_MRK = "❌"
 
-CROSS_MRK = "❌"
-
 async def replying(
     ctx: commands.Context,
     embed: Optional[discord.Embed] = None,

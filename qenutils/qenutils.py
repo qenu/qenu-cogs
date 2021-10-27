@@ -162,7 +162,7 @@ class Qenutils(commands.Cog):
             message = ""
             todo = await self.config.user(ctx.author).todo()
             if len(todo) == 0:
-                message += "```\nNothing to see here, head empty.\n uwu```"
+                message += "```\nNothing to see here, head empty.\n...uwu```"
             else:
                 for index, item in enumerate(todo):
                     message += f"[{index+1:02d}.]({item['link']}) **{item['text'].capitalize()}** • <t:{item['timestamp']}:R>\n"
@@ -170,7 +170,7 @@ class Qenutils(commands.Cog):
             pages = 1
             for page in pagify(message, delims=["\n"], page_length=1000):
                 e = discord.Embed(
-                    color=await ctx.embed_color(),
+                    color=ctx.author.color,
                     description=f"{page}",
                 )
                 e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
@@ -204,22 +204,24 @@ class Qenutils(commands.Cog):
     async def qenu_remove_todo(self, ctx: commands.Context, *, index: int):
         """Remove from todo list with index"""
         if index < 0:
-            return await replying(
+            await replying(
                 ctx,
                 embed=discord.Embed(
                     description="Invalid index.", color=await ctx.embed_color()
                 ),
                 mention_author=False,
             )
+            return
         async with self.config.user(ctx.author).todo() as todo:
             if len(todo) <= index:
-                return await replying(
+                await replying(
                     ctx,
                     embed=discord.Embed(
                         description="Invalid index.", color=await ctx.embed_color()
                     ),
                     mention_author=False,
                 )
+                return
             item = todo.pop(index - 1)
             message = item["text"]
             timestamp = item["timestamp"]
@@ -229,7 +231,7 @@ class Qenutils(commands.Cog):
                 description=f"{message} • <t:{timestamp}:F>\n[Original Message]({jump_url})",
                 color=await ctx.embed_color(),
             )
-            return await replying(ctx, embed=e, mention_author=False)
+            await replying(ctx, embed=e, mention_author=False)
 
     @commands.command(name="get")
     async def qenu_get(self, ctx: commands.Context, *, keyword: str):
