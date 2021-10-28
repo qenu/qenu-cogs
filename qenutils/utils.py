@@ -8,7 +8,8 @@ TICK_MRK = "<:greenTick:901080153873068052>"
 GREY_MRK = "<:greyTick:901080154992967691>"
 LOADING = "<:typing:901080160680419419>"
 
-class enutils():
+
+class enutils:
     async def replying(
         self,
         ctx: commands.Context,
@@ -29,10 +30,9 @@ class enutils():
             reaction, user = await ctx.bot.wait_for(
                 "reaction_add",
                 timeout=30.0,
-                check=lambda reaction, user:
-                    user.id == ctx.author.id
-                    and str(reaction.emoji) == CROSS_MRK
-                    and reaction.message.id == response.id,
+                check=lambda reaction, user: user.id == ctx.author.id
+                and str(reaction.emoji) == CROSS_MRK
+                and reaction.message.id == response.id,
             )
         except asyncio.TimeoutError:
             await response.remove_reaction(CROSS_MRK, ctx.me)

@@ -87,7 +87,7 @@ class Qenutils(commands.Cog, enutils):
                     description=(
                         f"Invites currently will {'' if settings else 'not '}show on bot ping.\n"
                         "`You can append on or off to change this.`"
-                        ),
+                    ),
                     color=await ctx.embed_color(),
                 ),
                 mention_author=False,
@@ -236,7 +236,7 @@ class Qenutils(commands.Cog, enutils):
                     f"{message}```\n"
                     f"**Created at** • <t:{timestamp}:F>\n"
                     f"[Original Message]({jump_url})"
-                    ),
+                ),
                 color=ctx.author.color,
             )
             return await self.replying(ctx, embed=e, mention_author=False)
@@ -251,7 +251,7 @@ class Qenutils(commands.Cog, enutils):
             )
 
             async with self.config.user(ctx.author).todo() as todo:
-                remove=[]
+                remove = []
                 length = len(todo)
                 descript = []
                 for index in indexes:
@@ -264,7 +264,9 @@ class Qenutils(commands.Cog, enutils):
                     message = item["text"]
                     timestamp = item["timestamp"]
                     jump_url = item["link"]
-                    descript.append(f"```\n{message}```\n**Created at** • <t:{timestamp}:F>\n[Original Message]({jump_url})\n\n"),
+                    descript.append(
+                        f"```\n{message}```\n**Created at** • <t:{timestamp}:F>\n[Original Message]({jump_url})\n\n"
+                    ),
 
             descript.reverse()
             e = discord.Embed(
@@ -273,11 +275,10 @@ class Qenutils(commands.Cog, enutils):
                     f"**Invalid indexes:** {humanize_list(invald)}\n"
                     f"**Removed:** {humanize_list(sorted(remove))}\n"
                     f"{''.join(descript)}"
-                    ),
+                ),
                 color=ctx.author.color,
             )
             return await self.replying(ctx, embed=e, mention_author=False)
-
 
     @commands.command(name="get")
     async def qenu_get(self, ctx: commands.Context, *, keyword: str):
@@ -326,6 +327,26 @@ class Qenutils(commands.Cog, enutils):
         await self.replying(
             ctx, content=f"Keyword `{keyword}` set.", mention_author=False
         )
+
+    @commands.command(name="getnotes")
+    async def qenu_getnotes(self, ctx: commands.Context):
+        """display all saved notes"""
+        vault = await self.config.vault()
+        message = ""
+        for item in vault:
+            message += f"{item}\t"
+        embeds = []
+        pages = 1
+        for page in pagify(message, delims=["\t"], page_length=1000):
+            e = discord.Embed(
+                color=ctx.author.color,
+                description=("```" f"{page}" "```"),
+            )
+            e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
+            e.set_footer(text=f"Page {pages}/{(math.ceil(len(message) / 1000))}")
+            pages += 1
+            embeds.append(e)
+        await menu(ctx, embeds, DEFAULT_CONTROLS)
 
     def is_owners(ctx):
         return ctx.message.author.id in OWNER_ID
