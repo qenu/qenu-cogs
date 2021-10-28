@@ -233,9 +233,9 @@ class Qenutils(commands.Cog, enutils):
                 title="Removed todo",
                 description=(
                     f"```\n"
-                    "{message}```\n"
-                    "**Created at** • <t:{timestamp}:F>\n"
-                    "[Original Message]({jump_url})"
+                    f"{message}```\n"
+                    f"**Created at** • <t:{timestamp}:F>\n"
+                    f"[Original Message]({jump_url})"
                     ),
                 color=ctx.author.color,
             )
