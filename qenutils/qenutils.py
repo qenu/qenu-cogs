@@ -5,8 +5,6 @@ import re
 import asyncio
 
 import discord
-from discord.mentions import A
-from discord.ui.button import B
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
@@ -14,7 +12,7 @@ from redbot.core.utils.chat_formatting import pagify, humanize_list
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 
-from .utils import replying, DropdownView, EmbedSelectOption
+from .utils import DropdownMenu, replying, DropdownView, EmbedSelectOption
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 # SNOWFLAKE_THRESHOLD = 2 ** 63
@@ -376,19 +374,33 @@ class Qenutils(commands.Cog):
     @commands.is_owner()
     async def qenu_tester(self, ctx: commands.Context):
         """yeee"""
-        edict = {
-            "a page":discord.Embed(title="Embed a", description="this is embed a"),
-            "b page":discord.Embed(title="Embed b", description="this is embed b"),
-            "c page":discord.Embed(title="Embed c", description="this is embed c"),
-            "d page":discord.Embed(title="Embed d", description="this is embed d"),
-        }
-        emojis = ["🇦", "🇧", "🇨", "🇩"]
+        embed_list = [
+            discord.Embed(title="Menu", description="Choose from embeds a to d.\nVery exciting i know."),
+            discord.Embed(title="Embed a", description="Here lies the memories of embed a"),
+            discord.Embed(title="Embed b", description="Here lies the memories of embed b"),
+            discord.Embed(title="Embed c", description="Here lies the memories of embed c"),
+            discord.Embed(title="Embed d", description="Here lies the memories of embed d"),
+        ]
+        select_list = [
+            discord.SelectOption(label="Menu", description="this is the main menu", emoji="🔷"),
+            discord.SelectOption(label="Embed a", description="this is embed a", emoji="🇦"),
+            discord.SelectOption(label="Embed b", description="this is embed b", emoji="🇧"),
+            discord.SelectOption(label="Embed c", description="this is embed c", emoji="🇨"),
+            discord.SelectOption(label="Embed d", description="this is embed d", emoji="🇩"),
+        ]
 
-        await ctx.send(
-            embed=edict["a page"],
-            view=DropdownView(
-                EmbedSelectOption(edict, emojis),
-                ctx=ctx,
-                placeholder="hehe xd",
-                embeds=edict
-            ))
+        # DropdownView
+        #   message
+        #   placeholder for box
+        # List
+        #   discord.SelectOption(label="", description="", emoji="")
+        #   discord.Embed(title="", description="")
+
+        menu = await ctx.replying(embed=embed_list["menu"])
+        await ctx.send(view=DropdownMenu(
+            message=menu,
+            placeholder="Select a sub-menu...",
+            selects=select_list,
+            embeds=embed_list,
+        ))
+
