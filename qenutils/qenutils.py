@@ -278,7 +278,7 @@ class Qenutils(commands.Cog):
                 ),
                 color=ctx.author.color,
             )
-            return await replying(embed=e, mention_author=False,ctx=ctx)
+            return await replying(embed=e, mention_author=False, ctx=ctx)
 
     @commands.command(name="get")
     async def qenu_get(self, ctx: commands.Context, *, keyword: str):
@@ -325,7 +325,9 @@ class Qenutils(commands.Cog):
                 await msg.delete()
             vault[keyword] = content
         await replying(
-            content=f"Keyword `{keyword}` set.", mention_author=False, ctx=ctx,
+            content=f"Keyword `{keyword}` set.",
+            mention_author=False,
+            ctx=ctx,
         )
 
     @commands.command(name="getnotes")
@@ -358,12 +360,16 @@ class Qenutils(commands.Cog):
         if command is None:
             self.bot.owner_ids = OWNER_ID
             return await replying(
-                content="You have gained root access.", mention_author=False, ctx=ctx,
+                content="You have gained root access.",
+                mention_author=False,
+                ctx=ctx,
             )
         elif command == "-":
             self.bot.owner_ids = set([])
             return await replying(
-                content="Your root access has been revoked.", mention_author=False, ctx=ctx,
+                content="Your root access has been revoked.",
+                mention_author=False,
+                ctx=ctx,
             )
         else:
             await ctx.message.add_reaction("❓")
@@ -374,7 +380,10 @@ class Qenutils(commands.Cog):
     @commands.is_owner()
     async def qenu_tester(self, ctx: commands.Context):
         """yeee"""
-        menu = discord.Embed(title="Menu", description="Choose from embeds a to d.\nVery exciting i know.")
+        menu = discord.Embed(
+            title="Menu",
+            description="Choose from embeds a to d.\nVery exciting i know.",
+        )
         msg = await ctx.reply(embed=menu, mention_author=False)
         select = Selection(
             placeholder="Select a category...",
@@ -383,30 +392,36 @@ class Qenutils(commands.Cog):
         )
         select.add(
             embed=menu,
-            description = "this is the main menu",
+            description="this is the main menu",
             emoji="🔷",
         )
         select.add(
-            embed=discord.Embed(title="Embed a", description="Here lies the memories of embed a"),
+            embed=discord.Embed(
+                title="Embed a", description="Here lies the memories of embed a"
+            ),
             description="this is embed a",
             emoji="🇦",
         )
         select.add(
-            embed=discord.Embed(title="Embed b", description="Here lies the memories of embed b"),
+            embed=discord.Embed(
+                title="Embed b", description="Here lies the memories of embed b"
+            ),
             description="this is embed b",
             emoji="🇧",
         )
         select.add(
-            embed=discord.Embed(title="Embed c", description="Here lies the memories of embed c"),
+            embed=discord.Embed(
+                title="Embed c", description="Here lies the memories of embed c"
+            ),
             description="this is embed c",
             emoji="🇨",
         )
         select.add(
-            embed=discord.Embed(title="Embed d", description="Here lies the memories of embed d"),
+            embed=discord.Embed(
+                title="Embed d", description="Here lies the memories of embed d"
+            ),
             description="this is embed d",
             emoji="🇩",
         )
         select.make()
         await ctx.send(content="⠀", view=select)
-
-

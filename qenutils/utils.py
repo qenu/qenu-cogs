@@ -40,7 +40,6 @@ async def replying(
         await response.delete()
 
 
-
 class Selection(discord.ui.View):
     def __init__(self, *, placeholder: str, **kwargs: Any):
         super().__init__(timeout=60)
@@ -50,7 +49,14 @@ class Selection(discord.ui.View):
         self._selection = {}
         print("Selection created.")
 
-    def add(self, *, embed: discord.Embed, description: str, title: Optional[str]=None, emoji: Optional[str]=None):
+    def add(
+        self,
+        *,
+        embed: discord.Embed,
+        description: str,
+        title: Optional[str] = None,
+        emoji: Optional[str] = None
+    ):
         """Adds a page for the selection menu
 
         embed:  discord.Embed
@@ -65,12 +71,12 @@ class Selection(discord.ui.View):
         if isinstance(title, type(None)):
             title = embed.title
         self._selection[title] = {
-            "Embed" : embed,
+            "Embed": embed,
             "SelectOption": discord.SelectOption(
                 label=title,
                 description=description,
                 emoji=emoji,
-                ),
+            ),
         }
 
     def make(self):
@@ -79,7 +85,7 @@ class Selection(discord.ui.View):
                 placeholder=self.placeholder,
                 message=self.message,
                 selection=self._selection,
-                ctx=self.ctx
+                ctx=self.ctx,
             )
         )
 
@@ -93,19 +99,17 @@ class Selection(discord.ui.View):
         """Just extends the default reaction_check to use owner_ids"""
         if interaction.user.id not in (*self.ctx.bot.owner_ids, self.ctx.author.id):
             await interaction.response.send_message(
-                content="This is not your dropdown. \U0001f90c", ephemeral=True,
+                content="This is not your dropdown. \U0001f90c",
+                ephemeral=True,
             )
             return False
         return True
 
+
 class Dropdown(discord.ui.Select):
     def __init__(
-        self,
-        placeholder: str,
-        message: discord.Message,
-        selection: dict,
-        **kwargs: Any
-        ):
+        self, placeholder: str, message: discord.Message, selection: dict, **kwargs: Any
+    ):
         self.selects = [item["SelectOption"] for item in selection.values()]
         super().__init__(
             placeholder=placeholder,
@@ -122,5 +126,5 @@ class Dropdown(discord.ui.Select):
         # a response can only be triggered once,
         await self.menu_message.edit(
             embed=self.selection[self.values[0]]["Embed"],
-            allowed_mentions=discord.AllowedMentions.none()
-            )
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
