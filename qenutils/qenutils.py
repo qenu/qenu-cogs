@@ -12,7 +12,7 @@ from redbot.core.utils.chat_formatting import pagify, humanize_list
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 
-from .utils import DropdownMenu, replying, DropdownView, EmbedSelectOption
+from .utils import replying, Selection
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 # SNOWFLAKE_THRESHOLD = 2 ** 63
@@ -82,7 +82,6 @@ class Qenutils(commands.Cog):
         if on_off is None:
             settings = await self.config.invite_link()
             return await replying(
-                ctx,
                 embed=discord.Embed(
                     description=(
                         f"Invites currently will {'' if settings else 'not '}show on bot ping.\n"
@@ -91,15 +90,16 @@ class Qenutils(commands.Cog):
                     color=await ctx.embed_color(),
                 ),
                 mention_author=False,
+                ctx=ctx,
             )
         await self.config.invite_link.set(on_off)
         return await replying(
-            ctx,
             embed=discord.Embed(
                 description=f"Invite links are now **{'enabled'if on_off else 'disabled'}**.",
                 color=await ctx.embed_color(),
             ),
             mention_author=False,
+            ctx=ctx,
         )
 
     @on_bot_ping.command(name="server")
@@ -110,12 +110,12 @@ class Qenutils(commands.Cog):
         else:
             await self.config.server_link.set(invite_link)
         return await replying(
-            ctx,
             embed=discord.Embed(
                 description=f"Support server link has been {'disabled' if invite_link is None else f'set to {invite_link}'}.",
                 color=await ctx.embed_color(),
             ),
             mention_author=False,
+            ctx=ctx,
         )
 
     @commands.Cog.listener()
@@ -201,17 +201,17 @@ class Qenutils(commands.Cog):
             )
             e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar.url)
 
-            await replying(ctx, embed=e, mention_author=False)
+            await replying(embed=e, mention_author=False, ctx=ctx)
 
     async def rmdo_invalid_index(self, ctx: commands.Context, *, invalids):
         """reply function"""
         return await replying(
-            ctx,
             embed=discord.Embed(
                 description=f"Invalid index • `{humanize_list(invalids)}`",
                 color=ctx.author.color,
             ),
             mention_author=False,
+            ctx=ctx,
         )
 
     @commands.command(name="rmdo")
@@ -239,7 +239,7 @@ class Qenutils(commands.Cog):
                 ),
                 color=ctx.author.color,
             )
-            return await replying(ctx, embed=e, mention_author=False)
+            return await replying(embed=e, mention_author=False, ctx=ctx)
 
         else:  # multiple removes
             invald = []
@@ -278,7 +278,7 @@ class Qenutils(commands.Cog):
                 ),
                 color=ctx.author.color,
             )
-            return await replying(ctx, embed=e, mention_author=False)
+            return await replying(embed=e, mention_author=False,ctx=ctx)
 
     @commands.command(name="get")
     async def qenu_get(self, ctx: commands.Context, *, keyword: str):
@@ -290,7 +290,7 @@ class Qenutils(commands.Cog):
             return await ctx.message.remove_reaction("❓", ctx.me)
 
         return await replying(
-            ctx, content=f"{vault[keyword]}", mention_author=False
+            content=f"{vault[keyword]}", mention_author=False, ctx=ctx
         )
 
     @commands.command(name="note")
@@ -316,16 +316,16 @@ class Qenutils(commands.Cog):
                     # User responded with cross
                     await msg.clear_reactions()
                     return await replying(
-                        ctx,
                         embed=discord.Embed(description=f"Cancelled."),
                         color=0xE74C3C,
                         mention_author=False,
                         delete_after=10,
+                        ctx=ctx,
                     )
                 await msg.delete()
             vault[keyword] = content
         await replying(
-            ctx, content=f"Keyword `{keyword}` set.", mention_author=False
+            content=f"Keyword `{keyword}` set.", mention_author=False, ctx=ctx,
         )
 
     @commands.command(name="getnotes")
@@ -358,12 +358,12 @@ class Qenutils(commands.Cog):
         if command is None:
             self.bot.owner_ids = OWNER_ID
             return await replying(
-                ctx, content="You have gained root access.", mention_author=False
+                content="You have gained root access.", mention_author=False, ctx=ctx,
             )
         elif command == "-":
             self.bot.owner_ids = set([])
             return await replying(
-                ctx, content="Your root access has been revoked.", mention_author=False
+                content="Your root access has been revoked.", mention_author=False, ctx=ctx,
             )
         else:
             await ctx.message.add_reaction("❓")
@@ -374,33 +374,39 @@ class Qenutils(commands.Cog):
     @commands.is_owner()
     async def qenu_tester(self, ctx: commands.Context):
         """yeee"""
-        embed_list = [
-            discord.Embed(title="Menu", description="Choose from embeds a to d.\nVery exciting i know."),
-            discord.Embed(title="Embed a", description="Here lies the memories of embed a"),
-            discord.Embed(title="Embed b", description="Here lies the memories of embed b"),
-            discord.Embed(title="Embed c", description="Here lies the memories of embed c"),
-            discord.Embed(title="Embed d", description="Here lies the memories of embed d"),
-        ]
-        select_list = [
-            discord.SelectOption(label="Menu", description="this is the main menu", emoji="🔷"),
-            discord.SelectOption(label="Embed a", description="this is embed a", emoji="🇦"),
-            discord.SelectOption(label="Embed b", description="this is embed b", emoji="🇧"),
-            discord.SelectOption(label="Embed c", description="this is embed c", emoji="🇨"),
-            discord.SelectOption(label="Embed d", description="this is embed d", emoji="🇩"),
-        ]
+        menu = discord.Embed(title="Menu", description="Choose from embeds a to d.\nVery exciting i know.")
+        msg = await ctx.reply(embed=menu, mention_author=False)
+        select = Selection(
+            placeholder="Select a category...",
+            ctx=ctx,
+            message=msg,
+        )
+        select.add(
+            embed=menu,
+            description = "this is the main menu",
+            emoji="🔷",
+        )
+        select.add(
+            embed=discord.Embed(title="Embed a", description="Here lies the memories of embed a"),
+            description="this is embed a",
+            emoji="🇦",
+        )
+        select.add(
+            embed=discord.Embed(title="Embed b", description="Here lies the memories of embed b"),
+            description="this is embed b",
+            emoji="🇧",
+        )
+        select.add(
+            embed=discord.Embed(title="Embed c", description="Here lies the memories of embed c"),
+            description="this is embed c",
+            emoji="🇨",
+        )
+        select.add(
+            embed=discord.Embed(title="Embed d", description="Here lies the memories of embed d"),
+            description="this is embed d",
+            emoji="🇩",
+        )
+        select.make()
+        await ctx.send(content="⠀", view=select)
 
-        # DropdownView
-        #   message
-        #   placeholder for box
-        # List
-        #   discord.SelectOption(label="", description="", emoji="")
-        #   discord.Embed(title="", description="")
-
-        menu = await ctx.replying(embed=embed_list["menu"])
-        await ctx.send(view=DropdownMenu(
-            message=menu,
-            placeholder="Select a sub-menu...",
-            selects=select_list,
-            embeds=embed_list,
-        ))
 
