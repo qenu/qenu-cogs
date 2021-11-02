@@ -29,7 +29,7 @@ class Gateway(commands.Cog):
             identifier=0x11694CAB731712FC,
             force_registration=True,
         )
-        default_global = {"enabled": False, "ports": (None, None)}
+        default_global = {"enabled": False, "ports": (None, None), "webhook": False}
         self.config.register_global(**default_global)
 
     async def red_delete_data_for_user(
@@ -40,13 +40,17 @@ class Gateway(commands.Cog):
     @commands.group(name="gateway", invoke_without_command=True)
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, read_message_history=True)
+    @commands.max_concurrency(1)
     async def channel_gateway(self, ctx: commands.Context):
         """Bridges two channel together"""
         if ctx.invoked_subcommand is None:
 
             emb = discord.Embed(
                 title="Gateway Status",
-                description=f"Connection is currently **{'enabled' if await self.config.enabled() else 'disabled'}**.",
+                description=(
+                    f"Connection is currently **{'enabled' if await self.config.enabled() else 'disabled'}**.\n"
+                    f"Sending gateway using **{'webhooks' if await self.config.webhook() else 'embeds'}**."
+                ),
                 color=await ctx.embed_color(),
             )
             ports = await self.config.ports()
@@ -54,19 +58,47 @@ class Gateway(commands.Cog):
             port_1 = self.bot.get_channel(ports[1])
 
             emb.add_field(
-                name=f"{port_0.guild.name if isinstance(port_0, discord.TextChannel) else 'None'}",
-                value=f"{port_0.name if isinstance(port_0, discord.TextChannel) else 'None'}",
-                inline=True,
+                name="Orange Portal",
+                value=(
+                    "```\n"
+                    f"Guild: {port_0.guild.name if isinstance(port_0, discord.TextChannel) else 'None'}\n"
+                    f"Channel: {port_0.name if isinstance(port_0, discord.TextChannel) else 'None'}\n"
+                    "```"
+                ),
             )
             emb.add_field(
-                name=f"{port_1.guild.name if isinstance(port_1, discord.TextChannel) else 'None'}",
-                value=f"{port_1.name if isinstance(port_1, discord.TextChannel) else 'None'}",
-                inline=True,
+                name="Blue Portal",
+                value=(
+                    "```\n"
+                    f"Guild: {port_1.guild.name if isinstance(port_1, discord.TextChannel) else 'None'}\n"
+                    f"Channel: {port_1.name if isinstance(port_1, discord.TextChannel) else 'None'}\n"
+                    "```"
+                ),
             )
+            emb.add_field(
+                name="Commands",
+                value=(
+                    f"**{ctx.clean_prefix}gateway create**\n> creates a new connection\n\n"
+                    f"**{ctx.clean_prefix}gateway close**\n> closes current connection\n\n"
+                    f"**{ctx.clean_prefix}gateway webhook [enabled|disable]**\n> toggle webhooks\n\n"
+                ),
+                inline=False,
+            )
+
             return await ctx.reply(embed=emb, mention_author=False)
 
+    @channel_gateway.command(name="webhook")
+    async def channel_gateway_webhook(self, ctx: commands.Context, decision: bool):
+        """Choose if using wwbhook"""
+        if isinstance(decision, bool):
+            await self.config.webhook.set(decision)
+            return await ctx.reply(
+                content=f"Using webhooks has been {'enabled' if decision else 'disabled'}.",
+                mention_author=False,
+            )
+        return await ctx.send(f"Invalid input {decision}")
+
     @channel_gateway.command(name="create", aliases=["make"])
-    @commands.max_concurrency(1)
     async def channel_gateway_create(self, ctx: commands.Context):
         """Starts the process of bridging two channels"""
         react = await ctx.reply(
@@ -99,7 +131,7 @@ class Gateway(commands.Cog):
                 "\n"
                 f"`{verify}`"
             ),
-            mention_author=False,
+            allowed_mentions=discord.AllowedMentions.none(),
         )
 
         try:
@@ -124,7 +156,6 @@ class Gateway(commands.Cog):
         await portal.channel.send(embed=emb)
 
     @channel_gateway.command(name="shutdown", aliases=["close"])
-    @commands.max_concurrency(1)
     async def channel_gateway_shutdown(self, ctx: commands.Context):
         await self.config.enabled.set(False)
         await self.config.ports.set((None, None))
@@ -133,29 +164,60 @@ class Gateway(commands.Cog):
     async def _gateway(self, *, message: discord.Message, channel: discord.TextChannel):
         if channel is None:
             return
-        embed = discord.Embed(description=message.content, color=message.author.color)
-        embed.set_author(
-            name=f"{message.author} • {message.author.id}",
-            icon_url=message.author.avatar_url,
-        )
-        for attachment in message.attachments:
-            if any(
-                attachment.filename.endswith(extension)
-                for extension in ["jpg", "png", "gif"]
-            ):
-                embed.set_image(url=attachment.url)
-            else:
-                embed.add_field(
-                    name="Attachments",
-                    value=f"[{attachment.filename}]({attachment.url})",
-                    inline=False,
+        if not await self.config.webhook():
+            embed = discord.Embed(
+                description=message.content, color=message.author.color
+            )
+            embed.set_author(
+                name=f"{message.author} • {message.author.id}",
+                icon_url=message.author.avatar.url,
+            )
+            for attachment in message.attachments:
+                if any(
+                    attachment.filename.endswith(extension)
+                    for extension in ["jpg", "png", "gif"]
+                ):
+                    embed.set_image(url=attachment.url)
+                else:
+                    embed.add_field(
+                        name="Attachments",
+                        value=f"[{attachment.filename}]({attachment.url})",
+                        inline=False,
+                    )
+            embed.timestamp = message.created_at
+            return await channel.send(embed=embed)
+        else:
+            if (
+                webhook := discord.utils.get(
+                    await channel.webhooks(), name="qenu.gateway"
                 )
-        embed.timestamp = message.created_at
-        await channel.send(embed=embed)
+            ) is None:
+                webhook = await channel.create_webhook(name="qenu.gateway")
+            embed = None
+            if message.attachments:
+                embed = discord.Embed(title="Sent Attachment")
+                for attachment in message.attachments:
+                    if any(
+                        attachment.filename.endswith(extension)
+                        for extension in ["jpg", "png", "gif"]
+                    ):
+                        embed.set_image(url=attachment.url)
+                    else:
+                        embed.add_field(
+                            name="Others",
+                            value=f"[{attachment.filename}]({attachment.url})",
+                            inline=False,
+                        )
+            await webhook.send(
+                content=message.content,
+                embed=embed,
+                username=message.author.display_name,
+                avatar_url=message.author.avatar.url,
+            )
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message):
-        if message.author == self.bot.user:
+        if message.author.bot:
             return
         if message.guild is None:
             return

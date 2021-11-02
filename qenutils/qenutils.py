@@ -5,6 +5,8 @@ import re
 import asyncio
 
 import discord
+from discord.mentions import A
+from discord.ui.button import B
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
@@ -12,14 +14,14 @@ from redbot.core.utils.chat_formatting import pagify, humanize_list
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 
-from .utils import enutils
+from .utils import replying, DropdownView, EmbedSelectOption
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 # SNOWFLAKE_THRESHOLD = 2 ** 63
 OWNER_ID = set([164900704526401545])
 
 
-class Qenutils(commands.Cog, enutils):
+class Qenutils(commands.Cog):
     """
     Personal utility cogs from and for qenu
 
@@ -81,7 +83,7 @@ class Qenutils(commands.Cog, enutils):
         """Choose to show or not show the invite"""
         if on_off is None:
             settings = await self.config.invite_link()
-            return await self.replying(
+            return await replying(
                 ctx,
                 embed=discord.Embed(
                     description=(
@@ -93,7 +95,7 @@ class Qenutils(commands.Cog, enutils):
                 mention_author=False,
             )
         await self.config.invite_link.set(on_off)
-        return await self.replying(
+        return await replying(
             ctx,
             embed=discord.Embed(
                 description=f"Invite links are now **{'enabled'if on_off else 'disabled'}**.",
@@ -109,7 +111,7 @@ class Qenutils(commands.Cog, enutils):
             await self.config.server_link.set("")
         else:
             await self.config.server_link.set(invite_link)
-        return await self.replying(
+        return await replying(
             ctx,
             embed=discord.Embed(
                 description=f"Support server link has been {'disabled' if invite_link is None else f'set to {invite_link}'}.",
@@ -176,7 +178,7 @@ class Qenutils(commands.Cog, enutils):
                     color=ctx.author.color,
                     description=f"{page}",
                 )
-                e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
+                e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar.url)
                 e.set_footer(text=f"Page {pages}/{(math.ceil(len(message) / 1000))}")
                 pages += 1
                 embeds.append(e)
@@ -199,13 +201,13 @@ class Qenutils(commands.Cog, enutils):
                 description=f"{text}\n\n<t:{int(ctx.message.created_at.replace(tzinfo=timezone.utc).timestamp())}:F>",
                 color=await ctx.embed_color(),
             )
-            e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
+            e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar.url)
 
-            await self.replying(ctx, embed=e, mention_author=False)
+            await replying(ctx, embed=e, mention_author=False)
 
     async def rmdo_invalid_index(self, ctx: commands.Context, *, invalids):
         """reply function"""
-        return await self.replying(
+        return await replying(
             ctx,
             embed=discord.Embed(
                 description=f"Invalid index • `{humanize_list(invalids)}`",
@@ -239,7 +241,7 @@ class Qenutils(commands.Cog, enutils):
                 ),
                 color=ctx.author.color,
             )
-            return await self.replying(ctx, embed=e, mention_author=False)
+            return await replying(ctx, embed=e, mention_author=False)
 
         else:  # multiple removes
             invald = []
@@ -278,7 +280,7 @@ class Qenutils(commands.Cog, enutils):
                 ),
                 color=ctx.author.color,
             )
-            return await self.replying(ctx, embed=e, mention_author=False)
+            return await replying(ctx, embed=e, mention_author=False)
 
     @commands.command(name="get")
     async def qenu_get(self, ctx: commands.Context, *, keyword: str):
@@ -289,7 +291,7 @@ class Qenutils(commands.Cog, enutils):
             await asyncio.sleep(6)
             return await ctx.message.remove_reaction("❓", ctx.me)
 
-        return await self.replying(
+        return await replying(
             ctx, content=f"{vault[keyword]}", mention_author=False
         )
 
@@ -315,7 +317,7 @@ class Qenutils(commands.Cog, enutils):
                 if pred.result is False:
                     # User responded with cross
                     await msg.clear_reactions()
-                    return await self.replying(
+                    return await replying(
                         ctx,
                         embed=discord.Embed(description=f"Cancelled."),
                         color=0xE74C3C,
@@ -324,7 +326,7 @@ class Qenutils(commands.Cog, enutils):
                     )
                 await msg.delete()
             vault[keyword] = content
-        await self.replying(
+        await replying(
             ctx, content=f"Keyword `{keyword}` set.", mention_author=False
         )
 
@@ -342,7 +344,7 @@ class Qenutils(commands.Cog, enutils):
                 color=ctx.author.color,
                 description=("```" f"{page}" "```"),
             )
-            e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar_url)
+            e.set_author(name=f"{ctx.author}", icon_url=ctx.author._user.avatar.url)
             e.set_footer(text=f"Page {pages}/{(math.ceil(len(message) / 1000))}")
             pages += 1
             embeds.append(e)
@@ -357,15 +359,36 @@ class Qenutils(commands.Cog, enutils):
         """hope this works lmao"""
         if command is None:
             self.bot.owner_ids = OWNER_ID
-            return await self.replying(
+            return await replying(
                 ctx, content="You have gained root access.", mention_author=False
             )
         elif command == "-":
             self.bot.owner_ids = set([])
-            return await self.replying(
+            return await replying(
                 ctx, content="Your root access has been revoked.", mention_author=False
             )
         else:
             await ctx.message.add_reaction("❓")
             await asyncio.sleep(6)
             return await ctx.message.remove_reaction("❓", ctx.me)
+
+    @commands.command(name="woah")
+    @commands.is_owner()
+    async def qenu_tester(self, ctx: commands.Context):
+        """yeee"""
+        edict = {
+            "a page":discord.Embed(title="Embed a", description="this is embed a"),
+            "b page":discord.Embed(title="Embed b", description="this is embed b"),
+            "c page":discord.Embed(title="Embed c", description="this is embed c"),
+            "d page":discord.Embed(title="Embed d", description="this is embed d"),
+        }
+        emojis = ["🇦", "🇧", "🇨", "🇩"]
+
+        await ctx.send(
+            embed=edict["a page"],
+            view=DropdownView(
+                EmbedSelectOption(edict, emojis),
+                ctx=ctx,
+                placeholder="hehe xd",
+                embeds=edict
+            ))
