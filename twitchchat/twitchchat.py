@@ -39,7 +39,7 @@ class Twitchchat(commands.Cog):
     ) -> None:
         super().red_delete_data_for_user(requester=requester, user_id=user_id)
 
-    @commands.group(name="twitchchat", invoke_without_subcommand=True)
+    @commands.group(name="twitchchat", invoke_without_command=True)
     @commands.is_owner()
     async def twitchchat(self, ctx: commands.Context):
         """Menu for twitchchat cogs, also displays current config"""
@@ -67,7 +67,7 @@ class Twitchchat(commands.Cog):
         embed.timestamp = ctx.message.created_at
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message_without_command(self, message):
         """Cog listener to yeet discord to twitch"""
         if not self.respond:
             return
