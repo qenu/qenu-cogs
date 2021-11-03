@@ -65,6 +65,7 @@ class Twitchchat(commands.Cog):
             inline=False,
         )
         embed.timestamp = ctx.message.created_at
+        return replying(embed=embed, ctx=ctx)
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message):
