@@ -64,7 +64,7 @@ class Twitchchat(commands.Cog):
             ),
             inline=False,
         )
-        embed.timestamp = ctx.message.created_at.timestamp()
+        embed.timestamp = ctx.message.created_at
 
     @commands.Cog.listener()
     async def on_message(self, message):
