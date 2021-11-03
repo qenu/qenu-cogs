@@ -22,29 +22,34 @@ class Twitchchat(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(
             self,
-            identifier=0xb57cad433d9eab1,
+            identifier=0xB57CAD433D9EAB1,
             force_registration=True,
         )
         default_global = {
-            "oauth" : "",
-            "channel" : "",
-            "username" : "",
+            "oauth": "",
+            "channel": "",
+            "username": "",
         }
         self.respond = False
 
         self.config.register_global(**default_global)
 
-    async def red_delete_data_for_user(self, *, requester: RequestType, user_id: int) -> None:
+    async def red_delete_data_for_user(
+        self, *, requester: RequestType, user_id: int
+    ) -> None:
         super().red_delete_data_for_user(requester=requester, user_id=user_id)
 
     @commands.group(name="", invoke_without_subcommand=True)
     @commands.is_owner()
     async def twitchchat(self, ctx: commands.Context):
-        """Menu for twitchchat cogs, also displays current config
-        """
+        """Menu for twitchchat cogs, also displays current config"""
         embed = discord.Embed(title="Twitch chat bridge")
-        embed.add_field(name="Channel", value=f"{await self.config.channel()}", inline=True)
-        embed.add_field(name="Username", value=f"{await self.config.username()}", inline=True)
+        embed.add_field(
+            name="Channel", value=f"{await self.config.channel()}", inline=True
+        )
+        embed.add_field(
+            name="Username", value=f"{await self.config.username()}", inline=True
+        )
 
         embed.add_field(
             name="Commands",
@@ -57,7 +62,8 @@ class Twitchchat(commands.Cog):
                 f"{ctx.clean_prefix}twitchchat disconnect\n"
                 "> Exits the connection to twitch chat\n"
             ),
-            inline=False)
+            inline=False,
+        )
         embed.timestamp = ctx.message.created_at.timestamp()
 
     @commands.Cog.listener()
@@ -70,22 +76,26 @@ class Twitchchat(commands.Cog):
         if message.channel != self.respond:
             return
         channel = await self.config.channel()
-        message_temp = f'PRIVMSG #{channel} :{message.content}'
-        self.socket.send(f'{message_temp}\n'.encode())
+        message_temp = f"PRIVMSG #{channel} :{message.content}"
+        self.socket.send(f"{message_temp}\n".encode())
 
     @tasks.loop(seconds=1)
     async def chat_listener(self):
         read_buffer = self.socket.recv(1024).decode()
-        for line in read_buffer.split('\r\n'):
+        for line in read_buffer.split("\r\n"):
             # ping pong to stay alive
-            if 'PING' in line and 'PRIVMSG' not in line:
-                self.socket.send('PONG tmi.twitch.tv\r\n'.encode())
+            if "PING" in line and "PRIVMSG" not in line:
+                self.socket.send("PONG tmi.twitch.tv\r\n".encode())
 
             # reacts at user message
-            elif line != '':
-                parts = line.split(':', 2)
+            elif line != "":
+                parts = line.split(":", 2)
                 # return parts[1].split('!', 1)[0], parts[2]
-                await self.respond.send(embed=discord.Embed(title=f"{parts[1].split('!', 1)[0]}", description=f"{parts[2]}"))
+                await self.respond.send(
+                    embed=discord.Embed(
+                        title=f"{parts[1].split('!', 1)[0]}", description=f"{parts[2]}"
+                    )
+                )
 
     @twitchchat.command(name="connect", aliases=["start"])
     async def twitchchat_connect(self, ctx: commands.Context):
@@ -98,23 +108,22 @@ class Twitchchat(commands.Cog):
         auth = await self.config.oauth()
         name = await self.config.username()
         self.socket.connect((server, port))
-        self.socket.send(f'PASS {auth}\nNICK {name}\n JOIN #{channel}\n'.encode())
+        self.socket.send(f"PASS {auth}\nNICK {name}\n JOIN #{channel}\n".encode())
 
         loading = True
         while loading:
             read_buffer_join = self.socket.recv(1024)
             read_buffer_join = read_buffer_join.decode()
-            print (read_buffer_join)
+            print(read_buffer_join)
 
-            for line in read_buffer_join.split('\n')[0:-1]:
+            for line in read_buffer_join.split("\n")[0:-1]:
                 # checks if loading is complete
-                loading = 'End of /NAMES list' not in line
+                loading = "End of /NAMES list" not in line
 
         await replying(content="Twitch loaded, starting loop.", ctx=ctx)
         self.chat_listener.start()
         # use to store discord.TextChannel object
         self.respond = ctx.channel
-
 
     @twitchchat.command(name="disconnect", aliases=["stop", "close", "exit"])
     async def twitchchat_disconnect(self, ctx: commands.Context):
@@ -126,18 +135,22 @@ class Twitchchat(commands.Cog):
         pass
 
     @_set.command(name="channel")
-    async def _channel(self, ctx: commands.Context, *, twitch_channel: str=""):
+    async def _channel(self, ctx: commands.Context, *, twitch_channel: str = ""):
         """Sets the twitch channel to connect to
 
         setting it empty removes the channel
         """
         await self.config.channel.set(twitch_channel)
         if twitch_channel == "":
-            return replying(content=f"I have removed your twitch channel selection.", ctx=ctx)
-        return replying(content=f"Twtich channel has been set to {twitch_channel}.", ctx=ctx)
+            return replying(
+                content=f"I have removed your twitch channel selection.", ctx=ctx
+            )
+        return replying(
+            content=f"Twtich channel has been set to {twitch_channel}.", ctx=ctx
+        )
 
     @_set.command(name="username")
-    async def _username(self, ctx: commands.Context, *, twitch_username: str=""):
+    async def _username(self, ctx: commands.Context, *, twitch_username: str = ""):
         """Enter your twitch username
 
         setting it empty removes the username
@@ -145,10 +158,12 @@ class Twitchchat(commands.Cog):
         await self.config.username.set(twitch_username)
         if twitch_username == "":
             return await ctx.message.add_reaction(GREEN_TICK)
-        return await replying(content=f"Your username has been set to {twitch_username}.", ctx=ctx)
+        return await replying(
+            content=f"Your username has been set to {twitch_username}.", ctx=ctx
+        )
 
     @_set.command(name="oauth")
-    async def _oauth(self, ctx: commands.Context, *, tmi_oauth: str=""):
+    async def _oauth(self, ctx: commands.Context, *, tmi_oauth: str = ""):
         """Oauth token generated by twitch, **include** oauth:
         link to token: https://twitchapps.com/tmi/
 
