@@ -27,7 +27,7 @@ class Twitchchat(commands.Cog):
         )
         default_global = {
             "oauth": "",
-            "channel": "",
+            "_channel": "",
             "username": "",
         }
         self.respond = False
@@ -45,7 +45,7 @@ class Twitchchat(commands.Cog):
         """Menu for twitchchat cogs, also displays current config"""
         embed = discord.Embed(title="Twitch chat bridge")
         embed.add_field(
-            name="Channel", value=f"{await self.config.channel()}", inline=True
+            name="Channel", value=f"{await self.config._channel()}", inline=True
         )
         embed.add_field(
             name="Username", value=f"{await self.config.username()}", inline=True
@@ -75,7 +75,7 @@ class Twitchchat(commands.Cog):
             return
         if message.channel != self.respond:
             return
-        channel = await self.config.channel()
+        channel = await self.config._channel()
         message_temp = f"PRIVMSG #{channel} :{message.content}"
         self.socket.send(f"{message_temp}\n".encode())
 
@@ -104,7 +104,7 @@ class Twitchchat(commands.Cog):
         port = 6667
 
         self.socket = socket()
-        channel = await self.config.channel()
+        channel = await self.config._channel()
         auth = await self.config.oauth()
         name = await self.config.username()
         self.socket.connect((server, port))
@@ -128,6 +128,8 @@ class Twitchchat(commands.Cog):
     @twitchchat.command(name="disconnect", aliases=["stop", "close", "exit"])
     async def twitchchat_disconnect(self, ctx: commands.Context):
         """Ends the connection with twitch"""
+        self.respond = False
+        await replying(content="Disconnected from twitch chat.", ctx=ctx)
 
     @twitchchat.group(name="set")
     async def _set(self, ctx: commands.Context):
@@ -140,7 +142,7 @@ class Twitchchat(commands.Cog):
 
         setting it empty removes the channel
         """
-        await self.config.channel.set(twitch_channel)
+        await self.config._channel.set(twitch_channel)
         if twitch_channel == "":
             return replying(
                 content=f"I have removed your twitch channel selection.", ctx=ctx
