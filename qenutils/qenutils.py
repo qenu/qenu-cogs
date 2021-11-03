@@ -377,7 +377,7 @@ class Qenutils(commands.Cog):
             return await ctx.message.remove_reaction("❓", ctx.me)
 
     @commands.command(name="woah")
-    @commands.is_owner()
+    # @commands.is_owner()
     async def qenu_tester(self, ctx: commands.Context):
         """yeee"""
         menu = discord.Embed(
