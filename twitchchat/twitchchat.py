@@ -39,7 +39,7 @@ class Twitchchat(commands.Cog):
     ) -> None:
         super().red_delete_data_for_user(requester=requester, user_id=user_id)
 
-    @commands.group(name="", invoke_without_subcommand=True)
+    @commands.group(name="twitchchat", invoke_without_subcommand=True)
     @commands.is_owner()
     async def twitchchat(self, ctx: commands.Context):
         """Menu for twitchchat cogs, also displays current config"""
