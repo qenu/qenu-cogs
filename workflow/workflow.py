@@ -4,7 +4,7 @@ from typing import Literal, Optional
 import discord
 import asyncio
 import time
-import regex as re
+import re
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
