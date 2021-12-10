@@ -4,7 +4,6 @@ from typing import Literal, Optional
 import discord
 import asyncio
 import time
-from discord.ext.commands.cooldowns import C
 import regex as re
 from redbot.core import commands
 from redbot.core.bot import Red
