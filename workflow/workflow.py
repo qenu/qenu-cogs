@@ -104,7 +104,7 @@ PANEL_REGEX = re.compile("資訊大圖:.*\n")
 LAYER_REGEX = re.compile("實況圖層:.*\n")
 OTHER_REGEX = re.compile("其他委託:.*\n")
 
-COMMENT_REGEX = re.compile("備註:.*\n")
+COMMENT_REGEX = re.compile("備註:.*$")
 
 
 class Workflow(commands.Cog):
