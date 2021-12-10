@@ -1,11 +1,11 @@
+import asyncio
+import re
+import time
 from dataclasses import dataclass, field
 from logging import exception
 from typing import Literal, Optional
 
 import discord
-import asyncio
-import time
-import re
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
@@ -48,6 +48,7 @@ QUOTE_STATUS_TYPE: dict = {
     3: "已完成",
 }
 
+
 class Commission:
     def __init__(self, *, _type: str, _count: int = 0, per: int = 0) -> None:
         self._type = _type
@@ -55,10 +56,10 @@ class Commission:
         self.per = COMM_TYPE.get(_type, per)
         self._status = COMM_STATUS_TYPE[0]
 
+
 @dataclass
 class CommissionData:
     commission: list[Commission] = field(default_factory=list)
-
 
     def total(self) -> str:
         return_str = ""
@@ -67,46 +68,50 @@ class CommissionData:
                 return_str += f"{item._type} x{item._count} = {(item._count * item.per) or '報價'}\n"
         return return_str
 
+
 @dataclass
 class CustomerData:
-    name: str # 委託人姓名
-    contact: str # 聯絡方式
-    payment_method: int # 付款方式
-    contact_info: str = "" # 委託人聯絡資訊
+    name: str  # 委託人姓名
+    contact: str  # 聯絡方式
+    payment_method: int  # 付款方式
+    contact_info: str = ""  # 委託人聯絡資訊
+
 
 @dataclass
 class Quote:
-    message_id: int # discord.Message.id
-    status: int # 委託狀態
-    last_update: int # 最後更新時間
-    estimate_start_date: str # 預計開始日期
-    timestamp: int # 時間戳記
+    message_id: int  # discord.Message.id
+    status: int  # 委託狀態
+    last_update: int  # 最後更新時間
+    estimate_start_date: str  # 預計開始日期
+    timestamp: int  # 時間戳記
     customer_data: CustomerData
     commission_data: CommissionData
-    comment: str = "" # 委託備註
+    comment: str = ""  # 委託備註
+
 
 # regex compiles
-CUSTOMER_NAME_REGEX = re.compile(r"^委託人:.*$")
-CUSTOMER_CONTACT_REGEX = re.compile(r"^聯絡方式:.*$")
-CUSTOMER_CONTACT_INFO_REGEX = re.compile(r"^聯絡資訊:.*$")
-CUSTOMER_PAYMENT_REGEX = re.compile(r"^付款方式:.*$")
-ESTIMATE_DATE_REGEX = re.compile(r"^預計開始日期:.*$")
-QUOTE_STATUS_REGEX = re.compile(r"^訂單狀態:.*$")
+CUSTOMER_NAME_REGEX = re.compile(r"委託人:.*$")
+CUSTOMER_CONTACT_REGEX = re.compile(r"聯絡方式:.*$")
+CUSTOMER_CONTACT_INFO_REGEX = re.compile(r"聯絡資訊:.*$")
+CUSTOMER_PAYMENT_REGEX = re.compile(r"付款方式:.*$")
+ESTIMATE_DATE_REGEX = re.compile(r"預計開始日期:.*$")
+QUOTE_STATUS_REGEX = re.compile(r"訂單狀態:.*$")
 
-EMOTE_REGEX = re.compile(r"^客製貼圖:.*$")
-SUBSCRIBE_REGEX = re.compile(r"^訂閱徽章:.*$")
-BITS_REGEX = re.compile(r"^小奇點圖:.*$")
-PANEL_REGEX = re.compile(r"^資訊大圖:.*$")
-LAYER_REGEX = re.compile(r"^實況圖層:.*$")
-OTHER_REGEX = re.compile(r"^其他委託:.*$")
+EMOTE_REGEX = re.compile(r"客製貼圖:.*$")
+SUBSCRIBE_REGEX = re.compile(r"訂閱徽章:.*$")
+BITS_REGEX = re.compile(r"小奇點圖:.*$")
+PANEL_REGEX = re.compile(r"資訊大圖:.*$")
+LAYER_REGEX = re.compile(r"實況圖層:.*$")
+OTHER_REGEX = re.compile(r"其他委託:.*$")
 
-COMMENT_REGEX = re.compile(r"^備註:.*$")
+COMMENT_REGEX = re.compile(r"備註:.*$")
 
 
 class Workflow(commands.Cog):
     """
     custom tailored project flow system by ba
     """
+
     """
     All commission statuses would be posted to the same channel,
     where the commisision status would be categorized by config guild,
@@ -121,12 +126,12 @@ class Workflow(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(
             self,
-            identifier=0x13969aa179e8081f,
+            identifier=0x13969AA179E8081F,
             force_registration=True,
         )
         default_guild: dict = {
-            "owner": None, # discord user id
-            "channel_id": None, # discord channel id
+            "owner": None,  # discord user id
+            "channel_id": None,  # discord channel id
             "quotations": {},
             "pending": [],
             "ongoing": [],
@@ -135,7 +140,9 @@ class Workflow(commands.Cog):
         }
         # self.config.register_guild(**default_guild)
 
-    async def red_delete_data_for_user(self, *, requester: RequestType, user_id: int) -> None:
+    async def red_delete_data_for_user(
+        self, *, requester: RequestType, user_id: int
+    ) -> None:
         # TODO: Replace this with the proper end user data removal handling.
         super().red_delete_data_for_user(requester=requester, user_id=user_id)
 
@@ -151,7 +158,7 @@ class Workflow(commands.Cog):
         Returns
         -------
         Quote
-            parsed content
+            quote object
         """
         quote_data: dict = {}
 
@@ -160,12 +167,16 @@ class Workflow(commands.Cog):
         quote_data["status"] = int(quote_status)
 
         quote_data["last_update"] = int(time.time())
-        quote_data["estimate_start_date"] = ESTIMATE_DATE_REGEX.match(content).split(":")[1].strip()
+        quote_data["estimate_start_date"] = (
+            ESTIMATE_DATE_REGEX.match(content).split(":")[1].strip()
+        )
         quote_data["timestamp"] = int(time.time())
 
         customer_name = CUSTOMER_NAME_REGEX.match(content).split(":")[1].strip()
         customer_contact = CUSTOMER_CONTACT_REGEX.match(content).split(":")[1].strip()
-        customer_contact_info = CUSTOMER_CONTACT_INFO_REGEX.match(content).split(":")[1].strip()
+        customer_contact_info = (
+            CUSTOMER_CONTACT_INFO_REGEX.match(content).split(":")[1].strip()
+        )
         customer_payment = CUSTOMER_PAYMENT_REGEX.match(content).split(":")[1].strip()
         quote_data["customer_data"] = CustomerData(
             name=customer_name,
@@ -191,9 +202,9 @@ class Workflow(commands.Cog):
             commission_type, commission_data = commission_str.split(":")
             commission_list = commission_data.split("")
             if len(commission_list) == 1:
-                per=COMM_TYPE[commission_type]
+                per = COMM_TYPE[commission_type]
             else:
-                per=commission_list[1]
+                per = commission_list[1]
             return Commission(
                 _type=commission_type,
                 per=per,
@@ -249,15 +260,16 @@ class Workflow(commands.Cog):
                 embed.add_field(
                     name=f"{item._type}",
                     value=(
-                        f"數量: {item._count}\n"
-                        f"進度: {COMM_STATUS_TYPE[item._status]}\n"
-                        ),
+                        f"數量: {item._count}\n" f"進度: {COMM_STATUS_TYPE[item._status]}\n"
+                    ),
                     inline=True,
                 )
 
         return embed
 
-    async def update_workflow_message(self, ctx: commands.Context, quote_id: int) -> None:
+    async def update_workflow_message(
+        self, ctx: commands.Context, quote_id: int
+    ) -> None:
         """
         Update/Creates the workflow embed
 
@@ -299,60 +311,55 @@ class Workflow(commands.Cog):
 
     @commands.max_concurrency(1, commands.BucketType.guild)
     @workflow.command(name="add", aliases=["a", "新增"])
-    async def workflow_add(self, ctx: commands.Context, *, content: Optional[str]=None) -> None:
+    async def workflow_add(
+        self, ctx: commands.Context, *, content: Optional[str] = None
+    ) -> None:
         """
         新增工作
 
         """
         if not content:
-            embed=discord.Embed(description=(
-                "複製以上格式新增工作排程\n"
-                "---\n"
-                "委託部分數字代表的意思如下\n"
-                "委託內容 數量 報價\n"
-                "報價可以為空或0, 則代表特例價格\n"
-            ))
+            embed = discord.Embed(
+                description=(
+                    "複製以上格式新增工作排程\n"
+                    "---\n"
+                    "委託部分數字代表的意思如下\n"
+                    "委託內容 數量 報價\n"
+                    "報價可以為空或0, 則代表特例價格\n"
+                )
+            )
             embed.add_field(
                 name="付款方式",
-                value=(
-                    "   1: 轉帳\n"
-                    "   2: 歐富寶\n"
-                    "   3: Paypal\n"
-                    "   0: 其他\n"
-                ),
+                value=("   1: 轉帳\n" "   2: 歐富寶\n" "   3: Paypal\n" "   0: 其他\n"),
                 inline=True,
             )
             embed.add_field(
                 name="訂單狀態",
-                value=(
-                    "   1: 等待中\n"
-                    "   2: 進行中\n"
-                    "   3: 已完成\n"
-                    "   0: 取消\n"
-                ),
+                value=("   1: 等待中\n" "   2: 進行中\n" "   3: 已完成\n" "   0: 取消\n"),
                 inline=True,
             )
-            await ctx.send(content=(
-                "```\n"
-                "委託人:\n"
-                "聯繫方式: \n"
-                "聯絡資訊: \n"
-                "付款方式: 1\n"
-                "預計開始日期: \n"
-                "訂單狀態: 1\n"
-                "---\n"
-                "客製貼圖: 0\n"
-                "訂閱徽章: 0\n"
-                "小奇點圖: 0\n"
-                "資訊大圖: 0\n"
-                "實況圖層: 0\n"
-                "其他委託: 0\n"
-                "---\n"
-                "備註:\n"
-                "```"),
+            explain = await ctx.send(
+                content=(
+                    "```\n"
+                    "委託人:\n"
+                    "聯繫方式: \n"
+                    "聯絡資訊: \n"
+                    "付款方式: 1\n"
+                    "預計開始日期: \n"
+                    "訂單狀態: 1\n"
+                    "---\n"
+                    "客製貼圖: 0\n"
+                    "訂閱徽章: 0\n"
+                    "小奇點圖: 0\n"
+                    "資訊大圖: 0\n"
+                    "實況圖層: 0\n"
+                    "其他委託: 0\n"
+                    "---\n"
+                    "備註:\n"
+                    "```"
+                ),
                 embed=embed,
             )
-            # await ctx.send(embed=embed)
 
             try:
                 msg = await self.bot.wait_for(
@@ -369,7 +376,7 @@ class Workflow(commands.Cog):
         except AttributeError as e:
             return await ctx.send(f"格式錯誤: {e}")
 
-# ==================================================
+        # ==================================================
         embed = discord.Embed()
         embed.title = f"委託編號 #{'test'} • {quote.status}"
         embed.description = (
@@ -388,12 +395,11 @@ class Workflow(commands.Cog):
                 embed.add_field(
                     name=f"{item._type}",
                     value=(
-                        f"數量: {item._count}\n"
-                        f"進度: {COMM_STATUS_TYPE[item._status]}\n"
-                        ),
+                        f"數量: {item._count}\n" f"進度: {COMM_STATUS_TYPE[item._status]}\n"
+                    ),
                     inline=True,
                 )
-# ==================================================
+        # ==================================================
 
         message = await ctx.send(embed=embed)
         quote.message_id = message.id
@@ -411,4 +417,3 @@ class Workflow(commands.Cog):
         #         guild_data["ongoing"].append(next_id)
         #     elif quote.status == 3:
         #         guild_data["completed"].append(next_id)
-

@@ -1,6 +1,6 @@
-from typing import Literal, Optional
 import socket
 from time import time
+from typing import Literal, Optional
 
 import discord
 from redbot.core import commands

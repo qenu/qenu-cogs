@@ -1,8 +1,9 @@
-import discord
 import asyncio
-from typing import Optional, List, Any, Dict
-from redbot.core import commands
 import contextlib
+from typing import Any, Dict, List, Optional
+
+import discord
+from redbot.core import commands
 
 RED_TICK = "<:redTick:901080156217704478>"
 GREEN_TICK = "<:greenTick:901080153873068052>"

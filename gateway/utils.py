@@ -1,6 +1,7 @@
-import discord
 import asyncio
 from typing import Optional
+
+import discord
 from redbot.core import commands
 
 CROSS_MRK = "<:redTick:901080156217704478>"

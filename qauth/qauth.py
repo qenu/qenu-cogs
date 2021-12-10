@@ -1,16 +1,16 @@
-from typing import Literal, Optional
-import pyotp
 import asyncio
 import math
 import time
+from typing import Literal, Optional
 
 import discord
+import pyotp
 from discord.ext import tasks
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import pagify
-from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
+from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
