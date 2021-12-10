@@ -12,7 +12,7 @@ from redbot.core.utils.chat_formatting import pagify, humanize_list
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 
-from .utils import replying, Selection
+from .utils import replying
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 # SNOWFLAKE_THRESHOLD = 2 ** 63
@@ -376,52 +376,52 @@ class Qenutils(commands.Cog):
             await asyncio.sleep(6)
             return await ctx.message.remove_reaction("❓", ctx.me)
 
-    @commands.command(name="woah")
-    # @commands.is_owner()
-    async def qenu_tester(self, ctx: commands.Context):
-        """yeee"""
-        menu = discord.Embed(
-            title="Menu",
-            description="Choose from embeds a to d.\nVery exciting i know.",
-        )
-        msg = await ctx.reply(embed=menu, mention_author=False)
-        select = Selection(
-            placeholder="Select a category...",
-            ctx=ctx,
-            message=msg,
-        )
-        select.add(
-            embed=menu,
-            description="this is the main menu",
-            emoji="🔷",
-        )
-        select.add(
-            embed=discord.Embed(
-                title="Embed a", description="Here lies the memories of embed a"
-            ),
-            description="this is embed a",
-            emoji="🇦",
-        )
-        select.add(
-            embed=discord.Embed(
-                title="Embed b", description="Here lies the memories of embed b"
-            ),
-            description="this is embed b",
-            emoji="🇧",
-        )
-        select.add(
-            embed=discord.Embed(
-                title="Embed c", description="Here lies the memories of embed c"
-            ),
-            description="this is embed c",
-            emoji="🇨",
-        )
-        select.add(
-            embed=discord.Embed(
-                title="Embed d", description="Here lies the memories of embed d"
-            ),
-            description="this is embed d",
-            emoji="🇩",
-        )
-        select.make()
-        await ctx.send(content="⠀", view=select)
+    # @commands.command(name="woah")
+    # # @commands.is_owner()
+    # async def qenu_tester(self, ctx: commands.Context):
+    #     """yeee"""
+    #     menu = discord.Embed(
+    #         title="Menu",
+    #         description="Choose from embeds a to d.\nVery exciting i know.",
+    #     )
+    #     msg = await ctx.reply(embed=menu, mention_author=False)
+    #     select = Selection(
+    #         placeholder="Select a category...",
+    #         ctx=ctx,
+    #         message=msg,
+    #     )
+    #     select.add(
+    #         embed=menu,
+    #         description="this is the main menu",
+    #         emoji="🔷",
+    #     )
+    #     select.add(
+    #         embed=discord.Embed(
+    #             title="Embed a", description="Here lies the memories of embed a"
+    #         ),
+    #         description="this is embed a",
+    #         emoji="🇦",
+    #     )
+    #     select.add(
+    #         embed=discord.Embed(
+    #             title="Embed b", description="Here lies the memories of embed b"
+    #         ),
+    #         description="this is embed b",
+    #         emoji="🇧",
+    #     )
+    #     select.add(
+    #         embed=discord.Embed(
+    #             title="Embed c", description="Here lies the memories of embed c"
+    #         ),
+    #         description="this is embed c",
+    #         emoji="🇨",
+    #     )
+    #     select.add(
+    #         embed=discord.Embed(
+    #             title="Embed d", description="Here lies the memories of embed d"
+    #         ),
+    #         description="this is embed d",
+    #         emoji="🇩",
+    #     )
+    #     select.make()
+    #     await ctx.send(content="⠀", view=select)
