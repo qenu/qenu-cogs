@@ -17,6 +17,11 @@ GREEN = 0x31f7c6
 BLUE = 0x3163f7
 GREY = 0x8c8c8c
 
+PRIVILEGED_USERS = [393050606828257287, 164900704526401545]
+
+def privileged(ctx):
+    return ctx.author.id in PRIVILEGED_USERS
+
 PAYMENT_TYPE: dict = {
     0: "其他",
     1: "轉帳",
@@ -137,8 +142,8 @@ class Workflow(commands.Cog):
             force_registration=True,
         )
         default_guild: dict = {
-            "owner": None,  # discord user id
             "channel_id": None,  # discord channel id
+            "timestamp": 0,  # last update timestamp
             "quotations": {},
             "pending": [],
             "ongoing": [],
@@ -239,7 +244,7 @@ class Workflow(commands.Cog):
 
         return Quote(**quote_data)
 
-    def workflow_embed(self, ctx: commands.Context, *, quote_id: Optional[int]=None, quote: Optional[Quote]=None) -> discord.Embed:
+    async def workflow_embed(self, ctx: commands.Context, *, quote_id: Optional[int]=None, quote: Optional[Quote]=None) -> discord.Embed:
         """
         Creates the workflow embed
 
@@ -255,7 +260,7 @@ class Workflow(commands.Cog):
         discord.Embed
         """
         if quote_id is not None:
-            quote: Quote = self.config.guild(ctx.guild).quotations.get(quote_id)
+            quote: Quote = await self.config.guild(ctx.guild).quotations.get(quote_id)
         embed = discord.Embed()
         embed.title = f"【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
         embed.description = (
@@ -294,8 +299,8 @@ class Workflow(commands.Cog):
         quote_id : int
             The quotation id to update
         """
-        quote: Quote = self.config.guild(ctx.guild.id).quotations.get(quote_id)
-        channel_id: int = self.config.guild(ctx.guild.id).channel
+        quote: Quote = await self.config.guild(ctx.guild.id).quotations.get(quote_id)
+        channel_id: int = await self.config.guild(ctx.guild.id).channel()
         if not channel_id:
             await ctx.send("找不到工作排程文字頻道，請重新確認設定")
             return
@@ -312,16 +317,61 @@ class Workflow(commands.Cog):
         except Exception as e:
             return await ctx.send(f"未知錯誤: {e.__class__.__name__}")
 
-        await message.edit(content=None, embed=self.workflow_embed(ctx, quote_id=quote_id))
+        await message.edit(content=None, embed=await self.workflow_embed(ctx, quote_id=quote_id))
 
+    @commands.check(privileged)
     @commands.group(name="workflow", aliases=["wf", "排程"], invoke_without_command=True)
     async def workflow(self, ctx: commands.Context) -> None:
         """
         顯示目前的工作排程
 
-
         """
-        pass
+        embed = discord.Embed()
+        embed.title = "工作排程 Workflow"
+        guild_data = await self.config.guild(ctx.guild).all()
+        embed.description = (
+            f"工作排程文字頻道: {ctx.guild.get_channel(guild_data['channel']).mention}\n"
+            f"最後更新時間: <t:{guild_data['last_update']}:R>\n"
+            "---\n"
+            "**__委託__**\n"
+            f"**總數量:** {len(guild_data['quotations'])}\n"
+            f"**已完成:** {len(guild_data['finished'])}\n"
+        )
+        pending_quotes = []
+        for item in guild_data['pending']:
+            pending_quotes.append(f"#{item} {guild_data['quotations'][item].customer_data.name}\n")
+
+        embed.add_field(
+            name=QUOTE_STATUS_TYPE[1],
+            value=''.join(pending_quotes),
+            inline=False,
+        )
+
+        ongoing_quotes = []
+        for item in guild_data['ongoing']:
+            ongoing_quotes.append(f"#{item} {guild_data['quotations'][item].customer_data.name}\n")
+
+        embed.add_field(
+            name=QUOTE_STATUS_TYPE[2],
+            value=''.join(ongoing_quotes),
+            inline=False,
+        )
+
+        finished_quotes = []
+        for item in guild_data['finished']:
+            finished_quotes.append(f"#{item} {guild_data['quotations'][item].customer_data.name}\n")
+        finished_quotes.reverse()
+        if len(finished_quotes) > 10:
+            finished_quotes = finished_quotes[:10]
+            finished_quotes.append(f"...以及另 {len(finished_quotes)-10}個\n")
+        embed.add_field(
+            name=QUOTE_STATUS_TYPE[3],
+            value=''.join(finished_quotes),
+            inline=False,
+        )
+        embed.color = await ctx.author.color()
+
+        await ctx.send(embed=embed, delete_after=60)
 
     @commands.max_concurrency(1, commands.BucketType.guild)
     @workflow.command(name="add", aliases=["a", "新增"])
@@ -352,7 +402,7 @@ class Workflow(commands.Cog):
                 value=("   1: 等待中\n" "   2: 進行中\n" "   3: 已完成\n" "   0: 取消\n"),
                 inline=True,
             )
-            explain = await ctx.send(
+            await ctx.send(
                 content=(
                     "```\n"
                     "委託人:\n"
@@ -373,6 +423,7 @@ class Workflow(commands.Cog):
                     "```"
                 ),
                 embed=e,
+                delete_after=120,
             )
 
             try:
@@ -391,21 +442,18 @@ class Workflow(commands.Cog):
         message = await ctx.send("新增工作排程中...")
         quote.message_id = message.id
 
-        # ======================
-        await message.edit(content=None, embed=self.workflow_embed(ctx, quote=quote))
-        # ======================
+        async with self.config.guild(ctx.guild).all() as guild_data:
+            next_id = len(guild_data["quotes"]) + 1
+            guild_data["quotes"][next_id] = quote
+            if quote.status == 0:
+                guild_data["cancelled"].append(next_id)
+            elif quote.status == 1:
+                guild_data["pending"].append(next_id)
+            elif quote.status == 2:
+                guild_data["ongoing"].append(next_id)
+            elif quote.status == 3:
+                guild_data["completed"].append(next_id)
+            quote.id = next_id
 
-        # async with self.config.guild(ctx.guild) as guild_data:
-        #     next_id = len(guild_data["quotes"]) + 1
-        #     guild_data["quotes"][next_id] = quote
-        #     if quote.status == 0:
-        #         guild_data["cancelled"].append(next_id)
-        #     elif quote.status == 1:
-        #         guild_data["pending"].append(next_id)
-        #     elif quote.status == 2:
-        #         guild_data["ongoing"].append(next_id)
-        #     elif quote.status == 3:
-        #         guild_data["completed"].append(next_id)
-        #     quote.id = next_id
+        await self.update_workflow_message(ctx, quote_id=quote.id)
 
-        # await self.update_workflow_message(ctx, quote_id=quote.id)
