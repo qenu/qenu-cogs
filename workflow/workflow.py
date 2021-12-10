@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from logging import exception
 from typing import Literal, Optional
 
 import discord
@@ -324,7 +325,7 @@ class Workflow(commands.Cog):
                 "```"
             )
             await ctx.send(
-                "```\n"
+                # "```\n"
                 "複製以上格式新增工作排程\n"
                 "---\n"
                 "付款方式:\n"
@@ -342,7 +343,7 @@ class Workflow(commands.Cog):
                 "委託部分數字代表的意思如下\n"
                 "委託內容 數量 報價\n"
                 "報價可以為空或0, 則代表特例價格\n"
-                "```"
+                # "```"
                 )
 
             try:
@@ -355,7 +356,10 @@ class Workflow(commands.Cog):
             except asyncio.TimeoutError:
                 return await ctx.send("連線超時，請重新執行指令")
 
-        quote = self.parse_content(content)
+        try:
+            quote = self.parse_content(content)
+        except AttributeError as e:
+            return await ctx.send(f"格式錯誤: {e}")
 
 # ==================================================
         embed = discord.Embed()
