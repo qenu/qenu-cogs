@@ -54,7 +54,7 @@ class Commission:
         self._type = _type
         self._count = _count
         self.per = COMM_TYPE.get(_type, per)
-        self._status = COMM_STATUS_TYPE[0]
+        self._status = 0
 
 
 @dataclass
