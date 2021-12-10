@@ -369,7 +369,7 @@ class Workflow(commands.Cog):
             value=''.join(finished_quotes),
             inline=False,
         )
-        embed.color = await ctx.author.color()
+        embed.color = await ctx.author.color
 
         await ctx.send(embed=embed, delete_after=60)
 
