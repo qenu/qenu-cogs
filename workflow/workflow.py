@@ -90,21 +90,21 @@ class Quote:
 
 
 # regex compiles
-CUSTOMER_NAME_REGEX = re.compile(r"委託人:.*\n")
-CUSTOMER_CONTACT_REGEX = re.compile(r"聯絡方式:.*\n")
-CUSTOMER_CONTACT_INFO_REGEX = re.compile(r"聯絡資訊:.*\n")
-CUSTOMER_PAYMENT_REGEX = re.compile(r"付款方式:.*\n")
-ESTIMATE_DATE_REGEX = re.compile(r"預計開始日期:.*\n")
-QUOTE_STATUS_REGEX = re.compile(r"訂單狀態:.*\n")
+CUSTOMER_NAME_REGEX = re.compile("委託人:.*\n")
+CUSTOMER_CONTACT_REGEX = re.compile("聯絡方式:.*\n")
+CUSTOMER_CONTACT_INFO_REGEX = re.compile("聯絡資訊:.*\n")
+CUSTOMER_PAYMENT_REGEX = re.compile("付款方式:.*\n")
+ESTIMATE_DATE_REGEX = re.compile("預計開始日期:.*\n")
+QUOTE_STATUS_REGEX = re.compile("訂單狀態:.*\n")
 
-EMOTE_REGEX = re.compile(r"客製貼圖:.*\n")
-SUBSCRIBE_REGEX = re.compile(r"訂閱徽章:.*\n")
-BITS_REGEX = re.compile(r"小奇點圖:.*\n")
-PANEL_REGEX = re.compile(r"資訊大圖:.*\n")
-LAYER_REGEX = re.compile(r"實況圖層:.*\n")
-OTHER_REGEX = re.compile(r"其他委託:.*\n")
+EMOTE_REGEX = re.compile("客製貼圖:.*\n")
+SUBSCRIBE_REGEX = re.compile("訂閱徽章:.*\n")
+BITS_REGEX = re.compile("小奇點圖:.*\n")
+PANEL_REGEX = re.compile("資訊大圖:.*\n")
+LAYER_REGEX = re.compile("實況圖層:.*\n")
+OTHER_REGEX = re.compile("其他委託:.*\n")
 
-COMMENT_REGEX = re.compile(r"備註:.*\n")
+COMMENT_REGEX = re.compile("備註:.*\n")
 
 
 class Workflow(commands.Cog):
