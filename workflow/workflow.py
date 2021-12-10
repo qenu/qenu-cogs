@@ -64,7 +64,7 @@ class CommissionData:
     def total(self) -> str:
         return_str = ""
         for item in self.commission:
-            if item.count != 0:
+            if item._count != 0:
                 return_str += f"{item._type} x{item._count} = {(item._count * item.per) or '報價'}\n"
         return return_str
 
@@ -256,7 +256,7 @@ class Workflow(commands.Cog):
         )
         embed.set_footer(text=f"最後更新時間: <t:{quote.last_update}:F>")
         for item in quote.commission_data.commission:
-            if item.count != 0:
+            if item._count != 0:
                 embed.add_field(
                     name=f"{item._type}",
                     value=(
