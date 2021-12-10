@@ -150,7 +150,7 @@ class Workflow(commands.Cog):
             "finished": [],
             "cancelled": [],
         }
-        # self.config.register_guild(**default_guild)
+        self.config.register_guild(**default_guild)
 
     async def red_delete_data_for_user(
         self, *, requester: RequestType, user_id: int
@@ -330,7 +330,7 @@ class Workflow(commands.Cog):
         embed.title = "工作排程 Workflow"
         guild_data = await self.config.guild(ctx.guild).all()
         embed.description = (
-            f"工作排程文字頻道: {ctx.guild.get_channel(guild_data['channel']).mention}\n"
+            f"工作排程文字頻道: {ctx.guild.get_channel(guild_data['channel_id']).mention}\n"
             f"最後更新時間: <t:{guild_data['last_update']}:R>\n"
             "---\n"
             "**__委託__**\n"
