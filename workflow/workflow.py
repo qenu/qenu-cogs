@@ -20,7 +20,7 @@ PAYMENT_TYPE: dict = {
 }
 
 COMM_STATUS_TYPE: dict = {
-    0: "等待",
+    0: "無",
     1: "草稿",
     2: "線搞",
     3: "上色",
@@ -54,7 +54,7 @@ class Commission:
         self._type = _type
         self._count = _count
         self.per = COMM_TYPE.get(_type, per)
-        self._status = 0
+        self._status =
 
 
 @dataclass
@@ -243,20 +243,17 @@ class Workflow(commands.Cog):
         """
         quote: Quote = self.config.guild(ctx.guild).quotations.get(quote_id)
         embed = discord.Embed()
-        # embed.title = f"委託編號 #{quote_id} • {quote.status}"
-        embed.title = f"{quote.customer_data.name}的委託 • {quote.status}"
+        embed.title = f"{quote.customer_data.name}的委託 • {QUOTE_STATUS_TYPE[quote.status]}"
         embed.description = (
-            f"委託時間: <t:{quote.timestamp}:D>\n"
-            # f"委託人: {quote.customer_data.name}\n"
+            f"最後更新時間: <t:{quote.last_update}:R>\n"
+            f"預計開工日期: {quote.estimate_start_date}\n"
             f"聯絡方式: {quote.customer_data.contact}\n"
             f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
-            f"預計開工日期: {quote.estimate_start_date}\n"
-            f"最後更新時間: <t:{quote.last_update}:F>\n"
+            f"委託時間: <t:{quote.timestamp}:D>\n"
             "\n"
             "**委託內容:**\n"
-            "---\n"
         )
-        embed.set_footer(text=f"委託編號: #{quote_id} • 訊息編號{quote.message_id}")
+        embed.set_footer(text=f"委託編號: #{quote_id} • 訊息編號: {quote.message_id}")
         for item in quote.commission_data.commission:
             if item._count != 0:
                 embed.add_field(
@@ -376,22 +373,21 @@ class Workflow(commands.Cog):
         quote = self.parse_content(content)
 
 
+        message = await ctx.send("新增工作排程中...")
+        quote.message_id = message.id
         # ==================================================
         embed = discord.Embed()
-        # embed.title = f"委託編號 #{quote_id} • {quote.status}"
-        embed.title = f"{quote.customer_data.name}的委託 • {quote.status}"
+        embed.title = f"{quote.customer_data.name}的委託 • {QUOTE_STATUS_TYPE[quote.status]}"
         embed.description = (
-            f"委託時間: <t:{quote.timestamp}:D>\n"
-            # f"委託人: {quote.customer_data.name}\n"
+            f"最後更新時間: <t:{quote.last_update}:R>\n"
+            f"預計開工日期: {quote.estimate_start_date}\n"
             f"聯絡方式: {quote.customer_data.contact}\n"
             f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
-            f"預計開工日期: {quote.estimate_start_date}\n"
-            f"最後更新時間: <t:{quote.last_update}:F>\n"
+            f"委託時間: <t:{quote.timestamp}:D>\n"
             "\n"
             "**委託內容:**\n"
-            "---\n"
         )
-        embed.set_footer(text=f"委託編號: #{'tester'} • 訊息編號{quote.message_id}")
+        embed.set_footer(text=f"委託編號: #{'tester_id'} • 訊息編號: {quote.message_id}")
         for item in quote.commission_data.commission:
             if item._count != 0:
                 embed.add_field(
@@ -404,8 +400,6 @@ class Workflow(commands.Cog):
 
         # ==================================================
 
-        message = await ctx.send("新增工作排程中...")
-        quote.message_id = message.id
         await message.edit(embed=embed)
 
         await ctx.send(quote)
