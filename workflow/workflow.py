@@ -163,7 +163,7 @@ class Workflow(commands.Cog):
         quote_data: dict = {}
 
         quote_data["message_id"] = 0
-        quote_status = QUOTE_STATUS_REGEX.search(content).split(":")[1].strip()
+        quote_status = QUOTE_STATUS_REGEX.search(content).group().split(":")[1].strip()
         quote_data["status"] = int(quote_status)
 
         quote_data["last_update"] = int(time.time())
@@ -172,12 +172,12 @@ class Workflow(commands.Cog):
         )
         quote_data["timestamp"] = int(time.time())
 
-        customer_name = CUSTOMER_NAME_REGEX.search(content).split(":")[1].strip()
-        customer_contact = CUSTOMER_CONTACT_REGEX.search(content).split(":")[1].strip()
+        customer_name = CUSTOMER_NAME_REGEX.search(content).group().split(":")[1].strip()
+        customer_contact = CUSTOMER_CONTACT_REGEX.search(content).group().split(":")[1].strip()
         customer_contact_info = (
-            CUSTOMER_CONTACT_INFO_REGEX.search(content).split(":")[1].strip()
+            CUSTOMER_CONTACT_INFO_REGEX.search(content).group().split(":")[1].strip()
         )
-        customer_payment = CUSTOMER_PAYMENT_REGEX.search(content).split(":")[1].strip()
+        customer_payment = CUSTOMER_PAYMENT_REGEX.search(content).group().split(":")[1].strip()
         quote_data["customer_data"] = CustomerData(
             name=customer_name,
             contact=customer_contact,
@@ -211,12 +211,12 @@ class Workflow(commands.Cog):
                 _count=commission_list[0],
             )
 
-        emote = EMOTE_REGEX.search(content)
-        subscribe = SUBSCRIBE_REGEX.search(content)
-        bits = BITS_REGEX.search(content)
-        panel = PANEL_REGEX.search(content)
-        layer = LAYER_REGEX.search(content)
-        other = OTHER_REGEX.search(content)
+        emote = EMOTE_REGEX.search(content).group()
+        subscribe = SUBSCRIBE_REGEX.search(content).group()
+        bits = BITS_REGEX.search(content).group()
+        panel = PANEL_REGEX.search(content).group()
+        layer = LAYER_REGEX.search(content).group()
+        other = OTHER_REGEX.search(content).group()
 
         commission = []
         commission.append(convert_commission(emote))
@@ -228,7 +228,7 @@ class Workflow(commands.Cog):
 
         quote_data["commission_data"] = CommissionData(commission=commission)
 
-        quote_data["comment"] = COMMENT_REGEX.search(content).split(":")[1].strip()
+        quote_data["comment"] = COMMENT_REGEX.search(content).group().split(":")[1].strip()
 
         return Quote(**quote_data)
 
