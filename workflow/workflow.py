@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from logging import BASIC_FORMAT, exception
-from pickle import NEXT_BUFFER
 from typing import Literal, Optional
 
 import discord
