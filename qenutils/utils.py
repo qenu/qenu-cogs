@@ -35,7 +35,12 @@ async def replying(
             and reaction.message.id == response.id,
         )
     except asyncio.TimeoutError:
-        await response.remove_reaction(RED_TICK, ctx.me)
+        try:
+            await response.remove_reaction(RED_TICK, ctx.me)
+        except discord.HTTPException:
+            pass
+        except discord.errors.NotFound:
+            pass
     else:
         await response.delete()
 
