@@ -2,13 +2,14 @@ import asyncio
 import re
 import time
 from dataclasses import dataclass, field
-from logging import exception
 from typing import Literal, Optional
 
 import discord
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
+from redbot.core.utils.chat_formatting import box, pagify
+from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
@@ -143,7 +144,8 @@ class Workflow(commands.Cog):
         )
         default_guild: dict = {
             "channel_id": None,  # discord channel id
-            "timestamp": 0,  # last update timestamp
+            "timestamp": time.time(),  # last update timestamp
+            "quote_number": 0,  # last quote number
             "quotations": {},
             "pending": [],
             "ongoing": [],
@@ -268,7 +270,7 @@ class Workflow(commands.Cog):
             f"預計開工日期: {quote.estimate_start_date}\n"
             f"聯絡方式: {quote.customer_data.contact}\n"
             f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
-            f"委託時間: <t:{quote.timestamp}:D>\n"
+            f"委託時間: <t:{int(quote.timestamp)}:D>\n"
             "\n"
             "**委託內容:**\n"
         )
@@ -330,10 +332,9 @@ class Workflow(commands.Cog):
         embed.title = "工作排程 Workflow"
         guild_data = await self.config.guild(ctx.guild).all()
         embed.description = (
-            f"工作排程文字頻道: {ctx.guild.get_channel(guild_data['channel_id'])}\n"
-            f"最後更新時間: <t:{guild_data['timestamp']}:R>\n"
+            f"頻道: {ctx.guild.get_channel(guild_data['channel_id'])}\n"
+            f"最後更新: <t:{int(guild_data['timestamp'])}:R>\n"
             "---\n"
-            "**__委託__**\n"
             f"**總數量:** {len(guild_data['quotations'])}\n"
             f"**已完成:** {len(guild_data['finished'])}\n"
         )
@@ -372,6 +373,34 @@ class Workflow(commands.Cog):
         embed.color = ctx.author.color
 
         await ctx.send(embed=embed, delete_after=60)
+
+    @commands.is_owner()
+    @workflow.command(name="dev")
+    async def workflow_dev(self, ctx: commands.Context) -> None:
+        pass
+
+    @workflow_dev.command(name="info")
+    async def workflow_dev_info(self, ctx: commands.Context) -> None:
+        guild_data = await self.config.guild(ctx.guild).all()
+        return_content = (
+            f"channel_id: {guild_data['channel_id']}\n"
+            f"timestamp: {int(guild_data['timestamp'])}\n"
+            f"quote_number: {guild_data['quote_number']}\n"
+            f"pending: {guild_data['pending']}\n"
+            f"ongoing: {guild_data['ongoing']}\n"
+            f"finished: {guild_data['finished']}\n"
+            f"cancelled: {guild_data['cancelled']}\n"
+            f"quotations: \n"
+        )
+        for item in guild_data['quotations']:
+            quote: Quote = guild_data['quotations'][item]
+            return_content += quote.__repr__() + "\n"
+        await menu(ctx, [box(i, lang="yaml") for i in return_content.split("\n")], DEFAULT_CONTROLS)
+
+    @workflow_dev.command(name="reset")
+    async def workflow_dev_reset(self, ctx: commands.Context) -> None:
+        await self.config.guild(ctx.guild).clear()
+        await ctx.send("工作排程已重置")
 
     @commands.max_concurrency(1, commands.BucketType.guild)
     @workflow.command(name="add", aliases=["a", "新增"])
@@ -443,8 +472,9 @@ class Workflow(commands.Cog):
         quote.message_id = message.id
 
         async with self.config.guild(ctx.guild).all() as guild_data:
-            next_id = len(guild_data["quotes"]) + 1
-            guild_data["quotes"][next_id] = quote
+            guild_data["quote_number"] += 1
+            next_id = guild_data["quote_number"]
+            guild_data["quotations"][next_id] = quote
             if quote.status == 0:
                 guild_data["cancelled"].append(next_id)
             elif quote.status == 1:
@@ -457,3 +487,53 @@ class Workflow(commands.Cog):
 
         await self.update_workflow_message(ctx, quote_id=quote.id)
 
+    @workflow.command(name="info", aliases=["i", "查看"])
+    async def workflow_info(self, ctx: commands.Context, quote_id: int) -> None:
+        """
+        查看工作排程
+
+        """
+        embed = self.workflow_embed(ctx, quote_id)
+    #     async with self.config.guild(ctx.guild).all() as guild_data:
+
+    #     await self.update_workflow_message(ctx, quote_id=quote_id)
+
+
+    # @workflow.command(name="edit", aliases=["e", "編輯", "更新"])
+    # async def workflow_edit(self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str) -> None:
+    #     """
+    #     編輯工作排程
+
+    #     """
+    #     if edit_type not in ["status", "content", "price"]:
+    #         return await ctx.send("請輸入正確的編輯類型")
+    #     if edit_type == "status":
+    #         if content not in ["0", "1", "2", "3"]:
+    #             return await ctx.send("請輸入正確的狀態")
+    #         content = int(content)
+    #     elif edit_type == "price":
+    #         if content == "":
+    #             content = 0
+    #         else:
+    #             try:
+    #                 content = int(content)
+    #             except ValueError:
+    #                 return await ctx.send("請輸入正確的價格")
+    #     else:
+    #         content = content.replace("\n", "")
+
+    #     async with self.config.guild(ctx.guild).all() as guild_data:
+    #         if quote_id not in guild_data["quotations"]:
+    #             return await ctx.send("找不到該工作排程")
+    #         quote = guild_data["quotations"][quote_id]
+    #         if edit_type == "status":
+    #             if quote.status == content:
+    #                 return await ctx.send("該工作排程狀態已經是該狀態")
+    #             if quote.status == 0:
+    #                 guild_data["cancelled"].remove(quote_id)
+    #             elif quote.status == 1:
+    #                 guild_data["pending"].remove(quote_id)
+    #             elif quote.status == 2:
+    #                 guild_data["ongoing"].remove(quote_id)
+    #             elif quote.status == 3:
+    #                 guild_data["completed"].remove(quote_id)
