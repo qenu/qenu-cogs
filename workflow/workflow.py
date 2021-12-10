@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal, Optional
 
 import discord
@@ -56,7 +56,8 @@ class Commission:
 
 @dataclass
 class CommissionData:
-    commission: list = []
+    commission: list[Commission] = field(default_factory=list)
+
 
     def total(self) -> str:
         return_str = ""
