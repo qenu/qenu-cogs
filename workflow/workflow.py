@@ -168,7 +168,7 @@ class Workflow(commands.Cog):
 
         quote_data["last_update"] = int(time.time())
         quote_data["estimate_start_date"] = (
-            ESTIMATE_DATE_REGEX.se(content).split(":")[1].strip()
+            ESTIMATE_DATE_REGEX.search(content).group().split(":")[1].strip()
         )
         quote_data["timestamp"] = int(time.time())
 
