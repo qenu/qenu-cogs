@@ -1,0 +1,19 @@
+{
+    "name": "Workflow",
+    "short": "custom-tailored project flow system by ba",
+    "description": "custom-tailored project workflow management system inspired by trello",
+    "end_user_data_statement": "This cog does not persistently store any data or metadata about users.",
+    "install_msg": "Thank you for installing workflow, contact me ba#0420 if you occured any problems.",
+    "author": [
+        "qenu"
+    ],
+    "required_cogs": {},
+    "requirements": [],
+    "tags": [
+        "utilities"
+    ],
+    "min_bot_version": "3.3.10",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG"
+}
