@@ -200,7 +200,7 @@ class Workflow(commands.Cog):
                 converted string
             """
             commission_type, commission_data = commission_str.split(":")
-            commission_list = commission_data.split("")
+            commission_list = commission_data.split(" ")
             if len(commission_list) == 1:
                 per = COMM_TYPE[commission_type]
             else:
@@ -342,7 +342,7 @@ class Workflow(commands.Cog):
                 content=(
                     "```\n"
                     "委託人:\n"
-                    "聯繫方式: \n"
+                    "聯絡方式: \n"
                     "聯絡資訊: \n"
                     "付款方式: 1\n"
                     "預計開始日期: \n"
