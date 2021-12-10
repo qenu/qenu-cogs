@@ -200,15 +200,15 @@ class Workflow(commands.Cog):
                 converted string
             """
             commission_type, commission_data = commission_str.split(":")
-            commission_list = commission_data.split(" ")
+            commission_list = commission_data.split()
             if len(commission_list) == 1:
                 per = COMM_TYPE[commission_type]
             else:
-                per = commission_list[1]
+                per = int(commission_list[1])
             return Commission(
                 _type=commission_type,
                 per=per,
-                _count=commission_list[0],
+                _count=int(commission_list[0]),
             )
 
         emote = EMOTE_REGEX.search(content).group()
@@ -376,7 +376,7 @@ class Workflow(commands.Cog):
 
         # ==================================================
         embed = discord.Embed()
-        embed.title = f"委託編號 #{'test'} • {quote.status}"
+        embed.title = f"委託編號 #{'test'} • {QUOTE_STATUS_TYPE[quote.status]}"
         embed.description = (
             f"委託時間: <t:{quote.timestamp}:D>\n"
             f"委託人: {quote.customer_data.name}\n"
@@ -385,7 +385,6 @@ class Workflow(commands.Cog):
             f"預計開工日期: {quote.estimate_start_date}\n"
             "\n"
             "**委託內容:**\n"
-            "---\n"
         )
         embed.set_footer(text=f"最後更新時間: <t:{quote.last_update}:F>")
         for item in quote.commission_data.commission:
