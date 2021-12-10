@@ -371,10 +371,8 @@ class Workflow(commands.Cog):
             except asyncio.TimeoutError:
                 return await ctx.send("連線超時，請重新執行指令")
 
-        try:
-            quote = self.parse_content(content)
-        except AttributeError as e:
-            return await ctx.send(f"格式錯誤: {e}")
+        quote = self.parse_content(content)
+
 
         # ==================================================
         embed = discord.Embed()
