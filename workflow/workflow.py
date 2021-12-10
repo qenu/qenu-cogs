@@ -90,21 +90,21 @@ class Quote:
 
 
 # regex compiles
-CUSTOMER_NAME_REGEX = re.compile(r"委託人:.*$")
-CUSTOMER_CONTACT_REGEX = re.compile(r"聯絡方式:.*$")
-CUSTOMER_CONTACT_INFO_REGEX = re.compile(r"聯絡資訊:.*$")
-CUSTOMER_PAYMENT_REGEX = re.compile(r"付款方式:.*$")
-ESTIMATE_DATE_REGEX = re.compile(r"預計開始日期:.*$")
-QUOTE_STATUS_REGEX = re.compile(r"訂單狀態:.*$")
+CUSTOMER_NAME_REGEX = re.compile(r"委託人:.*\n")
+CUSTOMER_CONTACT_REGEX = re.compile(r"聯絡方式:.*\n")
+CUSTOMER_CONTACT_INFO_REGEX = re.compile(r"聯絡資訊:.*\n")
+CUSTOMER_PAYMENT_REGEX = re.compile(r"付款方式:.*\n")
+ESTIMATE_DATE_REGEX = re.compile(r"預計開始日期:.*\n")
+QUOTE_STATUS_REGEX = re.compile(r"訂單狀態:.*\n")
 
-EMOTE_REGEX = re.compile(r"客製貼圖:.*$")
-SUBSCRIBE_REGEX = re.compile(r"訂閱徽章:.*$")
-BITS_REGEX = re.compile(r"小奇點圖:.*$")
-PANEL_REGEX = re.compile(r"資訊大圖:.*$")
-LAYER_REGEX = re.compile(r"實況圖層:.*$")
-OTHER_REGEX = re.compile(r"其他委託:.*$")
+EMOTE_REGEX = re.compile(r"客製貼圖:.*\n")
+SUBSCRIBE_REGEX = re.compile(r"訂閱徽章:.*\n")
+BITS_REGEX = re.compile(r"小奇點圖:.*\n")
+PANEL_REGEX = re.compile(r"資訊大圖:.*\n")
+LAYER_REGEX = re.compile(r"實況圖層:.*\n")
+OTHER_REGEX = re.compile(r"其他委託:.*\n")
 
-COMMENT_REGEX = re.compile(r"備註:.*$")
+COMMENT_REGEX = re.compile(r"備註:.*\n")
 
 
 class Workflow(commands.Cog):
@@ -372,7 +372,6 @@ class Workflow(commands.Cog):
                 return await ctx.send("連線超時，請重新執行指令")
 
         try:
-            await ctx.send(content)
             quote = self.parse_content(content)
         except AttributeError as e:
             return await ctx.send(f"格式錯誤: {e}")
