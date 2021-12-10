@@ -243,18 +243,20 @@ class Workflow(commands.Cog):
         """
         quote: Quote = self.config.guild(ctx.guild).quotations.get(quote_id)
         embed = discord.Embed()
-        embed.title = f"委託編號 #{quote_id} • {quote.status}"
+        # embed.title = f"委託編號 #{quote_id} • {quote.status}"
+        embed.title = f"{quote.customer_data.name}的委託 • {quote.status}"
         embed.description = (
             f"委託時間: <t:{quote.timestamp}:D>\n"
-            f"委託人: {quote.customer_data.name}\n"
+            # f"委託人: {quote.customer_data.name}\n"
             f"聯絡方式: {quote.customer_data.contact}\n"
             f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
             f"預計開工日期: {quote.estimate_start_date}\n"
+            f"最後更新時間: <t:{quote.last_update}:F>\n"
             "\n"
             "**委託內容:**\n"
             "---\n"
         )
-        embed.set_footer(text=f"最後更新時間: <t:{quote.last_update}:F>")
+        embed.set_footer(text=f"委託編號: #{quote_id} • 訊息編號{quote.message_id}")
         for item in quote.commission_data.commission:
             if item._count != 0:
                 embed.add_field(
@@ -319,7 +321,7 @@ class Workflow(commands.Cog):
 
         """
         if not content:
-            embed = discord.Embed(
+            e = discord.Embed(
                 description=(
                     "複製以上格式新增工作排程\n"
                     "---\n"
@@ -328,12 +330,12 @@ class Workflow(commands.Cog):
                     "報價可以為空或0, 則代表特例價格\n"
                 )
             )
-            embed.add_field(
+            e.add_field(
                 name="付款方式",
                 value=("   1: 轉帳\n" "   2: 歐富寶\n" "   3: Paypal\n" "   0: 其他\n"),
                 inline=True,
             )
-            embed.add_field(
+            e.add_field(
                 name="訂單狀態",
                 value=("   1: 等待中\n" "   2: 進行中\n" "   3: 已完成\n" "   0: 取消\n"),
                 inline=True,
@@ -358,7 +360,7 @@ class Workflow(commands.Cog):
                     "備註:\n"
                     "```"
                 ),
-                embed=embed,
+                embed=e,
             )
 
             try:
@@ -376,17 +378,20 @@ class Workflow(commands.Cog):
 
         # ==================================================
         embed = discord.Embed()
-        embed.title = f"委託編號 #{'test'} • {QUOTE_STATUS_TYPE[quote.status]}"
+        # embed.title = f"委託編號 #{quote_id} • {quote.status}"
+        embed.title = f"{quote.customer_data.name}的委託 • {quote.status}"
         embed.description = (
             f"委託時間: <t:{quote.timestamp}:D>\n"
-            f"委託人: {quote.customer_data.name}\n"
+            # f"委託人: {quote.customer_data.name}\n"
             f"聯絡方式: {quote.customer_data.contact}\n"
             f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
             f"預計開工日期: {quote.estimate_start_date}\n"
+            f"最後更新時間: <t:{quote.last_update}:F>\n"
             "\n"
             "**委託內容:**\n"
+            "---\n"
         )
-        embed.set_footer(text=f"最後更新時間: <t:{quote.last_update}:F>")
+        embed.set_footer(text=f"委託編號: #{'tester'} • 訊息編號{quote.message_id}")
         for item in quote.commission_data.commission:
             if item._count != 0:
                 embed.add_field(
@@ -396,10 +401,12 @@ class Workflow(commands.Cog):
                     ),
                     inline=True,
                 )
+
         # ==================================================
 
-        message = await ctx.send(embed=embed)
+        message = await ctx.send("新增工作排程中...")
         quote.message_id = message.id
+        await message.edit(embed=embed)
 
         await ctx.send(quote)
 
