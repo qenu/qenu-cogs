@@ -324,27 +324,55 @@ class Workflow(commands.Cog):
                 "備註:\n"
                 "```"
             )
-            await ctx.send(
-                # "```\n"
+            embed=discord.Embed(description=(
                 "複製以上格式新增工作排程\n"
-                "---\n"
-                "付款方式:\n"
-                "   1: 轉帳\n"
-                "   2: 歐富寶\n"
-                "   3: Paypal\n"
-                "   0: 其他\n"
-                "---\n"
-                "訂單狀態:\n"
-                "   1: 等待中\n"
-                "   2: 進行中\n"
-                "   3: 已完成\n"
-                "   0: 取消\n"
                 "---\n"
                 "委託部分數字代表的意思如下\n"
                 "委託內容 數量 報價\n"
                 "報價可以為空或0, 則代表特例價格\n"
-                # "```"
-                )
+            ))
+            embed.add_field(
+                name="付款方式",
+                value=(
+                    "   1: 轉帳\n"
+                    "   2: 歐富寶\n"
+                    "   3: Paypal\n"
+                    "   0: 其他\n"
+                ),
+                inline=True,
+            )
+            embed.add_field(
+                name="訂單狀態",
+                value=(
+                    "   1: 等待中\n"
+                    "   2: 進行中\n"
+                    "   3: 已完成\n"
+                    "   0: 取消\n"
+                ),
+                inline=True,
+            )
+            await ctx.send(embed=embed)
+            # await ctx.send(
+            #     "```\n"
+            #     "複製以上格式新增工作排程\n"
+            #     "---\n"
+            #     "付款方式:\n"
+            #     "   1: 轉帳\n"
+            #     "   2: 歐富寶\n"
+            #     "   3: Paypal\n"
+            #     "   0: 其他\n"
+            #     "---\n"
+            #     "訂單狀態:\n"
+            #     "   1: 等待中\n"
+            #     "   2: 進行中\n"
+            #     "   3: 已完成\n"
+            #     "   0: 取消\n"
+            #     "---\n"
+            #     "委託部分數字代表的意思如下\n"
+            #     "委託內容 數量 報價\n"
+            #     "報價可以為空或0, 則代表特例價格\n"
+            #     "```"
+            #     )
 
             try:
                 msg = await self.bot.wait_for(
