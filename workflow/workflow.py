@@ -305,25 +305,6 @@ class Workflow(commands.Cog):
 
         """
         if not content:
-            await ctx.send(
-                "```\n"
-                "委託人:\n"
-                "聯繫方式: \n"
-                "聯絡資訊: \n"
-                "付款方式: 1\n"
-                "預計開始日期: \n"
-                "訂單狀態: 1\n"
-                "---\n"
-                "客製貼圖: 0\n"
-                "訂閱徽章: 0\n"
-                "小奇點圖: 0\n"
-                "資訊大圖: 0\n"
-                "實況圖層: 0\n"
-                "其他委託: 0\n"
-                "---\n"
-                "備註:\n"
-                "```"
-            )
             embed=discord.Embed(description=(
                 "複製以上格式新增工作排程\n"
                 "---\n"
@@ -351,28 +332,27 @@ class Workflow(commands.Cog):
                 ),
                 inline=True,
             )
-            await ctx.send(embed=embed)
-            # await ctx.send(
-            #     "```\n"
-            #     "複製以上格式新增工作排程\n"
-            #     "---\n"
-            #     "付款方式:\n"
-            #     "   1: 轉帳\n"
-            #     "   2: 歐富寶\n"
-            #     "   3: Paypal\n"
-            #     "   0: 其他\n"
-            #     "---\n"
-            #     "訂單狀態:\n"
-            #     "   1: 等待中\n"
-            #     "   2: 進行中\n"
-            #     "   3: 已完成\n"
-            #     "   0: 取消\n"
-            #     "---\n"
-            #     "委託部分數字代表的意思如下\n"
-            #     "委託內容 數量 報價\n"
-            #     "報價可以為空或0, 則代表特例價格\n"
-            #     "```"
-            #     )
+            await ctx.send(content=(
+                "```\n"
+                "委託人:\n"
+                "聯繫方式: \n"
+                "聯絡資訊: \n"
+                "付款方式: 1\n"
+                "預計開始日期: \n"
+                "訂單狀態: 1\n"
+                "---\n"
+                "客製貼圖: 0\n"
+                "訂閱徽章: 0\n"
+                "小奇點圖: 0\n"
+                "資訊大圖: 0\n"
+                "實況圖層: 0\n"
+                "其他委託: 0\n"
+                "---\n"
+                "備註:\n"
+                "```"),
+                embed=embed,
+            )
+            # await ctx.send(embed=embed)
 
             try:
                 msg = await self.bot.wait_for(
