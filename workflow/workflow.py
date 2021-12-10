@@ -247,7 +247,7 @@ class Workflow(commands.Cog):
         -------
         discord.Embed
         """
-        if quote_id is None:
+        if quote_id is not None:
             quote: Quote = self.config.guild(ctx.guild).quotations.get(quote_id)
         embed = discord.Embed()
         embed.title = f"【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
