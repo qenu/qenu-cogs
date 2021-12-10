@@ -232,20 +232,27 @@ class Workflow(commands.Cog):
 
         return Quote(**quote_data)
 
-    def workflow_embed(self, ctx: commands.Context, quote_id: int) -> discord.Embed:
+    def workflow_embed(self, ctx: commands.Context, *, quote_id: Optional[int]=None, quote: Optional[Quote]=None) -> discord.Embed:
         """
         Creates the workflow embed
 
         Parameters
         ----------
         ctx : commands.Context
-        quote_id : int
+        quote_id : Optiona[int]
+            or
+        quote : Optional[Quote]
+
+        Returns
+        -------
+        discord.Embed
         """
-        quote: Quote = self.config.guild(ctx.guild).quotations.get(quote_id)
+        if quote_id is None:
+            quote: Quote = self.config.guild(ctx.guild).quotations.get(quote_id)
         embed = discord.Embed()
-        embed.title = f"{quote.customer_data.name}的委託 • {QUOTE_STATUS_TYPE[quote.status]}"
+        embed.title = f"【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
         embed.description = (
-            f"最後更新時間: <t:{quote.last_update}:R>\n"
+            f"最後更新時間: <t:{quote.last_update}:f>\n"
             f"預計開工日期: {quote.estimate_start_date}\n"
             f"聯絡方式: {quote.customer_data.contact}\n"
             f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
@@ -253,7 +260,7 @@ class Workflow(commands.Cog):
             "\n"
             "**委託內容:**\n"
         )
-        embed.set_footer(text=f"委託編號: #{quote_id} • 訊息編號: {quote.message_id}")
+        embed.set_footer(text=f"委託編號: #{quote_id} • 訊息ID: {quote.message_id}")
         for item in quote.commission_data.commission:
             if item._count != 0:
                 embed.add_field(
@@ -297,7 +304,7 @@ class Workflow(commands.Cog):
         except Exception as e:
             return await ctx.send(f"未知錯誤: {e.__class__.__name__}")
 
-        await message.edit(embed=self.workflow_embed(ctx, quote_id))
+        await message.edit(embed=self.workflow_embed(ctx, quote_id=quote_id))
 
     @commands.group(name="workflow", aliases=["wf", "排程"], invoke_without_command=True)
     async def workflow(self, ctx: commands.Context) -> None:
@@ -375,32 +382,9 @@ class Workflow(commands.Cog):
 
         message = await ctx.send("新增工作排程中...")
         quote.message_id = message.id
-        # ==================================================
-        embed = discord.Embed()
-        embed.title = f"{quote.customer_data.name}的委託 • {QUOTE_STATUS_TYPE[quote.status]}"
-        embed.description = (
-            f"最後更新時間: <t:{quote.last_update}:R>\n"
-            f"預計開工日期: {quote.estimate_start_date}\n"
-            f"聯絡方式: {quote.customer_data.contact}\n"
-            f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
-            f"委託時間: <t:{quote.timestamp}:D>\n"
-            "\n"
-            "**委託內容:**\n"
-        )
-        embed.set_footer(text=f"委託編號: #{'tester_id'} • 訊息編號: {quote.message_id}")
-        for item in quote.commission_data.commission:
-            if item._count != 0:
-                embed.add_field(
-                    name=f"{item._type}",
-                    value=(
-                        f"數量: {item._count}\n" f"進度: {COMM_STATUS_TYPE[item._status]}\n"
-                    ),
-                    inline=True,
-                )
 
-        # ==================================================
 
-        await message.edit(embed=embed)
+        await message.edit(embed=self.workflow_embed(ctx, quote=quote))
 
         await ctx.send(quote)
 
