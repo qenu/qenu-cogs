@@ -298,7 +298,7 @@ class Workflow(commands.Cog):
 
     @commands.max_concurrency(1, commands.BucketType.guild)
     @workflow.command(name="add", aliases=["a", "新增"])
-    async def workflow_add(self, ctx: commands.Context, *, content: str) -> None:
+    async def workflow_add(self, ctx: commands.Context, *, content: Optional[str]=None) -> None:
         """
         新增工作
 
