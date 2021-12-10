@@ -372,6 +372,7 @@ class Workflow(commands.Cog):
                 return await ctx.send("連線超時，請重新執行指令")
 
         try:
+            await ctx.send(content)
             quote = self.parse_content(content)
         except AttributeError as e:
             return await ctx.send(f"格式錯誤: {e}")
