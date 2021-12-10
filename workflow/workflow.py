@@ -12,11 +12,16 @@ from redbot.core.config import Config
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
+YELLOW = 0xffc629
+GREEN = 0x31f7c6
+BLUE = 0x3163f7
+GREY = 0x8c8c8c
+
 PAYMENT_TYPE: dict = {
     0: "其他",
     1: "轉帳",
     2: "歐富寶",
-    3: "paypal",
+    3: "Paypal",
 }
 
 COMM_STATUS_TYPE: dict = {
@@ -36,16 +41,18 @@ COMM_TYPE: dict = {
     "其他委託": 0,
 }
 
-COMMISSION_DATA: dict = {
-    "type": None,
-    "count": 0,
-}
-
 QUOTE_STATUS_TYPE: dict = {
     0: "取消",
     1: "等待中",
     2: "進行中",
     3: "已完成",
+}
+
+QUOTE_STATUS_COLOR: dict = {
+    0: GREY,
+    1: YELLOW,
+    2: GREEN,
+    3: BLUE,
 }
 
 
@@ -270,6 +277,7 @@ class Workflow(commands.Cog):
                     ),
                     inline=True,
                 )
+        embed.color = QUOTE_STATUS_COLOR[quote.status]
 
         return embed
 
@@ -304,7 +312,7 @@ class Workflow(commands.Cog):
         except Exception as e:
             return await ctx.send(f"未知錯誤: {e.__class__.__name__}")
 
-        await message.edit(embed=self.workflow_embed(ctx, quote_id=quote_id))
+        await message.edit(content=None, embed=self.workflow_embed(ctx, quote_id=quote_id))
 
     @commands.group(name="workflow", aliases=["wf", "排程"], invoke_without_command=True)
     async def workflow(self, ctx: commands.Context) -> None:
@@ -383,10 +391,9 @@ class Workflow(commands.Cog):
         message = await ctx.send("新增工作排程中...")
         quote.message_id = message.id
 
-
-        await message.edit(embed=self.workflow_embed(ctx, quote=quote))
-
-        await ctx.send(quote)
+        # ======================
+        await message.edit(content=None, embed=self.workflow_embed(ctx, quote=quote))
+        # ======================
 
         # async with self.config.guild(ctx.guild) as guild_data:
         #     next_id = len(guild_data["quotes"]) + 1
@@ -399,3 +406,6 @@ class Workflow(commands.Cog):
         #         guild_data["ongoing"].append(next_id)
         #     elif quote.status == 3:
         #         guild_data["completed"].append(next_id)
+        #     quote.id = next_id
+
+        # await self.update_workflow_message(ctx, quote_id=quote.id)
