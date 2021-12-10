@@ -331,7 +331,7 @@ class Workflow(commands.Cog):
         guild_data = await self.config.guild(ctx.guild).all()
         embed.description = (
             f"工作排程文字頻道: {ctx.guild.get_channel(guild_data['channel_id'])}\n"
-            f"最後更新時間: <t:{guild_data['last_update']}:R>\n"
+            f"最後更新時間: <t:{guild_data['timestamp']}:R>\n"
             "---\n"
             "**__委託__**\n"
             f"**總數量:** {len(guild_data['quotations'])}\n"
