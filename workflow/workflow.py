@@ -395,7 +395,7 @@ class Workflow(commands.Cog):
         for item in guild_data['quotations']:
             quote: Quote = guild_data['quotations'][item]
             return_content += quote.__repr__() + "\n"
-        await menu(ctx, [box(i, lang="yaml") for i in return_content.split("\n")], DEFAULT_CONTROLS)
+        await menu(ctx, [box(i, lang="yaml") for i in pagify(return_content)], DEFAULT_CONTROLS)
 
     @workflow_dev.command(name="reset")
     async def workflow_dev_reset(self, ctx: commands.Context) -> None:
