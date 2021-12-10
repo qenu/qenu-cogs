@@ -375,7 +375,7 @@ class Workflow(commands.Cog):
         await ctx.send(embed=embed, delete_after=60)
 
     @commands.is_owner()
-    @workflow.command(name="dev")
+    @workflow.group(name="dev")
     async def workflow_dev(self, ctx: commands.Context) -> None:
         pass
 
