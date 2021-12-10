@@ -389,7 +389,7 @@ class Workflow(commands.Cog):
         )
         embed.set_footer(text=f"最後更新時間: <t:{quote.last_update}:F>")
         for item in quote.commission_data.commission:
-            if item.count != 0:
+            if item._count != 0:
                 embed.add_field(
                     name=f"{item._type}",
                     value=(
