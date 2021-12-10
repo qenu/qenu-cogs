@@ -56,7 +56,7 @@ class Commission:
 
 @dataclass
 class CommissionData:
-    commission: list(Commission) = []
+    commission: list = []
 
     def total(self) -> str:
         return_str = ""
