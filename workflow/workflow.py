@@ -81,19 +81,19 @@ class Commission(dict):
         return json.dumps(self.__dict__)
 
 
-@dataclass
-class CommissionData:
-    commission: list[Commission] = field(default_factory=list)
+# @dataclass
+# class CommissionData:
+#     commission: list[Commission] = field(default_factory=list)
 
-    def total(self) -> str:
-        return_str = ""
-        for item in self.commission:
-            if item._count != 0:
-                return_str += f"{item._type} x{item._count} = {(item._count * item.per) or '報價'}\n"
-        return return_str
+#     def total(self) -> str:
+#         return_str = ""
+#         for item in self.commission:
+#             if item._count != 0:
+#                 return_str += f"{item._type} x{item._count} = {(item._count * item.per) or '報價'}\n"
+#         return return_str
 
-    def __dict__(self) -> dict:
-        return asdict(self)
+#     def __dict__(self) -> dict:
+#         return asdict(self)
 
 @dataclass
 class CustomerData:
@@ -110,7 +110,7 @@ class Quote:
     estimate_start_date: str = None  # 預計開始日期
     timestamp: int = None  # 時間戳記
     customer_data: CustomerData = None
-    commission_data: CommissionData = None
+    commission_data: list = None
     id: Optional[int] = None
     comment: str = ""  # 委託備註
 
@@ -139,7 +139,7 @@ class Quote:
         for item in data.get("commission_data"):
             print(item)
             c_data.append(Commission(**item))
-        self.commission_data = CommissionData(commission=c_data)
+        self.commission_data = c_data
         self.comment = data.get("comment")
 
 
@@ -282,7 +282,7 @@ class Workflow(commands.Cog):
         commission.append(convert_commission(layer))
         commission.append(convert_commission(other))
 
-        quote_data["commission_data"] = CommissionData(commission=commission)
+        quote_data["commission_data"] = commission
 
         quote_data["comment"] = COMMENT_REGEX.search(content).group().split(":")[1].strip()
 
