@@ -335,7 +335,7 @@ class Workflow(commands.Cog):
         """
         quotes_data: dict = await self.config.guild(ctx.guild).quotations()
         quote_data: dict = quotes_data.get(quote_id)
-        quote: Quote = Quote(**quote_data)
+        quote: Quote = Quote().from_dict(quote_data)
         channel_id: int = await self.config.guild(ctx.guild).channel()
         if not channel_id:
             await ctx.send("找不到工作排程文字頻道，請重新確認設定")
