@@ -83,21 +83,6 @@ class Commission(dict):
     def from_dict(self, d: dict) -> None:
         self.__init__(**d)
 
-
-# @dataclass
-# class CommissionData:
-#     commission: list[Commission] = field(default_factory=list)
-
-#     def total(self) -> str:
-#         return_str = ""
-#         for item in self.commission:
-#             if item._count != 0:
-#                 return_str += f"{item._type} x{item._count} = {(item._count * item.per) or '報價'}\n"
-#         return return_str
-
-#     def __dict__(self) -> dict:
-#         return asdict(self)
-
 @dataclass
 class CustomerData:
     name: str  # 委託人姓名
@@ -126,7 +111,7 @@ class Quote:
             "estimate_start_date": self.estimate_start_date,
             "timestamp": self.timestamp,
             "customer_data": self.customer_data.__dict__,
-            "commission_data": self.commission_data,
+            "commission_data": [dict(item) for item in self.commission_data],
             "comment": self.comment,
         }
 
@@ -518,8 +503,7 @@ class Workflow(commands.Cog):
             except asyncio.TimeoutError:
                 return await ctx.send("連線超時，請重新執行指令")
 
-        quote = self.parse_content(content)
-
+        quote: Quote = self.parse_content(content)
 
         message = await ctx.send("新增工作排程中...")
         quote.message_id = message.id
