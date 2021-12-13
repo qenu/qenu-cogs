@@ -132,7 +132,11 @@ class Quote:
         self.estimate_start_date = data.get("estimate_start_date")
         self.timestamp = data.get("timestamp")
         self.customer_data = CustomerData(**data.get("customer_data"))
-        self.commission_data = CommissionData(commission=[Commission(**item) for item in data.get("commission_data")])
+        c_data = []
+        for item in data.get("commission_data"):
+            print(item)
+            c_data.append(Commission(**item))
+        self.commission_data = CommissionData(commission=c_data)
         self.comment = data.get("comment")
 
 
