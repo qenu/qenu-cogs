@@ -353,7 +353,7 @@ class Workflow(commands.Cog):
         except discord.HTTPException:
             return await ctx.send("請求失敗，請稍後重試 discord.HTTPException")
         except Exception as e:
-            return await ctx.send(f"未知錯誤: {e.__class__.__name__}")
+            return await ctx.send(f"未知錯誤: {e}")
 
         await message.edit(content=None, embed=await self.workflow_embed(ctx, quote_id=quote_id))
 
