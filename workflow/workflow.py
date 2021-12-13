@@ -124,6 +124,7 @@ class Quote:
         }
 
     def from_dict(self, data: dict) -> None:
+        self.id = data["id"]
         self.message_id = data["message_id"]
         self.status = data["status"]
         self.last_update = data["last_update"]
