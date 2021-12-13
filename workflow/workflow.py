@@ -340,9 +340,9 @@ class Workflow(commands.Cog):
         quote: Quote = Quote().from_dict(quote_data)
         channel_id: int = await self.config.guild(ctx.guild).channel_id()
         if not channel_id:
-            await ctx.send("找不到工作排程文字頻道，請重新確認設定")
-            return
-        channel: discord.TextChannel = ctx.guild.get_channel(channel_id)
+            channel = ctx.channel
+        else:
+            channel: discord.TextChannel = ctx.guild.get_channel(channel_id)
 
         try:
             message = await channel.fetch_message(quote.message_id)
