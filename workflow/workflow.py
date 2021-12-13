@@ -2,7 +2,7 @@ import asyncio
 import re
 import time
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass
 from typing import Literal, Optional
 
 import discord
@@ -73,15 +73,19 @@ class Commission(dict):
         self._status = kwargs.get("_status", 0)
 
     @property
-    def __dict__(self) -> dict:
-        return asdict(self)
-
-    @property
     def json(self) -> str:
         return json.dumps(self.__dict__)
 
     def from_dict(self, d: dict) -> None:
         self.__init__(**d)
+
+    def to_dict(self) -> dict:
+        return {
+            "_type": self._type,
+            "_count": self._count,
+            "per": self.per,
+            "_status": self._status,
+        }
 
 @dataclass
 class CustomerData:
@@ -111,7 +115,7 @@ class Quote:
             "estimate_start_date": self.estimate_start_date,
             "timestamp": self.timestamp,
             "customer_data": self.customer_data.__dict__,
-            "commission_data": [dict(item) for item in self.commission_data],
+            "commission_data": [item.to_dict() for item in self.commission_data],
             "comment": self.comment,
         }
 
