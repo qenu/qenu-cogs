@@ -81,8 +81,7 @@ class Commission(dict):
         return json.dumps(self.__dict__)
 
     def from_dict(self, d: dict) -> None:
-        for k, v in d.items():
-            setattr(self, k, v)
+        self.__init__(**d)
 
 
 # @dataclass
