@@ -552,7 +552,7 @@ class Workflow(commands.Cog):
         私訊使用者工作排程詳細內容
 
         """
-        embed = self.workflow_embed(ctx, quote_id=quote_id, detail=True)
+        embed = await self.workflow_embed(ctx, quote_id=quote_id, detail=True)
         author = ctx.author
         await author.send(embed=embed)
         await ctx.tick()
