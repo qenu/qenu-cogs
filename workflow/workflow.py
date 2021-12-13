@@ -66,7 +66,7 @@ QUOTE_STATUS_COLOR: dict = {
 
 @dataclass
 class Commission(dict):
-    def __init__(self, kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         self._type = kwargs.get("_type")
         self._count = kwargs.get("_count")
         self.per = COMM_TYPE.get(kwargs.get("per"), 0)
@@ -138,7 +138,7 @@ class Quote:
         c_data = []
         for item in data.get("commission_data"):
             print(item)
-            c_data.append(Commission(**item))
+            c_data.append(Commission(item))
         self.commission_data = c_data
         self.comment = data.get("comment")
 
@@ -262,11 +262,9 @@ class Workflow(commands.Cog):
             else:
                 per = int(commission_list[1])
             return Commission(
-                {
-                "_type": commission_type,
-                "per": per,
-                "_count": int(commission_list[0]),
-                }
+                _type = commission_type,
+                per = per,
+                _count = int(commission_list[0]),
             )
 
         emote = EMOTE_REGEX.search(content).group()
