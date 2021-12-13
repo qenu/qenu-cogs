@@ -92,6 +92,9 @@ class CommissionData:
                 return_str += f"{item._type} x{item._count} = {(item._count * item.per) or '報價'}\n"
         return return_str
 
+    def __dict__(self) -> dict:
+        return asdict(self)
+
 @dataclass
 class CustomerData:
     name: str  # 委託人姓名
