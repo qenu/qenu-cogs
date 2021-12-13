@@ -123,7 +123,7 @@ class Quote:
             "estimate_start_date": self.estimate_start_date,
             "timestamp": self.timestamp,
             "customer_data": self.customer_data.__dict__,
-            "commission_data": self.commission_data.__dict__,
+            "commission_data": self.commission_data,
             "comment": self.comment,
         }
 
