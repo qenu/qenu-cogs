@@ -2,6 +2,7 @@ import asyncio
 import re
 import time
 from dataclasses import dataclass, field
+from dataclasses_json import dataclass_json
 from typing import Literal, Optional
 
 import discord
@@ -81,7 +82,6 @@ class CommissionData:
                 return_str += f"{item._type} x{item._count} = {(item._count * item.per) or '報價'}\n"
         return return_str
 
-
 @dataclass
 class CustomerData:
     name: str  # 委託人姓名
@@ -89,7 +89,7 @@ class CustomerData:
     payment_method: int  # 付款方式
     contact_info: str = ""  # 委託人聯絡資訊
 
-
+@dataclass_json
 @dataclass
 class Quote:
     message_id: int  # discord.Message.id
