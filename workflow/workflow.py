@@ -138,7 +138,7 @@ class Quote:
         c_data = []
         for item in data.get("commission_data"):
             print(item)
-            c_data.append(Commission(item))
+            c_data.append(item)
         self.commission_data = c_data
         self.comment = data.get("comment")
 
