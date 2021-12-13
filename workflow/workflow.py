@@ -532,7 +532,7 @@ class Workflow(commands.Cog):
 
         async with self.config.guild(ctx.guild).all() as guild_data:
             guild_data["quote_number"] += 1
-            next_id = guild_data["quote_number"]
+            next_id = str(guild_data["quote_number"])
             quote.id = next_id
             guild_data["quotations"][next_id] = quote.to_dict()
             if quote.status == 0:
@@ -556,6 +556,7 @@ class Workflow(commands.Cog):
         author = ctx.author
         await author.send(embed=embed)
         await ctx.tick()
+        await ctx.message.delete(delay=20)
 
 
 
