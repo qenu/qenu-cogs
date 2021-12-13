@@ -331,7 +331,7 @@ class Workflow(commands.Cog):
         quote_id : int
             The quotation id to update
         """
-        quote_data: dict = await self.config.guild(ctx.guild).quotations.get(quote_id)
+        quote_data: dict = await self.config.guild(ctx.guild).quotations().get(quote_id)
         quote: Quote = Quote(**quote_data)
         channel_id: int = await self.config.guild(ctx.guild).channel()
         if not channel_id:
