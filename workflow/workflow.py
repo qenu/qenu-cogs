@@ -100,7 +100,6 @@ class CustomerData:
 
 @dataclass
 class Quote:
-    id: int
     message_id: int  # discord.Message.id
     status: int  # 委託狀態
     last_update: int  # 最後更新時間
@@ -108,6 +107,7 @@ class Quote:
     timestamp: int  # 時間戳記
     customer_data: CustomerData
     commission_data: CommissionData
+    id: Optional[int] = None
     comment: str = ""  # 委託備註
 
     def to_dict(self) -> dict:
