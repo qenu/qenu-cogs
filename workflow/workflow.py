@@ -100,13 +100,13 @@ class CustomerData:
 
 @dataclass
 class Quote:
-    message_id: int  # discord.Message.id
-    status: int  # 委託狀態
-    last_update: int  # 最後更新時間
-    estimate_start_date: str  # 預計開始日期
-    timestamp: int  # 時間戳記
-    customer_data: CustomerData
-    commission_data: CommissionData
+    message_id: int = None  # discord.Message.id
+    status: int = None  # 委託狀態
+    last_update: int = None  # 最後更新時間
+    estimate_start_date: str = None  # 預計開始日期
+    timestamp: int = None  # 時間戳記
+    customer_data: CustomerData = None
+    commission_data: CommissionData = None
     id: Optional[int] = None
     comment: str = ""  # 委託備註
 
@@ -124,15 +124,16 @@ class Quote:
         }
 
     def from_dict(self, data: dict) -> None:
-        self.id = data["id"]
-        self.message_id = data["message_id"]
-        self.status = data["status"]
-        self.last_update = data["last_update"]
-        self.estimate_start_date = data["estimate_start_date"]
-        self.timestamp = data["timestamp"]
-        self.customer_data = CustomerData(**data["customer_data"])
-        self.commission_data = CommissionData(**data["commission_data"])
-        self.comment = data["comment"]
+        self.id = data.get("id")
+        self.message_id = data.get("message_id")
+        self.status = data.get("status")
+        self.last_update = data.get("last_update")
+        self.estimate_start_date = data.get("estimate_start_date")
+        self.timestamp = data.get("timestamp")
+        self.customer_data = CustomerData(**data.get("customer_data"))
+        self.commission_data = CommissionData(**data.get("commission_data"))
+        self.comment = data.get("comment")
+
 
 
 # regex compiles
