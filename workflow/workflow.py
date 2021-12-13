@@ -80,6 +80,10 @@ class Commission(dict):
     def json(self) -> str:
         return json.dumps(self.__dict__)
 
+    def from_dict(self, d: dict) -> None:
+        for k, v in d.items():
+            setattr(self, k, v)
+
 
 # @dataclass
 # class CommissionData:
@@ -321,6 +325,8 @@ class Workflow(commands.Cog):
         )
         embed.set_footer(text=f"委託編號: #{quote_id} • 訊息ID: {quote.message_id}")
         for item in quote.commission_data:
+            _ = Commission()
+            item = _.from_dict(item)
             if item._count != 0:
                 embed.add_field(
                     name=f"{item._type}",
