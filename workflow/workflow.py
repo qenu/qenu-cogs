@@ -63,6 +63,8 @@ QUOTE_STATUS_COLOR: dict = {
 }
 
 
+@dataclass_json
+@dataclass
 class Commission:
     def __init__(self, *, _type: str, _count: int = 0, per: int = 0) -> None:
         self._type = _type
@@ -71,6 +73,7 @@ class Commission:
         self._status = 0
 
 
+@dataclass_json
 @dataclass
 class CommissionData:
     commission: list[Commission] = field(default_factory=list)
@@ -82,6 +85,7 @@ class CommissionData:
                 return_str += f"{item._type} x{item._count} = {(item._count * item.per) or '報價'}\n"
         return return_str
 
+@dataclass_json
 @dataclass
 class CustomerData:
     name: str  # 委託人姓名
