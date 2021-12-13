@@ -70,6 +70,14 @@ class Commission:
         self.per = COMM_TYPE.get(_type, per)
         self._status = 0
 
+    def __dict__(self):
+        return {
+            "type": self._type,
+            "count": self._count,
+            "per": self.per,
+            "status": self._status,
+        }
+
 
 @dataclass
 class CommissionData:
