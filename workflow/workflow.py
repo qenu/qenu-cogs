@@ -6,6 +6,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Literal, Optional
 
 import discord
+from discord.utils import get
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
@@ -131,7 +132,7 @@ class Quote:
         self.estimate_start_date = data.get("estimate_start_date")
         self.timestamp = data.get("timestamp")
         self.customer_data = CustomerData(**data.get("customer_data"))
-        self.commission_data = CommissionData(**data.get("commission_data"))
+        self.commission_data = CommissionData(commission=[Commission(**item) for item in data.get("commission_data")])
         self.comment = data.get("comment")
 
 
