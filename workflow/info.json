@@ -8,9 +8,7 @@
         "qenu"
     ],
     "required_cogs": {},
-    "requirements": [
-        "dataclasses-json"
-    ],
+    "requirements": [],
     "tags": [
         "utilities"
     ],

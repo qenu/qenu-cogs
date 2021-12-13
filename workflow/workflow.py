@@ -2,7 +2,6 @@ import asyncio
 import re
 import time
 from dataclasses import dataclass, field
-from dataclasses_json import dataclass_json
 from typing import Literal, Optional
 
 import discord
@@ -63,7 +62,6 @@ QUOTE_STATUS_COLOR: dict = {
 }
 
 
-@dataclass_json
 @dataclass
 class Commission:
     def __init__(self, *, _type: str, _count: int = 0, per: int = 0) -> None:
@@ -73,7 +71,6 @@ class Commission:
         self._status = 0
 
 
-@dataclass_json
 @dataclass
 class CommissionData:
     commission: list[Commission] = field(default_factory=list)
@@ -85,7 +82,6 @@ class CommissionData:
                 return_str += f"{item._type} x{item._count} = {(item._count * item.per) or '報價'}\n"
         return return_str
 
-@dataclass_json
 @dataclass
 class CustomerData:
     name: str  # 委託人姓名
@@ -93,7 +89,6 @@ class CustomerData:
     payment_method: int  # 付款方式
     contact_info: str = ""  # 委託人聯絡資訊
 
-@dataclass_json
 @dataclass
 class Quote:
     message_id: int  # discord.Message.id
@@ -104,6 +99,28 @@ class Quote:
     customer_data: CustomerData
     commission_data: CommissionData
     comment: str = ""  # 委託備註
+
+    def to_dict(self) -> dict:
+        return {
+            "message_id": self.message_id,
+            "status": self.status,
+            "last_update": self.last_update,
+            "estimate_start_date": self.estimate_start_date,
+            "timestamp": self.timestamp,
+            "customer_data": self.customer_data.__dict__,
+            "commission_data": self.commission_data.__dict__,
+            "comment": self.comment,
+        }
+
+    def from_dict(self, data: dict) -> None:
+        self.message_id = data["message_id"]
+        self.status = data["status"]
+        self.last_update = data["last_update"]
+        self.estimate_start_date = data["estimate_start_date"]
+        self.timestamp = data["timestamp"]
+        self.customer_data = CustomerData(**data["customer_data"])
+        self.commission_data = CommissionData(**data["commission_data"])
+        self.comment = data["comment"]
 
 
 # regex compiles
@@ -305,7 +322,8 @@ class Workflow(commands.Cog):
         quote_id : int
             The quotation id to update
         """
-        quote: Quote = await self.config.guild(ctx.guild.id).quotations.get(quote_id)
+        quote_data: dict = await self.config.guild(ctx.guild.id).quotations.get(quote_id)
+        quote: Quote = Quote(**quote_data)
         channel_id: int = await self.config.guild(ctx.guild.id).channel()
         if not channel_id:
             await ctx.send("找不到工作排程文字頻道，請重新確認設定")
@@ -478,7 +496,8 @@ class Workflow(commands.Cog):
         async with self.config.guild(ctx.guild).all() as guild_data:
             guild_data["quote_number"] += 1
             next_id = guild_data["quote_number"]
-            guild_data["quotations"][next_id] = quote
+            quote.id = next_id
+            guild_data["quotations"][next_id] = quote.to_dict()
             if quote.status == 0:
                 guild_data["cancelled"].append(next_id)
             elif quote.status == 1:
@@ -487,7 +506,6 @@ class Workflow(commands.Cog):
                 guild_data["ongoing"].append(next_id)
             elif quote.status == 3:
                 guild_data["completed"].append(next_id)
-            quote.id = next_id
 
         await self.update_workflow_message(ctx, quote_id=quote.id)
 
