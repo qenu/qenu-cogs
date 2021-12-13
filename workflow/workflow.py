@@ -66,11 +66,11 @@ QUOTE_STATUS_COLOR: dict = {
 
 @dataclass
 class Commission(dict):
-    def __init__(self, *, _type: str, _count: int = 0, per: int = 0) -> None:
-        self._type = _type
-        self._count = _count
-        self.per = COMM_TYPE.get(_type, per)
-        self._status = 0
+    def __init__(self, *, kwargs) -> None:
+        self._type = kwargs.get("_type")
+        self._count = kwargs.get("_count")
+        self.per = COMM_TYPE.get(kwargs.get("per"), 0)
+        self._status = kwargs.get("_status")
 
     @property
     def __dict__(self) -> dict:
