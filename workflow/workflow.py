@@ -272,7 +272,7 @@ class Workflow(commands.Cog):
             f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
             f"委託時間: <t:{int(quote.timestamp)}:D>\n"
             "\n"
-            "**委託內容:**\n"
+            "**委託內容 ↓**\n"
         )
         embed.set_footer(text=f"委託編號: #{quote_id} • 訊息ID: {quote.message_id}")
         for item in quote.commission_data.commission:
@@ -490,10 +490,11 @@ class Workflow(commands.Cog):
     @workflow.command(name="info", aliases=["i", "查看"])
     async def workflow_info(self, ctx: commands.Context, quote_id: int) -> None:
         """
-        查看工作排程
+        私訊使用者工作排程詳細內容
 
         """
         embed = self.workflow_embed(ctx, quote_id)
+        author = ctx.author
     #     async with self.config.guild(ctx.guild).all() as guild_data:
 
     #     await self.update_workflow_message(ctx, quote_id=quote_id)
