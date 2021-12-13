@@ -280,7 +280,7 @@ class Workflow(commands.Cog):
 
         return Quote(**quote_data)
 
-    async def workflow_embed(self, ctx: commands.Context, *, quote_id: Optional[int]=None, quote: Optional[Quote]=None) -> discord.Embed:
+    async def workflow_embed(self, ctx: commands.Context, **kwargs) -> discord.Embed:
         """
         Creates the workflow embed
 
@@ -290,16 +290,23 @@ class Workflow(commands.Cog):
         quote_id : Optiona[int]
             or
         quote : Optional[Quote]
+        detail : Optional[bool]
 
         Returns
         -------
         discord.Embed
         """
-        if quote_id is not None:
+        quote: Quote = kwargs.get("quote", None)
+        if quote is None and (quote_id:=kwargs.get("quote_id")) is not None:
             quote: Quote = Quote()
             quotes_data: dict = await self.config.guild(ctx.guild).quotations()
-            quote_data: dict = quotes_data.get(str(quote_id))
+            quote_data: dict = quotes_data.get(str(quote_id), {})
             quote.from_dict(quote_data)
+        else:
+            return await ctx.send("Missing both quote and quote_id")
+
+        detail = kwargs.get("detail", False)
+
         embed = discord.Embed()
         embed.title = f"【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
         embed.description = (
@@ -308,6 +315,7 @@ class Workflow(commands.Cog):
             f"聯絡方式: {quote.customer_data.contact}\n"
             f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
             f"委託時間: <t:{int(quote.timestamp)}:D>\n"
+            f"備註: {quote.comment if detail else '...'}"
             "\n"
             "**委託內容 ↓**\n"
         )
@@ -316,13 +324,23 @@ class Workflow(commands.Cog):
             item = Commission()
             item.from_dict(_)
             if item._count != 0:
+                value_content = f"數量: {item._count}\n" f"進度: {COMM_STATUS_TYPE[item._status]}\n"
+                if detail:
+                    value_content += f"單價: {item.per}\n" if item.per != 0 else "單價: 報價\n"
+                    value_content += f"總價: {item.per * item._count}\n" if item.per != 0 else f"總價: 報價x{item._count}\n"
                 embed.add_field(
                     name=f"{item._type}",
-                    value=(
-                        f"數量: {item._count}\n" f"進度: {COMM_STATUS_TYPE[item._status]}\n"
-                    ),
+                    value=value_content,
                     inline=True,
                 )
+
+        if detail:
+            embed.add_field(
+                name="聯絡資訊",
+                value=quote.customer_data.contact_info,
+                inline=False,
+            )
+
         embed.color = QUOTE_STATUS_COLOR[quote.status]
 
         return embed
@@ -534,11 +552,11 @@ class Workflow(commands.Cog):
         私訊使用者工作排程詳細內容
 
         """
-        embed = self.workflow_embed(ctx, quote_id)
+        embed = self.workflow_embed(ctx, quote_id=quote_id, detail=True)
         author = ctx.author
-    #     async with self.config.guild(ctx.guild).all() as guild_data:
+        await author.send(embed=embed)
+        await ctx.tick()
 
-    #     await self.update_workflow_message(ctx, quote_id=quote_id)
 
 
     # @workflow.command(name="edit", aliases=["e", "編輯", "更新"])
