@@ -296,7 +296,10 @@ class Workflow(commands.Cog):
         discord.Embed
         """
         if quote_id is not None:
-            quote: Quote = await self.config.guild(ctx.guild).quotations.get(quote_id)
+            quote: Quote = Quote()
+            quotes_data: dict = await self.config.guild(ctx.guild).quotations()
+            quote_data: dict = quotes_data.get(str(quote_id))
+            quote.from_dict(quote_data)
         embed = discord.Embed()
         embed.title = f"【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
         embed.description = (
@@ -335,9 +338,9 @@ class Workflow(commands.Cog):
         quote_id : int
             The quotation id to update
         """
+        quote: Quote = Quote()
         quotes_data: dict = await self.config.guild(ctx.guild).quotations()
         quote_data: dict = quotes_data.get(str(quote_id))
-        quote: Quote = Quote()
         quote.from_dict(quote_data)
         channel_id: int = await self.config.guild(ctx.guild).channel_id()
         if not channel_id:
