@@ -100,6 +100,7 @@ class CustomerData:
 
 @dataclass
 class Quote:
+    id: int
     message_id: int  # discord.Message.id
     status: int  # 委託狀態
     last_update: int  # 最後更新時間
@@ -111,6 +112,7 @@ class Quote:
 
     def to_dict(self) -> dict:
         return {
+            "id": self.id,
             "message_id": self.message_id,
             "status": self.status,
             "last_update": self.last_update,
@@ -426,7 +428,7 @@ class Workflow(commands.Cog):
         )
         for item in guild_data['quotations']:
             quote: Quote = guild_data['quotations'][item]
-            return_content += quote.__repr__() + "\n"
+            return_content += f"{item} : " + quote.__repr__() + "\n"
         await menu(ctx, [box(i, lang="yaml") for i in pagify(return_content)], DEFAULT_CONTROLS)
 
     @workflow_dev.command(name="reset")
