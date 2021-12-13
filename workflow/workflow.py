@@ -320,7 +320,7 @@ class Workflow(commands.Cog):
             "**委託內容 ↓**\n"
         )
         embed.set_footer(text=f"委託編號: #{quote_id} • 訊息ID: {quote.message_id}")
-        for item in quote.commission_data.commission:
+        for item in quote.commission_data:
             if item._count != 0:
                 embed.add_field(
                     name=f"{item._type}",
