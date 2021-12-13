@@ -249,10 +249,10 @@ class Workflow(commands.Cog):
             """
             commission_type, commission_data = commission_str.split(":")
             commission_list = commission_data.split()
-            if len(commission_list) == 1:
-                per = COMM_TYPE[commission_type]
-            else:
+            per = COMM_TYPE.get(commission_type, 0)
+            if len(commission_list) == 2:
                 per = int(commission_list[1])
+
             return Commission(
                 _type = commission_type,
                 per = per,
