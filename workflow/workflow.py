@@ -400,7 +400,7 @@ class Workflow(commands.Cog):
         )
         pending_quotes = []
         for item in guild_data['pending']:
-            pending_quotes.append(f"#{item} {guild_data['quotations'][item].customer_data.name}\n")
+            pending_quotes.append(f"#{item} {guild_data['quotations'][item]['customer_data']['name']}\n")
 
         embed.add_field(
             name=QUOTE_STATUS_TYPE[1],
@@ -410,7 +410,7 @@ class Workflow(commands.Cog):
 
         ongoing_quotes = []
         for item in guild_data['ongoing']:
-            ongoing_quotes.append(f"#{item} {guild_data['quotations'][item].customer_data.name}\n")
+            ongoing_quotes.append(f"#{item} {guild_data['quotations'][item]['customer_data']['name']}\n")
 
         embed.add_field(
             name=QUOTE_STATUS_TYPE[2],
@@ -420,7 +420,7 @@ class Workflow(commands.Cog):
 
         finished_quotes = []
         for item in guild_data['finished']:
-            finished_quotes.append(f"#{item} {guild_data['quotations'][item].customer_data.name}\n")
+            finished_quotes.append(f"#{item} {guild_data['quotations'][item]['customer_data']['name']}\n")
         finished_quotes.reverse()
         if len(finished_quotes) > 10:
             finished_quotes = finished_quotes[:10]
