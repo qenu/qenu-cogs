@@ -1,7 +1,8 @@
 import asyncio
 import re
 import time
-from dataclasses import dataclass, field
+import json
+from dataclasses import dataclass, field, asdict
 from typing import Literal, Optional
 
 import discord
@@ -63,20 +64,20 @@ QUOTE_STATUS_COLOR: dict = {
 
 
 @dataclass
-class Commission:
+class Commission(dict):
     def __init__(self, *, _type: str, _count: int = 0, per: int = 0) -> None:
         self._type = _type
         self._count = _count
         self.per = COMM_TYPE.get(_type, per)
         self._status = 0
 
-    def __dict__(self):
-        return {
-            "type": self._type,
-            "count": self._count,
-            "per": self.per,
-            "status": self._status,
-        }
+    @property
+    def __dict__(self) -> dict:
+        return asdict(self)
+
+    @property
+    def json(self) -> str:
+        return json.dumps(self.__dict__)
 
 
 @dataclass
