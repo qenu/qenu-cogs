@@ -86,7 +86,12 @@ class Commission(dict):
 
     @classmethod
     def from_dict(cls, d: dict) -> "Commission":
-        return cls(**d)
+        return cls(
+            _type=d.get("_type"),
+            _count=d.get("_count", 0),
+            per=d.get("per", 0),
+            _status=d.get("_status", 0),
+        )
 
     def to_dict(self) -> dict:
         return {
