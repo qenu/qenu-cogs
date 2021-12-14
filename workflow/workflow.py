@@ -839,6 +839,8 @@ class Workflow(commands.Cog):
         """
         更新委託內容
         ---
+        下面有詳細解釋
+
         項目:
             委託人, 聯絡方式, 聯絡資訊, 開工日期, 備註
 
@@ -853,10 +855,10 @@ class Workflow(commands.Cog):
             進度: [1: 草稿, 2: 線搞, 3: 上色, 4: 完工, 0: 無]
 
         範例:
-            o.排程 更新 <#編號> 委託人 <委託人名稱>
-            o.排程 更新 <#編號> 付款方式 3
-            o.排程 更新 <#編號> 客製貼圖 進度 4
-            o.排程 更新 <#編號> 資訊大圖 價格 800
+            `o.排程 更新 <#編號> 委託人 <委託人名稱>`
+            `o.排程 更新 <#編號> 付款方式 3`
+            `o.排程 更新 <#編號> 客製貼圖 進度 4`
+            `o.排程 更新 <#編號> 資訊大圖 價格 800`
         """
         if edit_type not in ["委託人", "聯絡方式", "聯絡資訊", "開工日期", "備註", "付款方式", "進度", "客製貼圖", "訂閱徽章", "小奇點圖", "資訊大圖", "實況圖層", "其他委託"]:
             return await ctx.send(f"{edit_type}不是正確的項目，請輸入正確的項目名稱")
@@ -894,6 +896,8 @@ class Workflow(commands.Cog):
                 quote.customer_data.payment_method = int(content)
             elif edit_type == "進度":
                 quote.status = int(content)
+
+            quote.last_update = time.time()
 
             quotations[str(quote_id)] = quote.to_dict()
 
