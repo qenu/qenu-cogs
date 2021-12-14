@@ -34,7 +34,7 @@ PAYMENT_TYPE: dict = {
 }
 
 COMM_STATUS_TYPE: dict = {
-    0: "無",
+    0: "(無)",
     1: "草稿",
     2: "線搞",
     3: "上色",
@@ -473,8 +473,8 @@ class Workflow(commands.Cog):
 
         embed.add_field(
             name=QUOTE_STATUS_TYPE[1],
-            value="".join(pending_quotes) or "無項目",
-            inline=False,
+            value="".join(pending_quotes) or "(無)",
+            inline=True,
         )
 
         ongoing_quotes = []
@@ -485,8 +485,8 @@ class Workflow(commands.Cog):
 
         embed.add_field(
             name=QUOTE_STATUS_TYPE[2],
-            value="".join(ongoing_quotes) or "無項目",
-            inline=False,
+            value="".join(ongoing_quotes) or "(無)",
+            inline=True,
         )
 
         finished_quotes = []
@@ -500,8 +500,8 @@ class Workflow(commands.Cog):
             finished_quotes.append(f"...以及另 {len(finished_quotes)-10}個\n")
         embed.add_field(
             name=QUOTE_STATUS_TYPE[3],
-            value="".join(finished_quotes) or "無項目",
-            inline=False,
+            value="".join(finished_quotes) or "(無)",
+            inline=True,
         )
         embed.color = ctx.author.color
 
