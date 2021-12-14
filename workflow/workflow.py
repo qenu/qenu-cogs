@@ -897,7 +897,7 @@ class Workflow(commands.Cog):
             elif edit_type == "進度":
                 quote.status = int(content)
 
-            quote.last_update = time.time()
+            quote.last_update = int(time.time())
 
             quotations[str(quote_id)] = quote.to_dict()
 
