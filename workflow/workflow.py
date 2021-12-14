@@ -575,7 +575,6 @@ class Workflow(commands.Cog):
         embed = discord.Embed()
         embed.title = "排程指令列表"
         embed.description = (
-            "```yaml\n"
             "**顯示排程表**\n"
             f"`{ctx.clean_prefix}排程`\n"
             "顯示目前的工作排程數量\n\n"
@@ -589,7 +588,6 @@ class Workflow(commands.Cog):
             "=====\n"
             "**快速指令**\n"
             f"`{ctx.clean_prefix}委託`\n"
-            "```"
         )
         embed.color = ctx.me.color
         await ctx.message.delete()
