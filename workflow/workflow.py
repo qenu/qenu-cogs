@@ -1,4 +1,3 @@
-from _typeshed import NoneType
 import asyncio
 import re
 import time
