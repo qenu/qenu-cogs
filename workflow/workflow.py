@@ -1,7 +1,7 @@
 import asyncio
+import json
 import re
 import time
-import json
 from dataclasses import dataclass
 from typing import Literal, Optional
 
@@ -14,15 +14,17 @@ from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
-YELLOW = 0xffc629
-GREEN = 0x31f7c6
-BLUE = 0x3163f7
-GREY = 0x8c8c8c
+YELLOW = 0xFFC629
+GREEN = 0x31F7C6
+BLUE = 0x3163F7
+GREY = 0x8C8C8C
 
 PRIVILEGED_USERS = [393050606828257287, 164900704526401545]
 
+
 def privileged(ctx):
     return ctx.author.id in PRIVILEGED_USERS
+
 
 PAYMENT_TYPE: dict = {
     0: "其他",
@@ -74,6 +76,7 @@ class Commission(dict):
         per (int): commission price per unit in COMM_TYPE[_type]
         _status (int): commission status in COMM_STATUS_TYPE key
     """
+
     def __init__(self, **kwargs) -> None:
         self._type: str = kwargs.get("_type")
         self._count: int = kwargs.get("_count", 0)
@@ -101,6 +104,7 @@ class Commission(dict):
             "_status": self._status,
         }
 
+
 @dataclass
 class CustomerData:
     """
@@ -112,10 +116,12 @@ class CustomerData:
         contact_info (str): customer's contact info
         payment_type (int): customer's payment type in PAYMENT_TYPE key
     """
+
     name: str  # 委託人姓名
     contact: str  # 聯絡方式
     payment_method: int  # 付款方式
     contact_info: str = ""  # 委託人聯絡資訊
+
 
 @dataclass
 class Quote:
@@ -133,6 +139,7 @@ class Quote:
         commission_data (list): list of Commission
         comment (str): additional comments
     """
+
     status: int  # 委託狀態
     last_update: int  # 最後更新時間
     estimate_start_date: str  # 預計開始日期
@@ -166,7 +173,9 @@ class Quote:
             estimate_start_date=data.get("estimate_start_date"),
             timestamp=data.get("timestamp"),
             customer_data=CustomerData(**data.get("customer_data")),
-            commission_data=[Commission(**item) for item in data.get("commission_data")],
+            commission_data=[
+                Commission(**item) for item in data.get("commission_data")
+            ],
             comment=data.get("comment"),
         )
 
@@ -255,12 +264,18 @@ class Workflow(commands.Cog):
         )
         quote_data["timestamp"] = int(time.time())
 
-        customer_name = CUSTOMER_NAME_REGEX.search(content).group().split(":")[1].strip()
-        customer_contact = CUSTOMER_CONTACT_REGEX.search(content).group().split(":")[1].strip()
+        customer_name = (
+            CUSTOMER_NAME_REGEX.search(content).group().split(":")[1].strip()
+        )
+        customer_contact = (
+            CUSTOMER_CONTACT_REGEX.search(content).group().split(":")[1].strip()
+        )
         customer_contact_info = (
             CUSTOMER_CONTACT_INFO_REGEX.search(content).group().split(":")[1].strip()
         )
-        customer_payment = CUSTOMER_PAYMENT_REGEX.search(content).group().split(":")[1].strip()
+        customer_payment = (
+            CUSTOMER_PAYMENT_REGEX.search(content).group().split(":")[1].strip()
+        )
         quote_data["customer_data"] = CustomerData(
             name=customer_name,
             contact=customer_contact,
@@ -289,9 +304,9 @@ class Workflow(commands.Cog):
                 per = int(commission_list[1])
 
             return Commission(
-                _type = commission_type,
-                per = per,
-                _count = int(commission_list[0]),
+                _type=commission_type,
+                per=per,
+                _count=int(commission_list[0]),
             )
 
         emote = EMOTE_REGEX.search(content).group()
@@ -311,7 +326,9 @@ class Workflow(commands.Cog):
 
         quote_data["commission_data"] = commission
 
-        quote_data["comment"] = COMMENT_REGEX.search(content).group().split(":")[1].strip()
+        quote_data["comment"] = (
+            COMMENT_REGEX.search(content).group().split(":")[1].strip()
+        )
 
         return Quote(**quote_data)
 
@@ -332,7 +349,7 @@ class Workflow(commands.Cog):
         discord.Embed
         """
         quote: Quote = kwargs.get("quote", None)
-        if quote is None and (quote_id:=kwargs.get("quote_id")) is not None:
+        if quote is None and (quote_id := kwargs.get("quote_id")) is not None:
             quotes_data: dict = await self.config.guild(ctx.guild).quotations()
             quote_data: dict = quotes_data.get(str(quote_id), {})
             quote = Quote.from_dict(quote_data)
@@ -342,7 +359,9 @@ class Workflow(commands.Cog):
         detail = kwargs.get("detail", False)
 
         embed = discord.Embed()
-        embed.title = f"【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
+        embed.title = (
+            f"【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
+        )
         embed.description = (
             f"最後更新時間: <t:{quote.last_update}:f>\n"
             f"預計開工日期: {quote.estimate_start_date}\n"
@@ -357,10 +376,18 @@ class Workflow(commands.Cog):
         total_commission = 0
         for item in quote.commission_data:
             if item._count != 0:
-                value_content = f"數量: {item._count}\n" f"進度: {COMM_STATUS_TYPE[item._status]}\n"
+                value_content = (
+                    f"數量: {item._count}\n" f"進度: {COMM_STATUS_TYPE[item._status]}\n"
+                )
                 if detail:
-                    value_content += f"單價: {item.per}\n" if item.per != 0 else "單價: 報價\n"
-                    value_content += f"總價: {item.per * item._count}\n" if item.per != 0 else f"總價: 報價x{item._count}\n"
+                    value_content += (
+                        f"單價: {item.per}\n" if item.per != 0 else "單價: 報價\n"
+                    )
+                    value_content += (
+                        f"總價: {item.per * item._count}\n"
+                        if item.per != 0
+                        else f"總價: 報價x{item._count}\n"
+                    )
                     total_commission += item.per * item._count
                 embed.add_field(
                     name=f"{item._type}",
@@ -417,7 +444,9 @@ class Workflow(commands.Cog):
         except Exception as e:
             return await ctx.send(f"未知錯誤: {e}")
 
-        await message.edit(content=None, embed=await self.workflow_embed(ctx, quote_id=quote_id))
+        await message.edit(
+            content=None, embed=await self.workflow_embed(ctx, quote_id=quote_id)
+        )
 
     @commands.check(privileged)
     @commands.group(name="workflow", aliases=["wf", "排程"], invoke_without_command=True)
@@ -437,35 +466,41 @@ class Workflow(commands.Cog):
             f"**已完成:** {len(guild_data['finished'])}\n"
         )
         pending_quotes = []
-        for item in guild_data['pending']:
-            pending_quotes.append(f"#{item} {guild_data['quotations'][item]['customer_data']['name']}\n")
+        for item in guild_data["pending"]:
+            pending_quotes.append(
+                f"#{item} {guild_data['quotations'][item]['customer_data']['name']}\n"
+            )
 
         embed.add_field(
             name=QUOTE_STATUS_TYPE[1],
-            value=''.join(pending_quotes) or '無項目',
+            value="".join(pending_quotes) or "無項目",
             inline=False,
         )
 
         ongoing_quotes = []
-        for item in guild_data['ongoing']:
-            ongoing_quotes.append(f"#{item} {guild_data['quotations'][item]['customer_data']['name']}\n")
+        for item in guild_data["ongoing"]:
+            ongoing_quotes.append(
+                f"#{item} {guild_data['quotations'][item]['customer_data']['name']}\n"
+            )
 
         embed.add_field(
             name=QUOTE_STATUS_TYPE[2],
-            value=''.join(ongoing_quotes) or '無項目',
+            value="".join(ongoing_quotes) or "無項目",
             inline=False,
         )
 
         finished_quotes = []
-        for item in guild_data['finished']:
-            finished_quotes.append(f"#{item} {guild_data['quotations'][item]['customer_data']['name']}\n")
+        for item in guild_data["finished"]:
+            finished_quotes.append(
+                f"#{item} {guild_data['quotations'][item]['customer_data']['name']}\n"
+            )
         finished_quotes.reverse()
         if len(finished_quotes) > 10:
             finished_quotes = finished_quotes[:10]
             finished_quotes.append(f"...以及另 {len(finished_quotes)-10}個\n")
         embed.add_field(
             name=QUOTE_STATUS_TYPE[3],
-            value=''.join(finished_quotes) or '無項目',
+            value="".join(finished_quotes) or "無項目",
             inline=False,
         )
         embed.color = ctx.author.color
@@ -490,10 +525,12 @@ class Workflow(commands.Cog):
             f"cancelled: {guild_data['cancelled']}\n"
             f"quotations: \n"
         )
-        for item in guild_data['quotations']:
-            quote: Quote = guild_data['quotations'][item]
+        for item in guild_data["quotations"]:
+            quote: Quote = guild_data["quotations"][item]
             return_content += f"{item} : " + quote.__repr__() + "\n"
-        await menu(ctx, [box(i, lang="yaml") for i in pagify(return_content)], DEFAULT_CONTROLS)
+        await menu(
+            ctx, [box(i, lang="yaml") for i in pagify(return_content)], DEFAULT_CONTROLS
+        )
 
     @workflow_dev.command(name="reset")
     async def workflow_dev_reset(self, ctx: commands.Context) -> None:
@@ -506,7 +543,7 @@ class Workflow(commands.Cog):
         self, ctx: commands.Context, *, content: Optional[str] = None
     ) -> None:
         """
-        新增工作
+        新增排程工作
 
         """
         if not content:
@@ -530,7 +567,7 @@ class Workflow(commands.Cog):
                 value=("   1: 等待中\n" "   2: 進行中\n" "   3: 已完成\n" "   0: 取消\n"),
                 inline=True,
             )
-            await ctx.send(
+            fmt_message = await ctx.send(
                 content=(
                     "```\n"
                     "委託人:\n"
@@ -551,7 +588,6 @@ class Workflow(commands.Cog):
                     "```"
                 ),
                 embed=e,
-                delete_after=120,
             )
 
             try:
@@ -567,7 +603,8 @@ class Workflow(commands.Cog):
         try:
             quote: Quote = self.parse_content(content)
         except AttributeError as e:
-            return await ctx.send(f"輸入格式錯誤, {e}")
+            await fmt_message.delete()
+            return await ctx.send(f"```輸入格式錯誤!```\n`{e}`", delete_after=15)
 
         message = await ctx.send("新增工作排程中...")
         quote.message_id = message.id
@@ -587,6 +624,7 @@ class Workflow(commands.Cog):
                 guild_data["completed"].append(next_id)
 
         await self.update_workflow_message(ctx, quote_id=quote.id)
+        await fmt_message.delete()
 
     @workflow.command(name="info", aliases=["i", "查看"])
     async def workflow_info(self, ctx: commands.Context, quote_id: int) -> None:
@@ -598,45 +636,14 @@ class Workflow(commands.Cog):
         author = ctx.author
         await author.send(embed=embed)
         await ctx.tick()
-        await ctx.message.delete(delay=20)
+        await ctx.message.delete(delay=10)
 
+    @workflow.command(name="edit", aliases=["e", "編輯", "更新"])
+    async def workflow_edit(
+        self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str
+    ) -> None:
+        """
+        編輯工作排程
 
-
-    # @workflow.command(name="edit", aliases=["e", "編輯", "更新"])
-    # async def workflow_edit(self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str) -> None:
-    #     """
-    #     編輯工作排程
-
-    #     """
-    #     if edit_type not in ["status", "content", "price"]:
-    #         return await ctx.send("請輸入正確的編輯類型")
-    #     if edit_type == "status":
-    #         if content not in ["0", "1", "2", "3"]:
-    #             return await ctx.send("請輸入正確的狀態")
-    #         content = int(content)
-    #     elif edit_type == "price":
-    #         if content == "":
-    #             content = 0
-    #         else:
-    #             try:
-    #                 content = int(content)
-    #             except ValueError:
-    #                 return await ctx.send("請輸入正確的價格")
-    #     else:
-    #         content = content.replace("\n", "")
-
-    #     async with self.config.guild(ctx.guild).all() as guild_data:
-    #         if quote_id not in guild_data["quotations"]:
-    #             return await ctx.send("找不到該工作排程")
-    #         quote = guild_data["quotations"][quote_id]
-    #         if edit_type == "status":
-    #             if quote.status == content:
-    #                 return await ctx.send("該工作排程狀態已經是該狀態")
-    #             if quote.status == 0:
-    #                 guild_data["cancelled"].remove(quote_id)
-    #             elif quote.status == 1:
-    #                 guild_data["pending"].remove(quote_id)
-    #             elif quote.status == 2:
-    #                 guild_data["ongoing"].remove(quote_id)
-    #             elif quote.status == 3:
-    #                 guild_data["completed"].remove(quote_id)
+        """
+        pass
