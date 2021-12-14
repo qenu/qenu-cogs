@@ -629,7 +629,7 @@ class Workflow(commands.Cog):
     @workflow.command(name="info", aliases=["i", "查看"])
     async def workflow_info(self, ctx: commands.Context, quote_id: int) -> None:
         """
-        私訊使用者工作排程詳細內容
+        取得排程詳細內容
 
         """
         embed = await self.workflow_embed(ctx, quote_id=quote_id, detail=True)
@@ -642,21 +642,18 @@ class Workflow(commands.Cog):
     async def workflow_editinfo(
         self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str
     ) -> None:
-        f"""
-            ```yaml
-            編輯委託資料
-            ---
-            項目:
-                名稱, 聯絡方式, 聯絡資訊, 付款方式
-            付款方式:
-                1: 轉帳
-                2: 歐富寶
-                3: Paypal
-                0: 其他
+        """
+        編輯委託資料
+        ---
+        項目:
+            名稱, 聯絡方式, 聯絡資訊, 付款方式
+        付款方式:
+            1: 轉帳
+            2: 歐富寶
+            3: Paypal
+            0: 其他
 
-            使用方式: {ctx.clean_prefix}排程 <項目> <內容>
-            ※變更付款方式請用代號
-            ```
+        ※變更付款方式請用代號
         """
         if edit_type not in ["名稱", "聯絡方式", "聯絡資訊", "付款方式"]:
             return await ctx.send(f"{edit_type}不是正確的項目，請輸入正確的項目名稱")
@@ -689,21 +686,18 @@ class Workflow(commands.Cog):
     async def workflow_editstatus(
         self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str
     ) -> None:
-        f"""
-            ```yaml
-            編輯委託狀態
-            ---
-            項目:
-                進度, 開工日期, 備註
-            進度:
-                1: 等待中
-                2: 進行中
-                3: 已完成
-                0: 取消
+        """
+        編輯委託狀態
+        ---
+        項目:
+            進度, 開工日期, 備註
+        進度:
+            1: 等待中
+            2: 進行中
+            3: 已完成
+            0: 取消
 
-            使用方式: {ctx.clean_prefix}排程 <項目> <內容>
-            ※變更進度請用代號
-            ```
+        ※變更進度請用代號
         """
         if edit_type not in ["進度", "開工日期", "備註"]:
             return await ctx.send(f"{edit_type}不是正確的項目，請輸入正確的項目名稱")
@@ -735,22 +729,18 @@ class Workflow(commands.Cog):
         self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str
     ) -> None:
         """
+        編輯委託內容
+        ---
+        項目:
+            進度, 數量, 價格
+        進度:
+            1: 草稿
+            2: 線搞
+            3: 上色
+            4: 完工
+            0: 無
 
-        ```yaml
-            編輯委託內容
-            ---
-            項目:
-                進度, 數量, 價格
-            進度:
-                1: 草稿
-                2: 線搞
-                3: 上色
-                4: 完工
-                0: 無
-
-            使用方式: {ctx.clean_prefix}排程 <項目> <內容>
-            ※變更進度請用代號
-            ```
+        ※變更進度請用代號
         """
         if edit_type not in ["進度", "數量", "價格"]:
             return await ctx.send(f"{edit_type}不是正確的項目，請輸入正確的項目名稱")
