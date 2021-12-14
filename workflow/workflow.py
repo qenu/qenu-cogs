@@ -864,19 +864,19 @@ class Workflow(commands.Cog):
                         return await ctx.send(f"進度代號錯誤，請輸入正確的代號")
                     quote.commission_data[COMM_DATA_LIST[edit_type]]._status = int(val)
             elif edit_type == "委託人":
-                quote.commission_data["委託人"] = content
+                quote.customer_data.name = content
             elif edit_type == "聯絡方式":
-                quote.commission_data["聯絡方式"] = content
+                quote.customer_data.contact = content
             elif edit_type == "聯絡資訊":
-                quote.commission_data["聯絡資訊"] = content
+                quote.customer_data.contact_info = content
             elif edit_type == "開工日期":
-                quote.commission_data["開工日期"] = content
+                quote.estimate_start_date = content
             elif edit_type == "備註":
-                quote.commission_data["備註"] = content
+                quote.comment = content
             elif edit_type == "付款方式":
-                quote.commission_data["付款方式"] = int(content)
+                quote.customer_data.payment_method = int(content)
             elif edit_type == "進度":
-                quote.commission_data["進度"] = int(content)
+                quote.status = int(content)
 
         await self.update_workflow_message(ctx, quote_id=quote.id)
         await ctx.tick()
