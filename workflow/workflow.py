@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from typing import Literal, Optional
 
 import discord
-from discord.utils import get
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
@@ -66,18 +65,28 @@ QUOTE_STATUS_COLOR: dict = {
 
 @dataclass
 class Commission(dict):
+    """
+    Commission store each individual type of commission
+
+    Parameters:
+        _type (str): commission type in COMM_TYPE key
+        _count (int): number of commission
+        per (int): commission price per unit in COMM_TYPE[_type]
+        _status (int): commission status in COMM_STATUS_TYPE key
+    """
     def __init__(self, **kwargs) -> None:
-        self._type = kwargs.get("_type")
-        self._count = kwargs.get("_count", 0)
-        self.per = kwargs.get("per", 0)
-        self._status = kwargs.get("_status", 0)
+        self._type: str = kwargs.get("_type")
+        self._count: int = kwargs.get("_count", 0)
+        self.per: int = kwargs.get("per", 0)
+        self._status: int = kwargs.get("_status", 0)
 
     @property
     def json(self) -> str:
         return json.dumps(self.__dict__)
 
-    def from_dict(self, d: dict) -> None:
-        self.__init__(**d)
+    @classmethod
+    def from_dict(cls, d: dict) -> "Commission":
+        return cls(**d)
 
     def to_dict(self) -> dict:
         return {
@@ -89,6 +98,15 @@ class Commission(dict):
 
 @dataclass
 class CustomerData:
+    """
+    Customer's data
+
+    Parameters:
+        name (str): customer's name
+        contact (str): customer's way of contact
+        contact_info (str): customer's contact info
+        payment_type (int): customer's payment type in PAYMENT_TYPE key
+    """
     name: str  # 委託人姓名
     contact: str  # 聯絡方式
     payment_method: int  # 付款方式
@@ -96,15 +114,29 @@ class CustomerData:
 
 @dataclass
 class Quote:
-    message_id: int = None  # discord.Message.id
-    status: int = None  # 委託狀態
-    last_update: int = None  # 最後更新時間
-    estimate_start_date: str = None  # 預計開始日期
-    timestamp: int = None  # 時間戳記
-    customer_data: CustomerData = None
-    commission_data: list = None
-    id: Optional[int] = None
+    """
+    Stores an individual quotation
+
+    Parameters:
+        id (int): quotation id
+        message_id (int): quotation message id
+        status (int): quotation status in QUOTE_STATUS_TYPE key
+        last_update (int): last update timestamp
+        estimate_start_date (str): estimated start date
+        timestamp (int): quotation creation timestamp
+        customer_data (CustomerData): customer's info
+        commission_data (list): list of Commission
+        comment (str): additional comments
+    """
+    status: int  # 委託狀態
+    last_update: int  # 最後更新時間
+    estimate_start_date: str  # 預計開始日期
+    timestamp: int  # 時間戳記
+    customer_data: CustomerData
+    commission_data: list
     comment: str = ""  # 委託備註
+    id: Optional[int] = None
+    message_id: int = None  # discord.Message.id
 
     def to_dict(self) -> dict:
         return {
@@ -119,21 +151,19 @@ class Quote:
             "comment": self.comment,
         }
 
-    def from_dict(self, data: dict) -> None:
-        self.id = data.get("id")
-        self.message_id = data.get("message_id")
-        self.status = data.get("status")
-        self.last_update = data.get("last_update")
-        self.estimate_start_date = data.get("estimate_start_date")
-        self.timestamp = data.get("timestamp")
-        self.customer_data = CustomerData(**data.get("customer_data"))
-        c_data = []
-        for item in data.get("commission_data"):
-            print(item)
-            c_data.append(item)
-        self.commission_data = c_data
-        self.comment = data.get("comment")
-
+    @classmethod
+    def from_dict(cls, data: dict) -> "Quote":
+        return cls(
+            id=data.get("id"),
+            message_id=data.get("message_id"),
+            status=data.get("status"),
+            last_update=data.get("last_update"),
+            estimate_start_date=data.get("estimate_start_date"),
+            timestamp=data.get("timestamp"),
+            customer_data=CustomerData(**data.get("customer_data")),
+            commission_data=[Commission(**item) for item in data.get("commission_data")],
+            comment=data.get("comment"),
+        )
 
 
 # regex compiles
@@ -298,10 +328,9 @@ class Workflow(commands.Cog):
         """
         quote: Quote = kwargs.get("quote", None)
         if quote is None and (quote_id:=kwargs.get("quote_id")) is not None:
-            quote: Quote = Quote()
             quotes_data: dict = await self.config.guild(ctx.guild).quotations()
             quote_data: dict = quotes_data.get(str(quote_id), {})
-            quote.from_dict(quote_data)
+            quote = Quote.from_dict(quote_data)
         else:
             return await ctx.send("Missing both quote and quote_id")
 
@@ -321,8 +350,7 @@ class Workflow(commands.Cog):
         )
         embed.set_footer(text=f"委託編號: #{quote_id} • 訊息ID: {quote.message_id}")
         for _ in quote.commission_data:
-            item = Commission()
-            item.from_dict(_)
+            item = Commission.from_dict(_)
             if item._count != 0:
                 value_content = f"數量: {item._count}\n" f"進度: {COMM_STATUS_TYPE[item._status]}\n"
                 if detail:
@@ -358,10 +386,9 @@ class Workflow(commands.Cog):
         quote_id : int
             The quotation id to update
         """
-        quote: Quote = Quote()
         quotes_data: dict = await self.config.guild(ctx.guild).quotations()
         quote_data: dict = quotes_data.get(str(quote_id))
-        quote.from_dict(quote_data)
+        quote = Quote.from_dict(quote_data)
         channel_id: int = await self.config.guild(ctx.guild).channel_id()
         if not channel_id:
             channel = ctx.channel
