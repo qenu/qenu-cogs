@@ -1,3 +1,4 @@
+from _typeshed import NoneType
 import asyncio
 import re
 import time
@@ -519,6 +520,7 @@ class Workflow(commands.Cog):
                     "報價可以為空或0, 則代表特例價格\n"
                 )
             )
+            e.color = ctx.me.color
             e.add_field(
                 name="付款方式",
                 value=("   1: 轉帳\n" "   2: 歐富寶\n" "   3: Paypal\n" "   0: 其他\n"),
@@ -563,7 +565,10 @@ class Workflow(commands.Cog):
             except asyncio.TimeoutError:
                 return await ctx.send("連線超時，請重新執行指令")
 
-        quote: Quote = self.parse_content(content)
+        try:
+            quote: Quote = self.parse_content(content)
+        except AttributeError as e:
+            return await ctx.send(f"輸入格式錯誤, {e}")
 
         message = await ctx.send("新增工作排程中...")
         quote.message_id = message.id
