@@ -730,7 +730,6 @@ class Workflow(commands.Cog):
         await ctx.tick()
         await ctx.message.delete(delay=10)
 
-
     @workflow.command(name="editquote", aliases=["eq", "編輯委託", "更新委託"])
     async def workflow_editquote(
         self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str
