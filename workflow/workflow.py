@@ -354,13 +354,14 @@ class Workflow(commands.Cog):
             "**委託內容 ↓**\n"
         )
         embed.set_footer(text=f"委託編號: #{quote_id} • 訊息ID: {quote.message_id}")
+        total_commission = 0
         for item in quote.commission_data:
-            # item = Commission.from_dict(_)
             if item._count != 0:
                 value_content = f"數量: {item._count}\n" f"進度: {COMM_STATUS_TYPE[item._status]}\n"
                 if detail:
                     value_content += f"單價: {item.per}\n" if item.per != 0 else "單價: 報價\n"
                     value_content += f"總價: {item.per * item._count}\n" if item.per != 0 else f"總價: 報價x{item._count}\n"
+                    total_commission += item.per * item._count
                 embed.add_field(
                     name=f"{item._type}",
                     value=value_content,
@@ -368,6 +369,11 @@ class Workflow(commands.Cog):
                 )
 
         if detail:
+            embed.add_field(
+                name="總價(不包含報價)",
+                value=f"{total_commission}",
+                inline=False,
+            )
             embed.add_field(
                 name="聯絡資訊",
                 value=quote.customer_data.contact_info,
