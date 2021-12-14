@@ -641,7 +641,13 @@ class Workflow(commands.Cog):
             await fmt_message.delete()
             return await ctx.send(f"```輸入格式錯誤!```\n`{e}`", delete_after=15)
 
-        message = await ctx.send("新增工作排程中...")
+        channel_id = await self.config.guild(ctx.guild).channel_id()
+        if channel_id:
+            channel = ctx.guild.get_channel(channel_id)
+        else:
+            channel = ctx.channel
+
+        message = await channel.send("新增工作排程中...")
         quote.message_id = message.id
 
         async with self.config.guild(ctx.guild).all() as guild_data:
