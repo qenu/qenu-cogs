@@ -354,8 +354,8 @@ class Workflow(commands.Cog):
             "**委託內容 ↓**\n"
         )
         embed.set_footer(text=f"委託編號: #{quote_id} • 訊息ID: {quote.message_id}")
-        for _ in quote.commission_data:
-            item = Commission.from_dict(_)
+        for item in quote.commission_data:
+            # item = Commission.from_dict(_)
             if item._count != 0:
                 value_content = f"數量: {item._count}\n" f"進度: {COMM_STATUS_TYPE[item._status]}\n"
                 if detail:
