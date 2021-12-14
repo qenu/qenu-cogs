@@ -12,7 +12,7 @@ from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
-from .utils import replying
+from .utils import pred_msg
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
@@ -507,7 +507,8 @@ class Workflow(commands.Cog):
         )
         embed.color = ctx.author.color
 
-        await replying(ctx=ctx, embed=embed)
+        await ctx.message.delete()
+        await pred_msg(ctx=ctx, embed=embed)
 
     @commands.is_owner()
     @workflow.group(name="dev")

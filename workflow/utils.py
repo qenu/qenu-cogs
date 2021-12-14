@@ -46,3 +46,38 @@ async def replying(ctx: commands.Context,
         except Exception:
             pass
 
+
+async def pred_msg(ctx: commands.Context,
+    **kwargs: Any
+):
+    """better reply"""
+    mention_author = kwargs.get("mention_author", False)
+    content = kwargs.get("content", None)
+    embed = kwargs.get("embed", None)
+    response = await ctx.send(
+        content=content,
+        embed=embed,
+    )
+
+    await response.add_reaction(RED_TICK)
+
+    try:
+        reaction, user = await ctx.bot.wait_for(
+            "reaction_add",
+            timeout=60.0,
+            check=lambda reaction, user: user.id == ctx.author.id
+            and str(reaction.emoji) == RED_TICK
+            and reaction.message.id == response.id,
+        )
+    except asyncio.TimeoutError:
+        try:
+            await response.remove_reaction(RED_TICK, ctx.me)
+        except discord.HTTPException:
+            pass
+        except discord.errors.NotFound:
+            pass
+    else:
+        try:
+            await response.delete()
+        except Exception:
+            pass
