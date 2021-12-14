@@ -458,8 +458,8 @@ class Workflow(commands.Cog):
         embed = discord.Embed()
         embed.title = "工作排程 Workflow"
         guild_data = await self.config.guild(ctx.guild).all()
+        embed.set_footer(text=f"頻道: {ctx.guild.get_channel(guild_data['channel_id'])}")
         embed.description = (
-            f"頻道: {ctx.guild.get_channel(guild_data['channel_id'])}\n"
             f"最後更新: <t:{int(guild_data['timestamp'])}:R>\n"
             "---\n"
             f"**總數量:** {len(guild_data['quotations'])}\n"
