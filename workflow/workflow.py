@@ -439,9 +439,13 @@ class Workflow(commands.Cog):
         quote_data: dict = quotes_data.get(str(quote_id))
         quote = Quote.from_dict(quote_data)
         channel_id: int = await self.config.guild(ctx.guild).channel_id()
+        if not channel_id:
+            channel = ctx.channel
+        else:
+            channel: discord.TextChannel = ctx.guild.get_channel(channel_id)
 
         try:
-            message = await ctx.guild.get_channel(channel_id)
+            message = await channel.fetch_message(quote.message_id)
         except discord.NotFound:
             return await ctx.send("找不到訊息 discord.NotFound")
         except discord.Forbidden:
@@ -551,6 +555,16 @@ class Workflow(commands.Cog):
     async def workflow_dev_reset(self, ctx: commands.Context) -> None:
         await self.config.guild(ctx.guild).clear()
         await ctx.replying(ctx=ctx, content="已重置排程。")
+
+    @workflow_dev.command(name="channel")
+    async def workflow_dev_channel(self, ctx: commands.Context, *, channel: Optional[discord.TextChannel]) -> None:
+        """Sets the channel for quotes"""
+        if channel is None:
+            await self.config.guild(ctx.guild).channel_id.clear()
+            await pred_msg(ctx=ctx, content="已重置頻道。")
+        else:
+            await self.config.guild(ctx.guild).channel_id.set(channel.id)
+            await pred_msg(ctx=ctx, content="已設定頻道。")
 
     @workflow.command(name="command", aliases=["cmd", "指令"])
     async def workflow_command(self, ctx: commands.Context) -> None:
