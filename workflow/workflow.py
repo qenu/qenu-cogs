@@ -453,7 +453,7 @@ class Workflow(commands.Cog):
         except discord.HTTPException:
             return await ctx.send("請求失敗，請稍後重試 discord.HTTPException")
         except Exception as e:
-            return await ctx.send(f"未知錯誤: {e}")
+            return await ctx.send(f"未知錯誤: `{e}`")
 
         await message.edit(
             content=None, embed=await self.workflow_embed(ctx, quote_id=quote_id)
@@ -894,6 +894,8 @@ class Workflow(commands.Cog):
                 quote.customer_data.payment_method = int(content)
             elif edit_type == "進度":
                 quote.status = int(content)
+
+            quotations[str(quote_id)] = quote.to_dict()
 
         await self.update_workflow_message(ctx, quote_id=quote.id)
         await ctx.tick()
