@@ -12,6 +12,8 @@ from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
+from .utils import replying
+
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
 YELLOW = 0xFFC629
@@ -505,7 +507,7 @@ class Workflow(commands.Cog):
         )
         embed.color = ctx.author.color
 
-        await ctx.send(embed=embed, delete_after=60)
+        await replying(ctx=ctx, embed=embed)
 
     @commands.is_owner()
     @workflow.group(name="dev")
@@ -535,7 +537,7 @@ class Workflow(commands.Cog):
     @workflow_dev.command(name="reset")
     async def workflow_dev_reset(self, ctx: commands.Context) -> None:
         await self.config.guild(ctx.guild).clear()
-        await ctx.send("工作排程已重置")
+        await ctx.replying(ctx=ctx, content="已重置排程。")
 
     @commands.max_concurrency(1, commands.BucketType.guild)
     @workflow.command(name="add", aliases=["a", "新增"])
@@ -636,7 +638,7 @@ class Workflow(commands.Cog):
         author = ctx.author
         await author.send(embed=embed)
         await ctx.tick()
-        await ctx.message.delete(delay=10)
+        await ctx.message.delete(delay=5)
 
     @workflow.command(name="editinfo", aliases=["ei", "編輯資料", "更新資料"])
     async def workflow_editinfo(
