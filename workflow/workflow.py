@@ -439,13 +439,9 @@ class Workflow(commands.Cog):
         quote_data: dict = quotes_data.get(str(quote_id))
         quote = Quote.from_dict(quote_data)
         channel_id: int = await self.config.guild(ctx.guild).channel_id()
-        if not channel_id:
-            channel = ctx.channel
-        else:
-            channel: discord.TextChannel = ctx.guild.get_channel(channel_id)
 
         try:
-            message = await channel.fetch_message(quote.message_id)
+            message = await ctx.guild.get_channel(channel_id)
         except discord.NotFound:
             return await ctx.send("找不到訊息 discord.NotFound")
         except discord.Forbidden:
@@ -543,6 +539,13 @@ class Workflow(commands.Cog):
         await menu(
             ctx, [box(i, lang="yaml") for i in pagify(return_content)], DEFAULT_CONTROLS
         )
+
+    @workflow_dev.command(name="update")
+    async def workflow_dev_update(self, ctx: commands.Context, quote_id: int) -> None:
+        """Force updates a message"""
+        await self.update_workflow_message(ctx, quote_id)
+        await ctx.tick()
+        await ctx.message.delete(delay=5)
 
     @workflow_dev.command(name="reset")
     async def workflow_dev_reset(self, ctx: commands.Context) -> None:
