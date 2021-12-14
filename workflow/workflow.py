@@ -1,5 +1,6 @@
 import asyncio
 import json
+from os import stat
 import re
 import time
 from dataclasses import dataclass
@@ -580,14 +581,17 @@ class Workflow(commands.Cog):
             f"`{ctx.clean_prefix}排程 新增`\n"
             "新增一個排程工作\n\n"
             "**更新排程**\n"
-            f"`{ctx.clean_prefix}排程 更新資料 <委託編號> <項目> <資料>`\n"
-            "更新委託有關 名稱, 聯絡方式, 聯絡資訊, 付款方式\n\n"
-            f"`{ctx.clean_prefix}排程 更新狀態 <委託編號> <項目> <資料>`\n"
-            "更新委託有關 進度, 開工日期, 備註\n\n"
-            f"`{ctx.clean_prefix}排程 更新委託 <委託編號> <委託類型> <項目> <資料>`\n"
-            "更新委託有關 委託編號, 委託狀態, 委託備註\n\n"
+            f"`{ctx.clean_prefix}排程 更新 <委託編號> <內容>`\n"
+            "**排成後台**\n"
+            f"`{ctx.clean_prefix}排程 dev`\n"
+            "=====\n"
+            "**快速指令**\n"
+            f"`{ctx.clean_prefix}委託`\n"
+            "```"
         )
-
+        embed.color = ctx.me.color
+        await ctx.message.delete()
+        await pred_msg(ctx=ctx, embed=embed)
 
     @commands.max_concurrency(1, commands.BucketType.guild)
     @workflow.command(name="add", aliases=["a", "新增"])
@@ -737,7 +741,7 @@ class Workflow(commands.Cog):
         async with self.config.guild(ctx.guild).quotations() as quotations:
             quote_data = quotations.get(str(quote_id))
             if not quote_data:
-                return await ctx.send(f"找不到該委託編號 #{quote_id}")
+                return await ctx.send(f"找不到該委託編號 #{quote_id}", delete_after=15)
             quote: Quote = Quote.from_dict(quote_data)
 
             if quotation_edit:
@@ -770,6 +774,65 @@ class Workflow(commands.Cog):
 
             quotations[str(quote_id)] = quote.to_dict()
 
+        await self.update_workflow_message(ctx, quote_id=quote.id)
+        await ctx.tick()
+        await ctx.message.delete(delay=10)
+
+    @commands.check(privileged)
+    @commands.group(name="workflowutil", aliases=["wfu", "委託"])
+    async def workflow_utility(self, ctx: commands.Context, quote_id: int, *, content: Optional[str]=None) -> None:
+        """
+        排程委託快速指令
+        ---
+        輸入關鍵字可以快速操作
+
+        **關鍵字:**
+        進度類別:
+        > 進行中, 已完成, 取消
+
+        委託分類:
+        > 客製貼圖, 訂閱徽章, 小奇點圖, 資訊大圖, 實況圖層, 其他委託
+        委託進度:
+        > 草稿, 線搞, 上色, 完工, 無
+
+        **範例:**
+        `o.委託 <#編號> 進行中`
+        `o.委託 <#編號> 資訊大圖 上色`
+        """
+        if content is None:
+            await ctx.author.send(embed=await self.workflow_embed(ctx, quote_id=quote_id, detail=True))
+            return await ctx.message.delete(delay=10)
+
+        async with self.config.guild(ctx.guild).quotations() as quotations:
+            quote_data = quotations.get(str(quote_id))
+            if not quote_data:
+                return await ctx.send(f"找不到該委託編號 #{quote_id}", delete_after=15)
+            quote: Quote = Quote.from_dict(quote_data)
+
+            if content == "進行中":
+                quote.status = 2
+            elif content == "已完成":
+                quote.status = 3
+            elif content == "取消":
+                quote.status = 0
+            else:
+                quote_type, status_val = content.split()
+                if status_val is None or status_val not in ["草稿", "線搞", "上色", "完工", "無"]:
+                    return await ctx.send(f"{status_val} 關鍵字錯誤，請輸入正確的關鍵字")
+                val = 0
+                if status_val == "草稿":
+                    val = 1
+                elif status_val == "線搞":
+                    val = 2
+                elif status_val == "上色":
+                    val = 3
+                elif status_val == "完工":
+                    val = 4
+
+                quote.commission_data[COMM_DATA_LIST[quote_type]]._status = val
+
+            quote.last_update = int(time.time())
+            quotations[str(quote_id)] = quote.to_dict()
         await self.update_workflow_message(ctx, quote_id=quote.id)
         await ctx.tick()
         await ctx.message.delete(delay=10)
