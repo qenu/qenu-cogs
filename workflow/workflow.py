@@ -4,6 +4,7 @@ from os import stat
 import re
 import time
 from dataclasses import dataclass
+from types import new_class
 from typing import Literal, Optional
 
 import discord
@@ -459,6 +460,7 @@ class Workflow(commands.Cog):
         await message.edit(
             content=None, embed=await self.workflow_embed(ctx, quote_id=quote_id)
         )
+        await self.config.guild(ctx.guild).timestamp.set(int(time.time()))
 
     @commands.check(privileged)
     @commands.group(name="workflow", aliases=["wf", "排程"], invoke_without_command=True)
@@ -743,6 +745,16 @@ class Workflow(commands.Cog):
             if not quote_data:
                 return await ctx.send(f"找不到該委託編號 #{quote_id}", delete_after=15)
             quote: Quote = Quote.from_dict(quote_data)
+            old_status = quote.status
+            new_status = None
+            if old_status == 1:
+                old_status = "pending"
+            elif old_status == 2:
+                old_status = "ongoing"
+            elif old_status == 3:
+                old_status = "completed"
+            elif old_status == 0:
+                old_status = "cancelled"
 
             if quotation_edit:
                 quote_type, val = content.split()
@@ -769,10 +781,23 @@ class Workflow(commands.Cog):
                 quote.customer_data.payment_method = int(content)
             elif edit_type == "進度":
                 quote.status = int(content)
+                if quote.status == 1:
+                    new_status = "pending"
+                elif quote.status == 2:
+                    new_status = "ongoing"
+                elif quote.status == 3:
+                    new_status = "completed"
+                elif quote.status == 0:
+                    new_status = "cancelled"
 
             quote.last_update = int(time.time())
-
             quotations[str(quote_id)] = quote.to_dict()
+
+        if new_status:
+            async with self.config.guild(ctx.guild).all() as guild_data:
+                guild_data[old_status].pop(str(quote_id))
+                guild_data[new_status].append(str(quote_id))
+
 
         await self.update_workflow_message(ctx, quote_id=quote.id)
         await ctx.tick()
@@ -788,7 +813,7 @@ class Workflow(commands.Cog):
 
         **關鍵字:**
         進度類別:
-        > 進行中, 已完成, 取消
+        > 等待中, 進行中, 已完成, 取消
 
         委託分類:
         > 客製貼圖, 訂閱徽章, 小奇點圖, 資訊大圖, 實況圖層, 其他委託
@@ -808,13 +833,29 @@ class Workflow(commands.Cog):
             if not quote_data:
                 return await ctx.send(f"找不到該委託編號 #{quote_id}", delete_after=15)
             quote: Quote = Quote.from_dict(quote_data)
+            old_status = quote.status
+            new_status = None
+            if old_status == 1:
+                old_status = "pending"
+            elif old_status == 2:
+                old_status = "ongoing"
+            elif old_status == 3:
+                old_status = "completed"
+            elif old_status == 0:
+                old_status = "cancelled"
 
-            if content == "進行中":
+            if content == "等待中":
+                quote.status = 1
+                new_status = "pending"
+            elif content == "進行中":
                 quote.status = 2
+                new_status = "ongoing"
             elif content == "已完成":
                 quote.status = 3
+                new_status = "completed"
             elif content == "取消":
                 quote.status = 0
+                new_status = "cancelled"
             else:
                 quote_type, status_val = content.split()
                 if status_val is None or status_val not in ["草稿", "線搞", "上色", "完工", "無"]:
@@ -833,6 +874,12 @@ class Workflow(commands.Cog):
 
             quote.last_update = int(time.time())
             quotations[str(quote_id)] = quote.to_dict()
+
+        if new_status:
+            async with self.config.guild(ctx.guild).all() as guild_data:
+                guild_data[old_status].pop(str(quote_id))
+                guild_data[new_status].append(str(quote_id))
+
         await self.update_workflow_message(ctx, quote_id=quote.id)
         await ctx.tick()
         await ctx.message.delete(delay=10)
