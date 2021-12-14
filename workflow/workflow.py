@@ -673,25 +673,172 @@ class Workflow(commands.Cog):
         await ctx.tick()
         await ctx.message.delete(delay=5)
 
-    @workflow.command(name="editinfo", aliases=["ei", "編輯資料", "更新資料"])
-    async def workflow_editinfo(
-        self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str
+    # @workflow.command(name="editinfo", aliases=["ei", "編輯資料", "更新資料"])
+    # async def workflow_editinfo(
+    #     self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str
+    # ) -> None:
+    #     """
+    #     編輯委託資料
+    #     ---
+    #     項目:
+    #         名稱, 聯絡方式, 聯絡資訊, 付款方式
+    #     付款方式:
+    #         1: 轉帳
+    #         2: 歐富寶
+    #         3: Paypal
+    #         0: 其他
+
+    #     ※變更付款方式請用代號
+    #     """
+    #     if edit_type not in ["名稱", "聯絡方式", "聯絡資訊", "付款方式"]:
+    #         return await ctx.send(f"{edit_type}不是正確的項目，請輸入正確的項目名稱")
+
+    #     async with self.config.guild(ctx.guild).quotations() as quotations:
+    #         quote_data = quotations.get(str(quote_id))
+    #         if not quote_data:
+    #             return await ctx.send(f"找不到該委託編號 #{quote_id}")
+    #         quote: Quote = Quote.from_dict(quote_data)
+
+    #         if edit_type == "名稱":
+    #             quote.customer_data.name = content
+    #         elif edit_type == "聯絡方式":
+    #             quote.customer_data.contact = content
+    #         elif edit_type == "聯絡資訊":
+    #             quote.customer_data.contact_info = content
+    #         elif edit_type == "付款方式":
+    #             try:
+    #                 quote.customer_data.payment_method = int(content)
+    #                 if quote.customer_data.payment_method not in [1, 2, 3, 0]:
+    #                     raise ValueError
+    #             except ValueError as e:
+    #                 return await ctx.send(f"付款方式代號錯誤，請輸入正確的代號\n`{e}`")
+
+    #     await self.update_workflow_message(ctx, quote_id=quote.id)
+    #     await ctx.tick()
+    #     await ctx.message.delete(delay=10)
+
+    # @workflow.command(name="editstatus", aliases=["es", "編輯狀態", "更新狀態"])
+    # async def workflow_editstatus(
+    #     self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str
+    # ) -> None:
+    #     """
+    #     編輯委託狀態
+    #     ---
+    #     項目:
+    #         進度, 開工日期, 備註
+    #     進度:
+    #         1: 等待中
+    #         2: 進行中
+    #         3: 已完成
+    #         0: 取消
+
+    #     ※變更進度請用代號
+    #     """
+    #     if edit_type not in ["進度", "開工日期", "備註"]:
+    #         return await ctx.send(f"{edit_type}不是正確的項目，請輸入正確的項目名稱")
+
+    #     async with self.config.guild(ctx.guild).quotations() as quotations:
+    #         quote_data = quotations.get(str(quote_id))
+    #         if not quote_data:
+    #             return await ctx.send(f"找不到該委託編號 #{quote_id}")
+    #         quote: Quote = Quote.from_dict(quote_data)
+
+    #         if edit_type == "進度":
+    #             try:
+    #                 quote.status = int(content)
+    #                 if quote.status not in [1, 2, 3, 0]:
+    #                     raise ValueError
+    #             except ValueError as e:
+    #                 return await ctx.send(f"進度代號錯誤，請輸入正確的代號\n`{e}`")
+    #         elif edit_type == "開工日期":
+    #             quote.estimate_start_date = content
+    #         elif edit_type == "備註":
+    #             quote.comment = content
+
+    #     await self.update_workflow_message(ctx, quote_id=quote.id)
+    #     await ctx.tick()
+    #     await ctx.message.delete(delay=10)
+
+    # @workflow.command(name="editquote", aliases=["eq", "編輯委託", "更新委託"])
+    # async def workflow_editquote(
+    #     self, ctx: commands.Context, quote_id: int, edit_type: str, edit_element: str, *, content: str
+    # ) -> None:
+    #     """
+    #     編輯委託內容
+    #     ---
+    #     項目:
+    #         進度, 數量, 價格
+    #     進度:
+    #         1: 草稿
+    #         2: 線搞
+    #         3: 上色
+    #         4: 完工
+    #         0: 無
+
+    #     ※變更進度請用代號
+    #     """
+    #     if edit_type not in ["客製貼圖", "訂閱徽章", "小奇點圖", "資訊大圖", "實況圖層", "其他委託"]:
+    #         return await ctx.send(f"{edit_type}不是正確的委託，請輸入正確的項目名稱")
+    #     if edit_element not in ["進度", "數量", "價格"]:
+    #         return await ctx.send(f"{edit_element}不是正確的項目，請輸入正確的項目名稱")
+
+    #     async with self.config.guild(ctx.guild).quotations() as quotations:
+    #         quote_data = quotations.get(str(quote_id))
+    #         if not quote_data:
+    #             return await ctx.send(f"找不到該委託編號 #{quote_id}")
+    #         quote: Quote = Quote.from_dict(quote_data)
+
+    #         if edit_element == "數量":
+    #             quote.commission_data[COMM_DATA_LIST[edit_type]]._count = content
+    #         elif edit_element == "價格":
+    #             quote.commission_data[COMM_DATA_LIST[edit_type]]._per = content
+    #         elif edit_element == "進度":
+    #             try:
+    #                 quote.commission_data[COMM_DATA_LIST[edit_type]]._status = int(content)
+    #                 if quote.status not in [1, 2, 3, 4, 0]:
+    #                     raise ValueError
+    #             except ValueError as e:
+    #                 return await ctx.send(f"進度代號錯誤，請輸入正確的代號\n`{e}`")
+
+    #     await self.update_workflow_message(ctx, quote_id=quote.id)
+    #     await ctx.tick()
+    #     await ctx.message.delete(delay=10)
+
+    @workflow.command(name="edit", aliases=["e", "編輯", "更新"])
+    async def workflow_edit(
+        self,
+        ctx: commands.Context,
+        quote_id: int,
+        edit_type: str,
+        *,
+        content: str,
     ) -> None:
         """
-        編輯委託資料
+        更新委託內容
         ---
         項目:
-            名稱, 聯絡方式, 聯絡資訊, 付款方式
-        付款方式:
-            1: 轉帳
-            2: 歐富寶
-            3: Paypal
-            0: 其他
+            委託人, 聯絡方式, 聯絡資訊, 開工日期, 備註
 
-        ※變更付款方式請用代號
+        特別項目:
+            付款方式: [1: 轉帳, 2: 歐富寶, 3: Paypal, 0: 其他]
+            進度: [1: 等待中, 2: 進行中, 3: 已完成, 0: 取消]
+
+        委託細項:
+            客製貼圖, 訂閱徽章, 小奇點圖, 資訊大圖, 實況圖層, 其他委託
+        委託項目:
+            數量, 價格
+            進度: [1: 草稿, 2: 線搞, 3: 上色, 4: 完工, 0: 無]
+
+        範例:
+            o.排程 更新 <#編號> 委託人 <委託人名稱>
+            o.排程 更新 <#編號> 付款方式 3
+            o.排程 更新 <#編號> 客製貼圖 進度 4
+            o.排程 更新 <#編號> 資訊大圖 價格 800
         """
-        if edit_type not in ["名稱", "聯絡方式", "聯絡資訊", "付款方式"]:
+        if edit_type not in ["委託人", "聯絡方式", "聯絡資訊", "開工日期", "備註", "付款方式", "進度", "客製貼圖", "訂閱徽章", "小奇點圖", "資訊大圖", "實況圖層", "其他委託"]:
             return await ctx.send(f"{edit_type}不是正確的項目，請輸入正確的項目名稱")
+
+        quotation_edit: bool = edit_type in ["客製貼圖", "訂閱徽章", "小奇點圖", "資訊大圖", "實況圖層", "其他委託"]
 
         async with self.config.guild(ctx.guild).quotations() as quotations:
             quote_data = quotations.get(str(quote_id))
@@ -699,106 +846,31 @@ class Workflow(commands.Cog):
                 return await ctx.send(f"找不到該委託編號 #{quote_id}")
             quote: Quote = Quote.from_dict(quote_data)
 
-            if edit_type == "名稱":
-                quote.customer_data.name = content
+            if quotation_edit:
+                quote_type, val = content.split()
+                if quote_type == "價格":
+                    quote.commission_data[COMM_DATA_LIST[edit_type]]._per = val
+                elif quote_type == "數量":
+                    quote.commission_data[COMM_DATA_LIST[edit_type]]._count = val
+                elif quote_type == "進度":
+                    val = int(val)
+                    if val not in [1, 2, 3, 4, 0]:
+                        return await ctx.send(f"進度代號錯誤，請輸入正確的代號")
+                    quote.commission_data[COMM_DATA_LIST[edit_type]]._status = int(val)
+            elif edit_type == "委託人":
+                quote.commission_data["委託人"] = content
             elif edit_type == "聯絡方式":
-                quote.customer_data.contact = content
+                quote.commission_data["聯絡方式"] = content
             elif edit_type == "聯絡資訊":
-                quote.customer_data.contact_info = content
-            elif edit_type == "付款方式":
-                try:
-                    quote.customer_data.payment_method = int(content)
-                    if quote.customer_data.payment_method not in [1, 2, 3, 0]:
-                        raise ValueError
-                except ValueError as e:
-                    return await ctx.send(f"付款方式代號錯誤，請輸入正確的代號\n`{e}`")
-
-        await self.update_workflow_message(ctx, quote_id=quote.id)
-        await ctx.tick()
-        await ctx.message.delete(delay=10)
-
-    @workflow.command(name="editstatus", aliases=["es", "編輯狀態", "更新狀態"])
-    async def workflow_editstatus(
-        self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str
-    ) -> None:
-        """
-        編輯委託狀態
-        ---
-        項目:
-            進度, 開工日期, 備註
-        進度:
-            1: 等待中
-            2: 進行中
-            3: 已完成
-            0: 取消
-
-        ※變更進度請用代號
-        """
-        if edit_type not in ["進度", "開工日期", "備註"]:
-            return await ctx.send(f"{edit_type}不是正確的項目，請輸入正確的項目名稱")
-
-        async with self.config.guild(ctx.guild).quotations() as quotations:
-            quote_data = quotations.get(str(quote_id))
-            if not quote_data:
-                return await ctx.send(f"找不到該委託編號 #{quote_id}")
-            quote: Quote = Quote.from_dict(quote_data)
-
-            if edit_type == "進度":
-                try:
-                    quote.status = int(content)
-                    if quote.status not in [1, 2, 3, 0]:
-                        raise ValueError
-                except ValueError as e:
-                    return await ctx.send(f"進度代號錯誤，請輸入正確的代號\n`{e}`")
+                quote.commission_data["聯絡資訊"] = content
             elif edit_type == "開工日期":
-                quote.estimate_start_date = content
+                quote.commission_data["開工日期"] = content
             elif edit_type == "備註":
-                quote.comment = content
-
-        await self.update_workflow_message(ctx, quote_id=quote.id)
-        await ctx.tick()
-        await ctx.message.delete(delay=10)
-
-    @workflow.command(name="editquote", aliases=["eq", "編輯委託", "更新委託"])
-    async def workflow_editquote(
-        self, ctx: commands.Context, quote_id: int, edit_type: str, edit_element: str, *, content: str
-    ) -> None:
-        """
-        編輯委託內容
-        ---
-        項目:
-            進度, 數量, 價格
-        進度:
-            1: 草稿
-            2: 線搞
-            3: 上色
-            4: 完工
-            0: 無
-
-        ※變更進度請用代號
-        """
-        if edit_type not in ["客製貼圖", "訂閱徽章", "小奇點圖", "資訊大圖", "實況圖層", "其他委託"]:
-            return await ctx.send(f"{edit_type}不是正確的委託，請輸入正確的項目名稱")
-        if edit_element not in ["進度", "數量", "價格"]:
-            return await ctx.send(f"{edit_element}不是正確的項目，請輸入正確的項目名稱")
-
-        async with self.config.guild(ctx.guild).quotations() as quotations:
-            quote_data = quotations.get(str(quote_id))
-            if not quote_data:
-                return await ctx.send(f"找不到該委託編號 #{quote_id}")
-            quote: Quote = Quote.from_dict(quote_data)
-
-            if edit_element == "數量":
-                quote.commission_data[COMM_DATA_LIST[edit_type]]._count = content
-            elif edit_element == "價格":
-                quote.commission_data[COMM_DATA_LIST[edit_type]]._per = content
-            elif edit_element == "進度":
-                try:
-                    quote.commission_data[COMM_DATA_LIST[edit_type]]._status = int(content)
-                    if quote.status not in [1, 2, 3, 4, 0]:
-                        raise ValueError
-                except ValueError as e:
-                    return await ctx.send(f"進度代號錯誤，請輸入正確的代號\n`{e}`")
+                quote.commission_data["備註"] = content
+            elif edit_type == "付款方式":
+                quote.commission_data["付款方式"] = int(content)
+            elif edit_type == "進度":
+                quote.commission_data["進度"] = int(content)
 
         await self.update_workflow_message(ctx, quote_id=quote.id)
         await ctx.tick()
