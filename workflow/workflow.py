@@ -52,6 +52,15 @@ COMM_TYPE: dict = {
     "其他委託": 0,
 }
 
+COMM_DATA_LIST: dict = {
+    "客製貼圖": 0,
+    "訂閱徽章": 1,
+    "小奇點圖": 2,
+    "資訊大圖": 3,
+    "實況圖層": 4,
+    "其他委託": 5,
+}
+
 QUOTE_STATUS_TYPE: dict = {
     0: "取消",
     1: "等待中",
@@ -540,6 +549,29 @@ class Workflow(commands.Cog):
         await self.config.guild(ctx.guild).clear()
         await ctx.replying(ctx=ctx, content="已重置排程。")
 
+    @workflow.command(name="command", aliases=["cmd", "指令"])
+    async def workflow_command(self, ctx: commands.Context) -> None:
+        """顯示排程指令列表"""
+        embed = discord.Embed()
+        embed.title = "排程指令列表"
+        embed.description = (
+            "```yaml\n"
+            "**顯示排程表**\n"
+            f"`{ctx.clean_prefix}排程`\n"
+            "顯示目前的工作排程數量\n\n"
+            "**新增排程**\n"
+            f"`{ctx.clean_prefix}排程 新增`\n"
+            "新增一個排程工作\n\n"
+            "**更新排程**\n"
+            f"`{ctx.clean_prefix}排程 更新資料 <委託編號> <項目> <資料>`\n"
+            "更新委託有關 名稱, 聯絡方式, 聯絡資訊, 付款方式\n\n"
+            f"`{ctx.clean_prefix}排程 更新狀態 <委託編號> <項目> <資料>`\n"
+            "更新委託有關 進度, 開工日期, 備註\n\n"
+            f"`{ctx.clean_prefix}排程 更新委託 <委託編號> <項目> <資料>`\n"
+            "更新委託有關 委託編號, 委託狀態, 委託備註\n\n"
+        )
+
+
     @commands.max_concurrency(1, commands.BucketType.guild)
     @workflow.command(name="add", aliases=["a", "新增"])
     async def workflow_add(
@@ -729,7 +761,7 @@ class Workflow(commands.Cog):
 
     @workflow.command(name="editquote", aliases=["eq", "編輯委託", "更新委託"])
     async def workflow_editquote(
-        self, ctx: commands.Context, quote_id: int, edit_type: str, *, content: str
+        self, ctx: commands.Context, quote_id: int, edit_type: str, edit_element: str, *, content: str
     ) -> None:
         """
         編輯委託內容
@@ -745,8 +777,10 @@ class Workflow(commands.Cog):
 
         ※變更進度請用代號
         """
-        if edit_type not in ["進度", "數量", "價格"]:
-            return await ctx.send(f"{edit_type}不是正確的項目，請輸入正確的項目名稱")
+        if edit_type not in ["客製貼圖", "訂閱徽章", "小奇點圖", "資訊大圖", "實況圖層", "其他委託"]:
+            return await ctx.send(f"{edit_type}不是正確的委託，請輸入正確的項目名稱")
+        if edit_element not in ["進度", "數量", "價格"]:
+            return await ctx.send(f"{edit_element}不是正確的項目，請輸入正確的項目名稱")
 
         async with self.config.guild(ctx.guild).quotations() as quotations:
             quote_data = quotations.get(str(quote_id))
@@ -754,13 +788,13 @@ class Workflow(commands.Cog):
                 return await ctx.send(f"找不到該委託編號 #{quote_id}")
             quote: Quote = Quote.from_dict(quote_data)
 
-            if edit_type == "數量":
-                quote.quantity = content
-            elif edit_type == "價格":
-                quote.price = content
-            elif edit_type == "進度":
+            if edit_element == "數量":
+                quote.commission_data[COMM_DATA_LIST[edit_type]]._count = content
+            elif edit_element == "價格":
+                quote.commission_data[COMM_DATA_LIST[edit_type]]._per = content
+            elif edit_element == "進度":
                 try:
-                    quote.status = int(content)
+                    quote.commission_data[COMM_DATA_LIST[edit_type]]._status = int(content)
                     if quote.status not in [1, 2, 3, 4, 0]:
                         raise ValueError
                 except ValueError as e:
