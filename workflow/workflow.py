@@ -873,4 +873,3 @@ class Workflow(commands.Cog):
 
         await self.update_workflow_message(ctx, quote_id=quote.id)
         await ctx.tick()
-        await ctx.message.delete(delay=10)
