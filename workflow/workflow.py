@@ -838,7 +838,7 @@ class Workflow(commands.Cog):
                 new_status = "ongoing"
             elif content == "已完成":
                 quote.status = 3
-                new_status = "completed"
+                new_status = "finished"
             elif content == "取消":
                 quote.status = 0
                 new_status = "cancelled"
