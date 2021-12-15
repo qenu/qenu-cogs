@@ -659,6 +659,8 @@ class Workflow(commands.Cog):
                 content = msg.content
             except asyncio.TimeoutError:
                 return await ctx.send("連線超時，請重新執行指令")
+            else:
+                await msg.delete()
 
         try:
             quote: Quote = self.parse_content(content)
