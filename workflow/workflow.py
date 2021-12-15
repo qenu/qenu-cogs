@@ -923,3 +923,14 @@ class Workflow(commands.Cog):
 
         await self.update_workflow_message(ctx, quote.id)
         await ctx.tick()
+
+    @commands.check(privileged)
+    @commands.command(name="workflowcreate", aliases=["wfc", "新委託"])
+    async def workflow_create(
+        self,
+        ctx: commands.Context,
+    ) -> None:
+        """
+        新增委託
+        """
+        return await ctx.invoke(self.bot.get_command("workflow add"))
