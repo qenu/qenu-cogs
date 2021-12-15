@@ -12,7 +12,7 @@ from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
-from .utils import send_x
+from .utils import send_x, replying
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
@@ -527,6 +527,9 @@ class Workflow(commands.Cog):
 
     @workflow_dev.command(name="info")
     async def workflow_dev_info(self, ctx: commands.Context) -> None:
+        """
+        Show data stored in workflow config
+        """
         guild_data = await self.config.guild(ctx.guild).all()
         return_content = (
             f"channel_id: {guild_data['channel_id']}\n"
@@ -554,8 +557,9 @@ class Workflow(commands.Cog):
 
     @workflow_dev.command(name="reset")
     async def workflow_dev_reset(self, ctx: commands.Context) -> None:
+        """Resets the whole workflow config"""
         await self.config.guild(ctx.guild).clear()
-        await ctx.replying(ctx=ctx, content="已重置排程。")
+        await replying(ctx=ctx, content="已重置排程。")
 
     @workflow_dev.command(name="channel")
     async def workflow_dev_channel(self, ctx: commands.Context, *, channel: Optional[discord.TextChannel]) -> None:
