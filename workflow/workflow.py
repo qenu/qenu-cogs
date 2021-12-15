@@ -374,7 +374,7 @@ class Workflow(commands.Cog):
             f"【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
         )
         embed.description = (
-            f"最後更新時間: <t:{quote.last_update}:f>\n"
+            f"最後更新時間: <t:{quote.last_update}:R>\n"
             f"預計開工日期: {quote.estimate_start_date}\n"
             f"聯絡方式: {quote.customer_data.contact}\n"
             f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
