@@ -10,7 +10,7 @@ from typing import Literal, Optional
 import discord
 from redbot.core import commands
 from redbot.core.bot import Red
-from redbot.core.config import Config
+from redbot.core.config import Config, Value
 from redbot.core.utils.chat_formatting import box, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
@@ -793,7 +793,7 @@ class Workflow(commands.Cog):
 
         if new_status:
             async with self.config.guild(ctx.guild).all() as guild_data:
-                guild_data[old_status].pop(str(quote_id))
+                guild_data[old_status].remove(str(quote_id))
                 guild_data[new_status].append(str(quote_id))
 
 
@@ -875,7 +875,7 @@ class Workflow(commands.Cog):
 
         if new_status:
             async with self.config.guild(ctx.guild).all() as guild_data:
-                guild_data[old_status].pop(str(quote_id))
+                guild_data[old_status].remove(str(quote_id))
                 guild_data[new_status].append(str(quote_id))
 
         await self.update_workflow_message(ctx, quote_id=quote.id)
