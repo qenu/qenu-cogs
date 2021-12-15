@@ -1,16 +1,14 @@
 import asyncio
 import json
-from os import stat
 import re
 import time
 from dataclasses import dataclass
-from types import new_class
 from typing import Literal, Optional
 
 import discord
 from redbot.core import commands
 from redbot.core.bot import Red
-from redbot.core.config import Config, Value
+from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
@@ -743,15 +741,14 @@ class Workflow(commands.Cog):
             if not quote_data:
                 return await ctx.send(f"找不到該委託編號 #{quote_id}", delete_after=15)
             quote: Quote = Quote.from_dict(quote_data)
-            old_status = quote.status
             new_status = None
-            if old_status == 1:
+            if quote.status == 1:
                 old_status = "pending"
-            elif old_status == 2:
+            elif quote.status == 2:
                 old_status = "ongoing"
-            elif old_status == 3:
+            elif quote.status == 3:
                 old_status = "completed"
-            elif old_status == 0:
+            elif quote.status == 0:
                 old_status = "cancelled"
 
             if quotation_edit:
@@ -831,17 +828,7 @@ class Workflow(commands.Cog):
             if not quote_data:
                 return await ctx.send(f"找不到該委託編號 #{quote_id}", delete_after=15)
             quote: Quote = Quote.from_dict(quote_data)
-            old_status = quote.status
             new_status = None
-            if old_status == 1:
-                old_status = "pending"
-            elif old_status == 2:
-                old_status = "ongoing"
-            elif old_status == 3:
-                old_status = "completed"
-            elif old_status == 0:
-                old_status = "cancelled"
-
             if content == "等待中":
                 quote.status = 1
                 new_status = "pending"
@@ -875,7 +862,13 @@ class Workflow(commands.Cog):
 
         if new_status:
             async with self.config.guild(ctx.guild).all() as guild_data:
-                guild_data[old_status].remove(str(quote_id))
+                not_quote_id = lambda x: x != str(quote_id)
+
+                guild_data["pending"] = list(filter(not_quote_id, guild_data["pending"]))
+                guild_data["ongoing"] = list(filter(not_quote_id, guild_data["ongoing"]))
+                guild_data["finished"] = list(filter(not_quote_id, guild_data["finished"]))
+                guild_data["cancelled"] = list(filter(not_quote_id, guild_data["cancelled"]))
+
                 guild_data[new_status].append(str(quote_id))
 
         await self.update_workflow_message(ctx, quote_id=quote.id)
