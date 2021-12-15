@@ -12,7 +12,7 @@ from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
-from .utils import pred_msg
+from .utils import send_x
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
@@ -518,7 +518,7 @@ class Workflow(commands.Cog):
         embed.color = ctx.author.color
 
         await ctx.message.delete()
-        await pred_msg(ctx=ctx, embed=embed)
+        await send_x(ctx=ctx, embed=embed)
 
     @commands.is_owner()
     @workflow.group(name="dev")
@@ -562,10 +562,10 @@ class Workflow(commands.Cog):
         """Sets the channel for quotes"""
         if channel is None:
             await self.config.guild(ctx.guild).channel_id.clear()
-            await pred_msg(ctx=ctx, content="已重置頻道。")
+            await send_x(ctx=ctx, content="已重置頻道。")
         else:
             await self.config.guild(ctx.guild).channel_id.set(channel.id)
-            await pred_msg(ctx=ctx, content="已設定頻道。")
+            await send_x(ctx=ctx, content="已設定頻道。")
 
     @workflow.command(name="command", aliases=["cmd", "指令"])
     async def workflow_command(self, ctx: commands.Context) -> None:
@@ -589,7 +589,7 @@ class Workflow(commands.Cog):
         )
         embed.color = ctx.me.color
         await ctx.message.delete()
-        await pred_msg(ctx=ctx, embed=embed)
+        await send_x(ctx=ctx, embed=embed)
 
     @commands.max_concurrency(1, commands.BucketType.guild)
     @workflow.command(name="add", aliases=["a", "新增"])
@@ -842,9 +842,12 @@ class Workflow(commands.Cog):
                 quote.status = 0
                 new_status = "cancelled"
             else:
-                quote_type, status_val = content.split()
+                try:
+                    quote_type, status_val = content.split()
+                except ValueError:
+                    return await send_x(ctx=ctx, content=f"{content} 這個關鍵字不存在")
                 if status_val is None or status_val not in ["草稿", "線搞", "上色", "完工", "無"]:
-                    return await ctx.send(f"{status_val} 關鍵字錯誤，請輸入正確的關鍵字")
+                    return await send_x(ctx=ctx, content=f"{status_val} 關鍵字錯誤，請輸入正確的關鍵字")
                 val = 0
                 if status_val == "草稿":
                     val = 1

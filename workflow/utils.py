@@ -47,7 +47,7 @@ async def replying(ctx: commands.Context,
             pass
 
 
-async def pred_msg(ctx: commands.Context,
+async def send_x(ctx: commands.Context,
     **kwargs: Any
 ):
     """better reply"""
