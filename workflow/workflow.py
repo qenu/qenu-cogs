@@ -799,7 +799,7 @@ class Workflow(commands.Cog):
         await ctx.message.delete(delay=10)
 
     @commands.check(privileged)
-    @commands.group(name="workflowutil", aliases=["wfu", "委託"])
+    @commands.command(name="workflowutil", aliases=["wfu", "委託"])
     async def workflow_utility(self, ctx: commands.Context, quote_id: int, *, content: Optional[str]=None) -> None:
         """
         排程委託快速指令
@@ -824,57 +824,56 @@ class Workflow(commands.Cog):
             await ctx.author.send(embed=embed)
             return await ctx.message.delete(delay=10)
 
-        else:
-            async with self.config.guild(ctx.guild).quotations() as quotations:
-                quote_data = quotations.get(str(quote_id))
-                if not quote_data:
-                    return await ctx.send(f"找不到該委託編號 #{quote_id}", delete_after=15)
-                quote: Quote = Quote.from_dict(quote_data)
-                new_status = None
-                if content == "等待中":
-                    quote.status = 1
-                    new_status = "pending"
-                elif content == "進行中":
-                    quote.status = 2
-                    new_status = "ongoing"
-                elif content == "已完成":
-                    quote.status = 3
-                    new_status = "completed"
-                elif content == "取消":
-                    quote.status = 0
-                    new_status = "cancelled"
-                else:
-                    try:
-                        quote_type, status_val = content.split()
-                    except ValueError:
-                        return await send_x(ctx=ctx, content=f"{content} 這個關鍵字不存在")
-                    if status_val is None or status_val not in ["草稿", "線搞", "上色", "完工", "無"]:
-                        return await send_x(ctx=ctx, content=f"{status_val} 關鍵字錯誤，請輸入正確的關鍵字")
-                    val = 0
-                    if status_val == "草稿":
-                        val = 1
-                    elif status_val == "線搞":
-                        val = 2
-                    elif status_val == "上色":
-                        val = 3
-                    elif status_val == "完工":
-                        val = 4
+        async with self.config.guild(ctx.guild).quotations() as quotations:
+            quote_data = quotations.get(str(quote_id))
+            if not quote_data:
+                return await ctx.send(f"找不到該委託編號 #{quote_id}", delete_after=15)
+            quote: Quote = Quote.from_dict(quote_data)
+            new_status = None
+            if content == "等待中":
+                quote.status = 1
+                new_status = "pending"
+            elif content == "進行中":
+                quote.status = 2
+                new_status = "ongoing"
+            elif content == "已完成":
+                quote.status = 3
+                new_status = "completed"
+            elif content == "取消":
+                quote.status = 0
+                new_status = "cancelled"
+            else:
+                try:
+                    quote_type, status_val = content.split()
+                except ValueError:
+                    return await send_x(ctx=ctx, content=f"{content} 這個關鍵字不存在")
+                if status_val is None or status_val not in ["草稿", "線搞", "上色", "完工", "無"]:
+                    return await send_x(ctx=ctx, content=f"{status_val} 關鍵字錯誤，請輸入正確的關鍵字")
+                val = 0
+                if status_val == "草稿":
+                    val = 1
+                elif status_val == "線搞":
+                    val = 2
+                elif status_val == "上色":
+                    val = 3
+                elif status_val == "完工":
+                    val = 4
 
-                    quote.commission_data[COMM_DATA_LIST[quote_type]]._status = val
+                quote.commission_data[COMM_DATA_LIST[quote_type]]._status = val
 
-                quote.last_update = int(time.time())
-                quotations[str(quote_id)] = quote.to_dict()
+            quote.last_update = int(time.time())
+            quotations[str(quote_id)] = quote.to_dict()
 
-            if new_status:
-                async with self.config.guild(ctx.guild).all() as guild_data:
-                    not_quote_id = lambda x: x != str(quote_id)
+        if new_status:
+            async with self.config.guild(ctx.guild).all() as guild_data:
+                not_quote_id = lambda x: x != str(quote_id)
 
-                    guild_data["pending"] = list(filter(not_quote_id, guild_data["pending"]))
-                    guild_data["ongoing"] = list(filter(not_quote_id, guild_data["ongoing"]))
-                    guild_data["finished"] = list(filter(not_quote_id, guild_data["finished"]))
-                    guild_data["cancelled"] = list(filter(not_quote_id, guild_data["cancelled"]))
+                guild_data["pending"] = list(filter(not_quote_id, guild_data["pending"]))
+                guild_data["ongoing"] = list(filter(not_quote_id, guild_data["ongoing"]))
+                guild_data["finished"] = list(filter(not_quote_id, guild_data["finished"]))
+                guild_data["cancelled"] = list(filter(not_quote_id, guild_data["cancelled"]))
 
-                    guild_data[new_status].append(str(quote_id))
+                guild_data[new_status].append(str(quote_id))
 
-            await self.update_workflow_message(ctx, quote.id)
-            await ctx.tick()
+        await self.update_workflow_message(ctx, quote.id)
+        await ctx.tick()
