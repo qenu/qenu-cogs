@@ -4,6 +4,7 @@ import re
 import time
 from dataclasses import dataclass
 from typing import Literal, Optional
+import hashlib
 
 import discord
 from redbot.core import commands
@@ -12,7 +13,7 @@ from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
-from .utils import replying, send_x
+from .utils import replying, send_x, RED_TICK, GREEN_TICK, GREY_TICK
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
@@ -21,11 +22,23 @@ GREEN = 0x31F7C6
 BLUE = 0x3163F7
 GREY = 0x8C8C8C
 
+PENCIL_EMOTE = "✏️"
+
 PRIVILEGED_USERS = [393050606828257287, 164900704526401545]
 
 
 def privileged(ctx):
     return ctx.author.id in PRIVILEGED_USERS
+
+def make_discordcolor(text: str) -> discord.Color:
+    hashed = str(
+        int(hashlib.sha1(text.encode("utf-8")).hexdigest(), 16) % (10 ** 9)
+    )
+    r = int(hashed[:3]) % 100
+    g = int(hashed[3:6]) % 100
+    b = int(hashed[6:]) % 100
+
+    return discord.Color.from_rgb(r+100, g+100, b+100)
 
 
 PAYMENT_TYPE: dict = {
@@ -73,6 +86,13 @@ QUOTE_STATUS_COLOR: dict = {
     1: YELLOW,
     2: GREEN,
     3: BLUE,
+}
+
+QUOTE_STATUS_EMOJI: dict = {
+    0: RED_TICK,
+    1: GREY_TICK,
+    2: PENCIL_EMOTE,
+    3: GREEN_TICK,
 }
 
 
@@ -233,7 +253,7 @@ class Workflow(commands.Cog):
         )
         default_guild: dict = {
             "channel_id": None,  # discord channel id
-            "timestamp": time.time(),  # last update timestamp
+            "timestamp": int(time.time()),  # last update timestamp
             "quote_number": 0,  # last quote number
             "quotations": {},
             "pending": [],
@@ -371,7 +391,7 @@ class Workflow(commands.Cog):
 
         embed = discord.Embed()
         embed.title = (
-            f"【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
+            f"{QUOTE_STATUS_EMOJI[quote.status]}【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
         )
         embed.description = (
             f"最後更新時間: <t:{quote.last_update}:R>\n"
@@ -418,7 +438,8 @@ class Workflow(commands.Cog):
                 inline=False,
             )
 
-        embed.color = QUOTE_STATUS_COLOR[quote.status]
+        # embed.color = QUOTE_STATUS_COLOR[quote.status]
+        embed.color = make_discordcolor(quote.customer_data.name)
 
         return embed
 
