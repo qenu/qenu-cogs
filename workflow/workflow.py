@@ -12,7 +12,7 @@ from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
-from .utils import send_x, replying
+from .utils import replying, send_x
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
@@ -562,7 +562,9 @@ class Workflow(commands.Cog):
         await replying(ctx=ctx, content="已重置排程。")
 
     @workflow_dev.command(name="channel")
-    async def workflow_dev_channel(self, ctx: commands.Context, *, channel: Optional[discord.TextChannel]) -> None:
+    async def workflow_dev_channel(
+        self, ctx: commands.Context, *, channel: Optional[discord.TextChannel]
+    ) -> None:
         """Sets the channel for quotes"""
         if channel is None:
             await self.config.guild(ctx.guild).channel_id.clear()
@@ -735,10 +737,31 @@ class Workflow(commands.Cog):
             `o.排程 更新 <#編號> 客製貼圖 進度 4`
             `o.排程 更新 <#編號> 資訊大圖 價格 800`
         """
-        if edit_type not in ["委託人", "聯絡方式", "聯絡資訊", "開工日期", "備註", "付款方式", "進度", "客製貼圖", "訂閱徽章", "小奇點圖", "資訊大圖", "實況圖層", "其他委託"]:
+        if edit_type not in [
+            "委託人",
+            "聯絡方式",
+            "聯絡資訊",
+            "開工日期",
+            "備註",
+            "付款方式",
+            "進度",
+            "客製貼圖",
+            "訂閱徽章",
+            "小奇點圖",
+            "資訊大圖",
+            "實況圖層",
+            "其他委託",
+        ]:
             return await ctx.send(f"{edit_type}不是正確的項目，請輸入正確的項目名稱")
 
-        quotation_edit: bool = edit_type in ["客製貼圖", "訂閱徽章", "小奇點圖", "資訊大圖", "實況圖層", "其他委託"]
+        quotation_edit: bool = edit_type in [
+            "客製貼圖",
+            "訂閱徽章",
+            "小奇點圖",
+            "資訊大圖",
+            "實況圖層",
+            "其他委託",
+        ]
 
         async with self.config.guild(ctx.guild).quotations() as quotations:
             quote_data = quotations.get(str(quote_id))
@@ -797,14 +820,15 @@ class Workflow(commands.Cog):
                 guild_data[old_status].remove(str(quote_id))
                 guild_data[new_status].append(str(quote_id))
 
-
         await self.update_workflow_message(ctx, quote.id)
         await ctx.tick()
         await ctx.message.delete(delay=10)
 
     @commands.check(privileged)
     @commands.command(name="workflowutil", aliases=["wfu", "委託"])
-    async def workflow_utility(self, ctx: commands.Context, quote_id: int, *, content: Optional[str]=None) -> None:
+    async def workflow_utility(
+        self, ctx: commands.Context, quote_id: int, *, content: Optional[str] = None
+    ) -> None:
         """
         排程委託快速指令
         ---
@@ -851,8 +875,16 @@ class Workflow(commands.Cog):
                     quote_type, status_val = content.split()
                 except ValueError:
                     return await send_x(ctx=ctx, content=f"{content} 這個關鍵字不存在")
-                if status_val is None or status_val not in ["草稿", "線搞", "上色", "完工", "無"]:
-                    return await send_x(ctx=ctx, content=f"{status_val} 關鍵字錯誤，請輸入正確的關鍵字")
+                if status_val is None or status_val not in [
+                    "草稿",
+                    "線搞",
+                    "上色",
+                    "完工",
+                    "無",
+                ]:
+                    return await send_x(
+                        ctx=ctx, content=f"{status_val} 關鍵字錯誤，請輸入正確的關鍵字"
+                    )
                 val = 0
                 if status_val == "草稿":
                     val = 1
@@ -872,10 +904,18 @@ class Workflow(commands.Cog):
             async with self.config.guild(ctx.guild).all() as guild_data:
                 not_quote_id = lambda x: x != str(quote_id)
 
-                guild_data["pending"] = list(filter(not_quote_id, guild_data["pending"]))
-                guild_data["ongoing"] = list(filter(not_quote_id, guild_data["ongoing"]))
-                guild_data["finished"] = list(filter(not_quote_id, guild_data["finished"]))
-                guild_data["cancelled"] = list(filter(not_quote_id, guild_data["cancelled"]))
+                guild_data["pending"] = list(
+                    filter(not_quote_id, guild_data["pending"])
+                )
+                guild_data["ongoing"] = list(
+                    filter(not_quote_id, guild_data["ongoing"])
+                )
+                guild_data["finished"] = list(
+                    filter(not_quote_id, guild_data["finished"])
+                )
+                guild_data["cancelled"] = list(
+                    filter(not_quote_id, guild_data["cancelled"])
+                )
 
                 guild_data[new_status].append(str(quote_id))
 

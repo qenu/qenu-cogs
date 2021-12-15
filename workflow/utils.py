@@ -1,9 +1,9 @@
 import asyncio
+import contextlib
 from typing import Any
 
 import discord
 from redbot.core import commands
-import contextlib
 
 RED_TICK = "<:redTick:901080156217704478>"
 GREEN_TICK = "<:greenTick:901080153873068052>"
@@ -11,9 +11,7 @@ GREY_TICK = "<:greyTick:901080154992967691>"
 TYPING = "<:typing:901080160680419419>"
 
 
-async def replying(ctx: commands.Context,
-    **kwargs: Any
-):
+async def replying(ctx: commands.Context, **kwargs: Any):
     """better reply"""
     mention_author = kwargs.get("mention_author", False)
     content = kwargs.get("content", None)
@@ -43,10 +41,7 @@ async def replying(ctx: commands.Context,
             await response.delete()
 
 
-
-async def send_x(ctx: commands.Context,
-    **kwargs: Any
-):
+async def send_x(ctx: commands.Context, **kwargs: Any):
     """better send"""
     content = kwargs.get("content", None)
     embed = kwargs.get("embed", None)
