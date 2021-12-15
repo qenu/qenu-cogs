@@ -3,6 +3,7 @@ from typing import Any
 
 import discord
 from redbot.core import commands
+import contextlib
 
 RED_TICK = "<:redTick:901080156217704478>"
 GREEN_TICK = "<:greenTick:901080153873068052>"
@@ -34,24 +35,19 @@ async def replying(ctx: commands.Context,
             and reaction.message.id == response.id,
         )
     except asyncio.TimeoutError:
-        try:
+        with contextlib.suppress(discord.HTTPException, discord.errors.NotFound):
             await response.remove_reaction(RED_TICK, ctx.me)
-        except discord.HTTPException:
-            pass
-        except discord.errors.NotFound:
-            pass
+
     else:
-        try:
+        with contextlib.suppress(discord.HTTPException, discord.errors.NotFound):
             await response.delete()
-        except Exception:
-            pass
+
 
 
 async def send_x(ctx: commands.Context,
     **kwargs: Any
 ):
-    """better reply"""
-    mention_author = kwargs.get("mention_author", False)
+    """better send"""
     content = kwargs.get("content", None)
     embed = kwargs.get("embed", None)
     response = await ctx.send(
@@ -70,14 +66,9 @@ async def send_x(ctx: commands.Context,
             and reaction.message.id == response.id,
         )
     except asyncio.TimeoutError:
-        try:
+        with contextlib.suppress(discord.HTTPException, discord.errors.NotFound):
             await response.remove_reaction(RED_TICK, ctx.me)
-        except discord.HTTPException:
-            pass
-        except discord.errors.NotFound:
-            pass
+
     else:
-        try:
+        with contextlib.suppress(discord.HTTPException, discord.errors.NotFound):
             await response.delete()
-        except Exception:
-            pass
