@@ -429,7 +429,7 @@ class Workflow(commands.Cog):
         if detail:
             embed.add_field(
                 name="總價(不包含報價)",
-                value=f"{total_commission or '報價'}",
+                value=f"{total_commission or}",
                 inline=False,
             )
             embed.add_field(
@@ -687,7 +687,12 @@ class Workflow(commands.Cog):
             quote: Quote = self.parse_content(content)
         except AttributeError as e:
             await fmt_message.delete()
-            return await ctx.send(f"```輸入格式錯誤!```\n`{e}`", delete_after=15)
+            return await ctx.send(f"輸入格式錯誤!\n`{e}`", delete_after=15)
+
+        if quote.customer_data.name == "":
+            return await ctx.send("委託人不能為空白", delete_after=15)
+        if quote.customer_data.contact_info == "":
+            return await ctx.send("聯絡資訊不能為空白", delete_after=15)
 
         channel_id = await self.config.guild(ctx.guild).channel_id()
         if channel_id:
