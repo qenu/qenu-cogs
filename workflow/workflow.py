@@ -429,12 +429,12 @@ class Workflow(commands.Cog):
         if detail:
             embed.add_field(
                 name="總價(不包含報價)",
-                value=f"{total_commission}",
+                value=f"{total_commission or '報價'}",
                 inline=False,
             )
             embed.add_field(
                 name="聯絡資訊",
-                value=quote.customer_data.contact_info,
+                value=quote.customer_data.contact_info or "無",
                 inline=False,
             )
 
