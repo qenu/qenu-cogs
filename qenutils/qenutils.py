@@ -300,7 +300,7 @@ class Qenutils(commands.Cog):
         """Sets a note with a keyword"""
         async with self.config.vault() as vault:
             if not vault.get(keyword, None) is None:
-                msg = await ctx.reply(
+                msg: discord.Message = await ctx.reply(
                     embed=discord.Embed(
                         description=f"`{keyword}` currently in use, do you want to overwrite it?",
                         color=await ctx.embed_color(),
@@ -315,7 +315,7 @@ class Qenutils(commands.Cog):
                     return await msg.delete()
                 if pred.result is False:
                     # User responded with cross
-                    await msg.clear_reactions()
+                    await msg.remove_reaction(ReactionPredicate.YES_OR_NO_EMOJIS)
                     return await replying(
                         embed=discord.Embed(description=f"Cancelled."),
                         color=0xE74C3C,
@@ -355,10 +355,11 @@ class Qenutils(commands.Cog):
     async def qenu_notes_remove(self, ctx: commands.Context, keyword: str):
         """Removes a keyword from notes"""
         async with self.config.vault() as vault:
-            if vault.get(keyword, None) is None:
+            if vault.get(keyword, None) is not None:
                 del vault[keyword]
                 return await replying(
                     embed=discord.Embed(description=f"`{keyword}` removed from notes."),
+                    color=ctx.bot.color,
                     mention_author=False,
                     delete_after=10,
                     ctx=ctx
@@ -366,6 +367,7 @@ class Qenutils(commands.Cog):
             else:
                 return await replying(
                     embed=discord.Embed(description=f"Keyword `{keyword}` not in notes."),
+                    color=0x2F3136,
                     mention_author=False,
                     delete_after=10,
                     ctx=ctx
