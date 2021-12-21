@@ -393,6 +393,7 @@ class Workflow(commands.Cog):
             return await ctx.send("Missing both quote and quote_id")
 
         detail = kwargs.get("detail", False)
+        channel_id = await self.config.guild(ctx.guild).channel_id()
 
         embed = discord.Embed()
         embed.title = (
@@ -414,6 +415,7 @@ class Workflow(commands.Cog):
                 f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
                 f"委託時間: <t:{int(quote.timestamp)}:D>\n"
                 f"備註: {quote.comment}\n"
+                f"[原始訊息超連結](https://discordapp.com/channels/{ctx.guild.id}/{channel_id}/{quote.message_id})\n"
                 "\n"
                 "**↓ 委託內容 ↓**\n"
             )
