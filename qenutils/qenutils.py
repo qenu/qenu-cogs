@@ -5,6 +5,7 @@ from datetime import timezone
 from typing import Literal, Optional
 
 import discord
+from discord.utils import valid_icon_size
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
@@ -158,7 +159,7 @@ class Qenutils(commands.Cog):
         )
         await message.reply(embed=embed, mention_author=False)
 
-    @commands.command(name="todo")
+    @commands.command(name="todo", aliases=["todos"])
     async def qenu_todo(self, ctx: commands.Context, *, text: Optional[str]):
         """Personal todo list, append a message to add to it"""
         if text is None:
@@ -298,7 +299,7 @@ class Qenutils(commands.Cog):
     async def qenu_note(self, ctx: commands.Context, keyword: str, *, content: str):
         """Sets a note with a keyword"""
         async with self.config.vault() as vault:
-            if not isinstance(vault.get(keyword, None), type(None)):
+            if not vault.get(keyword, None) is None:
                 msg = await ctx.reply(
                     embed=discord.Embed(
                         description=f"`{keyword}` currently in use, do you want to overwrite it?",
@@ -330,8 +331,8 @@ class Qenutils(commands.Cog):
             ctx=ctx,
         )
 
-    @commands.command(name="getnotes")
-    async def qenu_getnotes(self, ctx: commands.Context):
+    @commands.group(name="notes", invoke_without_command=True)
+    async def qenu_notes(self, ctx: commands.Context):
         """display all saved notes"""
         vault = await self.config.vault()
         message = ""
@@ -349,6 +350,26 @@ class Qenutils(commands.Cog):
             pages += 1
             embeds.append(e)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
+
+    @qenu_notes.command(name="remove")
+    async def qenu_notes_remove(self, ctx: commands.Context, keyword: str):
+        """Removes a keyword from notes"""
+        async with self.config.vault() as vault:
+            if vault.get(keyword, None) is None:
+                del vault[keyword]
+                return await replying(
+                    embed=discord.Embed(description=f"`{keyword}` removed from notes."),
+                    mention_author=False,
+                    delete_after=10,
+                    ctx=ctx
+                )
+            else:
+                return await replying(
+                    embed=discord.Embed(description=f"Keyword `{keyword}` not in notes."),
+                    mention_author=False,
+                    delete_after=10,
+                    ctx=ctx
+                )
 
     def is_owners(ctx):
         return ctx.message.author.id in OWNER_ID
