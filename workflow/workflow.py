@@ -22,10 +22,6 @@ GREEN = 0x31F7C6
 BLUE = 0x3163F7
 GREY = 0x8C8C8C
 
-YES_EMOJI = "<:yes:901080163197010000>"
-NO_EMOJI = "<:no:901080164757291028>"
-
-
 PENCIL_EMOTE = "✏️"
 
 PRIVILEGED_USERS = [393050606828257287, 164900704526401545]
@@ -405,7 +401,7 @@ class Workflow(commands.Cog):
         )
 
         embed.description = (
-            f"**{'已付款' if quote.payment_received else '未付款'}**\n"
+            f"<:member_join:912536748469395517>**{'已付款' if quote.payment_received else '未付款'}**\n"
             f"預計開工日期: {quote.estimate_start_date}\n"
             f"委託時間: <t:{int(quote.timestamp)}:D>\n"
         )
