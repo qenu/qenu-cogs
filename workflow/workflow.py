@@ -906,7 +906,6 @@ class Workflow(commands.Cog):
         if content is None:
             embed = await self.workflow_embed(ctx, quote_id=quote_id, detail=True)
             await ctx.author.send(embed=embed)
-            return await ctx.message.delete(delay=10)
 
         async with self.config.guild(ctx.guild).quotations() as quotations:
             quote_data = quotations.get(str(quote_id))
