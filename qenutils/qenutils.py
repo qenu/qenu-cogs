@@ -6,7 +6,6 @@ from typing import Literal, Optional
 from random import choice
 
 import discord
-from discord.utils import valid_icon_size
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
@@ -23,7 +22,7 @@ AUTHOR_ID = 164900704526401545
 
 EYES_NAMI = "<:eyes_nami:652251609765511200>"
 EYES_SORAKA = "<:eyes_soraka:549193008726278154>"
-HIGHLIGHT_KEYWORD = ["ba ", "ba.", " ba"]
+HIGHLIGHT_KEYWORD = ["ba.", " ba "]
 
 
 class Qenutils(commands.Cog):
