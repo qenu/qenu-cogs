@@ -177,6 +177,7 @@ class Quote:
     timestamp: int  # 時間戳記
     customer_data: CustomerData
     commission_data: list
+    payment_received: bool # 是否已經付款
     comment: str = ""  # 委託備註
     id: Optional[str] = None
     message_id: int = None  # discord.Message.id
@@ -188,6 +189,7 @@ class Quote:
             "status": self.status,
             "last_update": self.last_update,
             "estimate_start_date": self.estimate_start_date,
+            "payment_received": self.payment_received,
             "timestamp": self.timestamp,
             "customer_data": self.customer_data.__dict__,
             "commission_data": [item.to_dict() for item in self.commission_data],
@@ -202,6 +204,7 @@ class Quote:
             status=data.get("status"),
             last_update=data.get("last_update"),
             estimate_start_date=data.get("estimate_start_date"),
+            payment_received=data.get("payment_received", False),
             timestamp=data.get("timestamp"),
             customer_data=CustomerData(**data.get("customer_data")),
             commission_data=[
@@ -218,6 +221,7 @@ CUSTOMER_CONTACT_INFO_REGEX = re.compile("聯絡資訊:.*\n")
 CUSTOMER_PAYMENT_REGEX = re.compile("付款方式:.*\n")
 ESTIMATE_DATE_REGEX = re.compile("預計開始日期:.*\n")
 QUOTE_STATUS_REGEX = re.compile("訂單狀態:.*\n")
+RECEIVABLE_REGEX = re.compile("已付款:.*\n")
 
 EMOTE_REGEX = re.compile("客製貼圖:.*\n")
 SUBSCRIBE_REGEX = re.compile("訂閱徽章:.*\n")
@@ -294,6 +298,7 @@ class Workflow(commands.Cog):
             ESTIMATE_DATE_REGEX.search(content).group().split(":")[1].strip()
         )
         quote_data["timestamp"] = int(time.time())
+        quote_data["payment_received"] = bool(RECEIVABLE_REGEX.search(content).group().split(":")[1].strip())
 
         customer_name = (
             CUSTOMER_NAME_REGEX.search(content).group().split(":")[1].strip()
@@ -393,17 +398,27 @@ class Workflow(commands.Cog):
         embed.title = (
             f"{QUOTE_STATUS_EMOJI[quote.status]}【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
         )
-        embed.description = (
-            f"最後更新時間: <t:{quote.last_update}:R>\n"
-            f"預計開工日期: {quote.estimate_start_date}\n"
-            f"聯絡方式: {quote.customer_data.contact}\n"
-            f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
-            f"委託時間: <t:{int(quote.timestamp)}:D>\n"
-            f"備註: {quote.comment if detail else '...'}"
-            "\n"
-            "**委託內容 ↓**\n"
-        )
-        embed.set_footer(text=f"委託編號: #{quote_id} • 訊息ID: {quote.message_id}")
+        if detail:
+           embed.description = (
+                f"已付款: {GREEN_TICK if quote.payment_received else RED_TICK}\n"
+                f"預計開工日期: {quote.estimate_start_date}\n"
+                f"委託時間: <t:{int(quote.timestamp)}:D>\n"
+                "\n"
+                "**↓ 委託內容 ↓**\n"
+            )
+        else:
+            embed.description = (
+                f"已付款: {GREEN_TICK if quote.payment_received else RED_TICK}\n"
+                f"預計開工日期: {quote.estimate_start_date}\n"
+                f"聯絡方式: {quote.customer_data.contact}\n"
+                f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
+                f"委託時間: <t:{int(quote.timestamp)}:D>\n"
+                f"備註: {quote.comment}\n"
+                "\n"
+                "**↓ 委託內容 ↓**\n"
+            )
+        embed.set_footer(text=f"委託編號: #{quote_id}\n最後更新時間")
+        embed.timestamp = ctx.message.created_at
         total_commission = 0
         for item in quote.commission_data:
             if item._count != 0:
@@ -648,6 +663,11 @@ class Workflow(commands.Cog):
                 value=("   1: 等待中\n" "   2: 進行中\n" "   3: 已完成\n" "   0: 取消\n"),
                 inline=True,
             )
+            e.add_field(
+                name="已付款",
+                value=("   1: 已付款\n" "   0: 未付款\n"),
+                inline=True,
+            )
             fmt_message = await ctx.send(
                 content=(
                     "```\n"
@@ -657,6 +677,7 @@ class Workflow(commands.Cog):
                     "付款方式: 1\n"
                     "預計開始日期: \n"
                     "訂單狀態: 1\n"
+                    "已付款: 0\n"
                     "---\n"
                     "客製貼圖: 0\n"
                     "訂閱徽章: 0\n"
@@ -752,6 +773,7 @@ class Workflow(commands.Cog):
         **特別項目:**
             付款方式: [1: 轉帳, 2: 歐富寶, 3: Paypal, 0: 其他]
             進度: [1: 等待中, 2: 進行中, 3: 已完成, 0: 取消]
+            已付款: [1: 已付款, 0: 未付款]
 
         **委託細項:**
             客製貼圖, 訂閱徽章, 小奇點圖, 資訊大圖, 實況圖層, 其他委託
@@ -772,6 +794,7 @@ class Workflow(commands.Cog):
             "開工日期",
             "備註",
             "付款方式",
+            "已付款",
             "進度",
             "客製貼圖",
             "訂閱徽章",
@@ -827,6 +850,8 @@ class Workflow(commands.Cog):
                 quote.estimate_start_date = content
             elif edit_type == "備註":
                 quote.comment = content
+            elif edit_type == "已付款":
+                quote.payment_received = bool(content)
             elif edit_type == "付款方式":
                 quote.customer_data.payment_method = int(content)
             elif edit_type == "進度":
@@ -865,6 +890,7 @@ class Workflow(commands.Cog):
         **關鍵字:**
         進度類別:
         > 等待中, 進行中, 已完成, 取消
+        > 已付款, 未付款
 
         委託分類:
         > 客製貼圖, 訂閱徽章, 小奇點圖, 資訊大圖, 實況圖層, 其他委託
@@ -895,9 +921,19 @@ class Workflow(commands.Cog):
             elif content == "已完成":
                 quote.status = 3
                 new_status = "finished"
+                # if the quote is finished
+                # then all commissions should be finished
+                for item in quote.commission_data:
+                    if item._count != 0:
+                        item._status = 4
             elif content == "取消":
                 quote.status = 0
                 new_status = "cancelled"
+
+            elif content == "已付款":
+                quote.payment_received = True
+            elif content == "未付款":
+                quote.payment_received = False
             else:
                 try:
                     quote_type, status_val = content.split()
@@ -924,6 +960,14 @@ class Workflow(commands.Cog):
                     val = 4
 
                 quote.commission_data[COMM_DATA_LIST[quote_type]]._status = val
+
+                # if commission status is within working range
+                # then change quote status to ongoing
+                if val != 0 and val != 4:
+                    if quote.status != 2:
+                        quote.status = 2
+                        new_status = "ongoing"
+
 
             quote.last_update = int(time.time())
             quotations[str(quote_id)] = quote.to_dict()
@@ -959,4 +1003,5 @@ class Workflow(commands.Cog):
         """
         新增委託
         """
+        await ctx.message.delete(delay=10)
         return await ctx.invoke(self.bot.get_command("workflow add"))
