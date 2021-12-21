@@ -221,7 +221,7 @@ CUSTOMER_CONTACT_INFO_REGEX = re.compile("聯絡資訊:.*\n")
 CUSTOMER_PAYMENT_REGEX = re.compile("付款方式:.*\n")
 ESTIMATE_DATE_REGEX = re.compile("預計開始日期:.*\n")
 QUOTE_STATUS_REGEX = re.compile("訂單狀態:.*\n")
-RECEIVABLE_REGEX = re.compile("已付款:.*\n")
+RECEIVABLE_REGEX = re.compile("付款狀態:.*\n")
 
 EMOTE_REGEX = re.compile("客製貼圖:.*\n")
 SUBSCRIBE_REGEX = re.compile("訂閱徽章:.*\n")
@@ -401,7 +401,7 @@ class Workflow(commands.Cog):
         )
         if not detail:
            embed.description = (
-                f"已付款: {GREEN_TICK if quote.payment_received else RED_TICK}\n"
+                f"付款狀態: {GREEN_TICK if quote.payment_received else GREY_TICK}\n"
                 f"預計開工日期: {quote.estimate_start_date}\n"
                 f"委託時間: <t:{int(quote.timestamp)}:D>\n"
                 "\n"
@@ -409,7 +409,7 @@ class Workflow(commands.Cog):
             )
         else:
             embed.description = (
-                f"已付款: {GREEN_TICK if quote.payment_received else RED_TICK}\n"
+                f"付款狀態: {GREEN_TICK if quote.payment_received else GREY_TICK}\n"
                 f"預計開工日期: {quote.estimate_start_date}\n"
                 f"聯絡方式: {quote.customer_data.contact}\n"
                 f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
@@ -666,7 +666,7 @@ class Workflow(commands.Cog):
                 inline=True,
             )
             e.add_field(
-                name="已付款",
+                name="付款狀態",
                 value=("   1: 已付款\n" "   0: 未付款\n"),
                 inline=True,
             )
@@ -679,7 +679,7 @@ class Workflow(commands.Cog):
                     "付款方式: 1\n"
                     "預計開始日期: \n"
                     "訂單狀態: 1\n"
-                    "已付款: 0\n"
+                    "付款狀態: 0\n"
                     "---\n"
                     "客製貼圖: 0\n"
                     "訂閱徽章: 0\n"
@@ -775,7 +775,7 @@ class Workflow(commands.Cog):
         **特別項目:**
             付款方式: [1: 轉帳, 2: 歐富寶, 3: Paypal, 0: 其他]
             進度: [1: 等待中, 2: 進行中, 3: 已完成, 0: 取消]
-            已付款: [1: 已付款, 0: 未付款]
+            付款狀態: [1: 已付款, 0: 未付款]
 
         **委託細項:**
             客製貼圖, 訂閱徽章, 小奇點圖, 資訊大圖, 實況圖層, 其他委託
@@ -796,7 +796,7 @@ class Workflow(commands.Cog):
             "開工日期",
             "備註",
             "付款方式",
-            "已付款",
+            "付款狀態",
             "進度",
             "客製貼圖",
             "訂閱徽章",
@@ -852,7 +852,7 @@ class Workflow(commands.Cog):
                 quote.estimate_start_date = content
             elif edit_type == "備註":
                 quote.comment = content
-            elif edit_type == "已付款":
+            elif edit_type == "付款狀態":
                 quote.payment_received = bool(content)
             elif edit_type == "付款方式":
                 quote.customer_data.payment_method = int(content)
