@@ -22,6 +22,10 @@ GREEN = 0x31F7C6
 BLUE = 0x3163F7
 GREY = 0x8C8C8C
 
+YES_EMOJI = "<:yes:901080163197010000>"
+NO_EMOJI = "<:no:901080164757291028>"
+
+
 PENCIL_EMOTE = "✏️"
 
 PRIVILEGED_USERS = [393050606828257287, 164900704526401545]
@@ -399,23 +403,20 @@ class Workflow(commands.Cog):
         embed.title = (
             f"{QUOTE_STATUS_EMOJI[quote.status]}【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
         )
-        if not detail:
-           embed.description = (
-                f"付款狀態: {GREEN_TICK if quote.payment_received else GREY_TICK}\n"
-                f"預計開工日期: {quote.estimate_start_date}\n"
-                f"委託時間: <t:{int(quote.timestamp)}:D>\n"
-                "\n"
-                "**↓ 委託內容 ↓**\n"
-            )
-        else:
-            embed.description = (
-                f"付款狀態: {GREEN_TICK if quote.payment_received else GREY_TICK}\n"
-                f"預計開工日期: {quote.estimate_start_date}\n"
+
+        embed.description = (
+            f"付款狀態: {YES_EMOJI if quote.payment_received else NO_EMOJI}\n"
+            f"預計開工日期: {quote.estimate_start_date}\n"
+            f"委託時間: <t:{int(quote.timestamp)}:D>\n"
+        )
+        if detail:
+            embed.description += (
                 f"聯絡方式: {quote.customer_data.contact}\n"
                 f"付款方式: {PAYMENT_TYPE[quote.customer_data.payment_method]}\n"
-                f"委託時間: <t:{int(quote.timestamp)}:D>\n"
                 f"備註: {quote.comment}\n"
                 f"[原始訊息超連結](https://discordapp.com/channels/{ctx.guild.id}/{channel_id}/{quote.message_id})\n"
+            )
+        embed.description += (
                 "\n"
                 "**↓ 委託內容 ↓**\n"
             )
