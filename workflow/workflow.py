@@ -405,7 +405,7 @@ class Workflow(commands.Cog):
         )
 
         embed.description = (
-            f"__**{'已付款' if quote.payment_received else '未付款'}**__\n"
+            f"**{'已付款' if quote.payment_received else '未付款'}**\n"
             f"預計開工日期: {quote.estimate_start_date}\n"
             f"委託時間: <t:{int(quote.timestamp)}:D>\n"
         )
