@@ -21,7 +21,7 @@ OWNER_ID = set([164900704526401545])
 AUTHOR_ID = 164900704526401545
 
 EYES_NAMI = "<:eyes_nami:652251609765511200>"
-HIGHLIGHT_KEYWORD = ["ba ", "ba.", "BA "]
+HIGHLIGHT_KEYWORD = ["ba", "ba.", "BA"]
 
 
 class Qenutils(commands.Cog):
@@ -124,7 +124,6 @@ class Qenutils(commands.Cog):
         )
 
     async def highlighted(self, message: discord.Message):
-        await message.add_reaction(EYES_NAMI)
         embed = discord.Embed()
         embed.set_author(name=f"{message.author.display_name}", icon_url=message.author.display_avatar.url)
         embed.timestamp = message.created_at
@@ -153,6 +152,7 @@ class Qenutils(commands.Cog):
         if await self.bot.allowed_by_whitelist_blacklist(who=message.author) is False:
             return
         if any([term in message.content for term in HIGHLIGHT_KEYWORD]):
+            await message.add_reaction(EYES_NAMI)
             return self.highlighted(message=message)
         if not message.channel.permissions_for(message.guild.me).send_messages:
             return
