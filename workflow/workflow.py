@@ -399,7 +399,7 @@ class Workflow(commands.Cog):
         embed.title = (
             f"{QUOTE_STATUS_EMOJI[quote.status]}【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
         )
-        if detail:
+        if not detail:
            embed.description = (
                 f"已付款: {GREEN_TICK if quote.payment_received else RED_TICK}\n"
                 f"預計開工日期: {quote.estimate_start_date}\n"
