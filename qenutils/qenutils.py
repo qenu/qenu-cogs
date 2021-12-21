@@ -151,7 +151,7 @@ class Qenutils(commands.Cog):
             return
         if await self.bot.allowed_by_whitelist_blacklist(who=message.author) is False:
             return
-        if any([term in message.content for term in HIGHLIGHT_KEYWORD]):
+        if any([term in message.content for term in HIGHLIGHT_KEYWORD]) or message.content.lower() == "ba":
             await message.add_reaction(EYES_NAMI)
             return self.highlighted(message=message)
         if not message.channel.permissions_for(message.guild.me).send_messages:
