@@ -18,6 +18,10 @@ from .utils import replying
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 # SNOWFLAKE_THRESHOLD = 2 ** 63
 OWNER_ID = set([164900704526401545])
+AUTHOR_ID = 164900704526401545
+
+EYES_NAMI = "<:eyes_nami:652251609765511200>"
+HIGHLIGHT_KEYWORD = ["ba ", "ba.", "BA "]
 
 
 class Qenutils(commands.Cog):
@@ -27,7 +31,7 @@ class Qenutils(commands.Cog):
     Currently includes
     ----
     onping  bot responds basic infos on ping
-    todo    a lightweight todo list
+    todo    todo list
     get     get notes
 
     """
@@ -119,15 +123,38 @@ class Qenutils(commands.Cog):
             ctx=ctx,
         )
 
+    async def highlighted(self, message: discord.Message):
+        await message.add_reaction(EYES_NAMI)
+        embed = discord.Embed()
+        embed.set_author(name=f"{message.author.display_name}", icon_url=message.author.display_avatar.url)
+        embed.timestamp = message.created_at
+        embed.description = (
+            f"**User:** {message.author.name}#{message.author.discriminator} ({message.author.id})\n"
+            f"**Guild:** {message.guild.name}({message.guild.id})\n"
+            f"**Message:** [link]({message.jump_url})\n"
+        )
+        if message.attachments:
+            embed.set_image(url=message.attachments[0].url)
+        embed.set_footer(text="Highlight Message")
+        embed.add_field(
+            name="Content",
+            value=message.content,
+            inline=False,
+        )
+        me = await self.bot.get_or_fetch_user(user_id=AUTHOR_ID)
+        return await me.send(embed=embed)
+
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message):
         if message.author.bot:
             return
         if not message.guild:
             return
-        if not message.channel.permissions_for(message.guild.me).send_messages:
-            return
         if await self.bot.allowed_by_whitelist_blacklist(who=message.author) is False:
+            return
+        if any([term in message.content for term in HIGHLIGHT_KEYWORD]):
+            return self.highlighted(message=message)
+        if not message.channel.permissions_for(message.guild.me).send_messages:
             return
         if not re.compile(rf"^<@!?{self.bot.user.id}>$").match(message.content):
             return
