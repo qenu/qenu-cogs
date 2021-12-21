@@ -3,6 +3,7 @@ import math
 import re
 from datetime import timezone
 from typing import Literal, Optional
+from random import choice
 
 import discord
 from discord.utils import valid_icon_size
@@ -21,7 +22,8 @@ OWNER_ID = set([164900704526401545])
 AUTHOR_ID = 164900704526401545
 
 EYES_NAMI = "<:eyes_nami:652251609765511200>"
-HIGHLIGHT_KEYWORD = ["ba ", "ba.", "BA "]
+EYES_SORAKA = "<:eyes_soraka:549193008726278154>"
+HIGHLIGHT_KEYWORD = ["ba ", "ba.", " ba"]
 
 
 class Qenutils(commands.Cog):
@@ -151,9 +153,9 @@ class Qenutils(commands.Cog):
             return
         if await self.bot.allowed_by_whitelist_blacklist(who=message.author) is False:
             return
-        if any([term in message.content for term in HIGHLIGHT_KEYWORD]) or message.content.lower() == "ba":
-            await message.add_reaction(EYES_NAMI)
-            return self.highlighted(message=message)
+        if any([term in message.content.lower() for term in HIGHLIGHT_KEYWORD]) or message.content.lower() == "ba":
+            await message.add_reaction(choice([EYES_NAMI, EYES_SORAKA]))
+            return await self.highlighted(message=message)
         if not message.channel.permissions_for(message.guild.me).send_messages:
             return
         if not re.compile(rf"^<@!?{self.bot.user.id}>$").match(message.content):
