@@ -130,13 +130,13 @@ class Qenutils(commands.Cog):
         embed.set_author(name=f"{message.author.display_name}", icon_url=message.author.display_avatar.url)
         embed.timestamp = message.created_at
         embed.description = (
-            f"**User:** {message.author.name}#{message.author.discriminator} ({message.author.id})\n"
-            f"**Guild:** {message.guild.name}({message.guild.id})\n"
-            f"**Message:** [link]({message.jump_url})\n"
+            f"**from User** {message.author.name}#{message.author.discriminator}\n"
+            f"**from Guild** {message.guild.name}\n"
+            f"[**from Message**]({message.jump_url})\n"
         )
         if message.attachments:
             embed.set_image(url=message.attachments[0].url)
-        embed.set_footer(text="Highlight Message")
+        embed.set_footer(text=f"Guild ID: {message.guild.id} • User ID: {message.author.id}\nSent by **Highlight Message**")
         embed.add_field(
             name="Content",
             value=message.content,
