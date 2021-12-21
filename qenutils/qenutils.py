@@ -135,7 +135,7 @@ class Qenutils(commands.Cog):
         )
         if message.attachments:
             embed.set_image(url=message.attachments[0].url)
-        embed.set_footer(text=f"Guild ID: {message.guild.id} • User ID: {message.author.id}\nSent by **Highlight Message**")
+        embed.set_footer(text=f"Guild ID: {message.guild.id} • User ID: {message.author.id}\nSent from Highlight Message")
         embed.add_field(
             name="Content",
             value=message.content,
