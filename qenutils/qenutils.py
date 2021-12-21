@@ -142,7 +142,7 @@ class Qenutils(commands.Cog):
             value=message.content,
             inline=False,
         )
-        me = self.bot.get_user(user_id=AUTHOR_ID)
+        me = self.bot.get_user(AUTHOR_ID)
         return await me.send(embed=embed)
 
     @commands.Cog.listener()
