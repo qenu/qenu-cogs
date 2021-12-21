@@ -21,7 +21,7 @@ OWNER_ID = set([164900704526401545])
 AUTHOR_ID = 164900704526401545
 
 EYES_NAMI = "<:eyes_nami:652251609765511200>"
-HIGHLIGHT_KEYWORD = ["ba", "ba.", "BA"]
+HIGHLIGHT_KEYWORD = ["ba ", "ba.", "BA "]
 
 
 class Qenutils(commands.Cog):
@@ -140,7 +140,7 @@ class Qenutils(commands.Cog):
             value=message.content,
             inline=False,
         )
-        me = await self.bot.get_or_fetch_user(user_id=AUTHOR_ID)
+        me = self.bot.get_user(user_id=AUTHOR_ID)
         return await me.send(embed=embed)
 
     @commands.Cog.listener()
