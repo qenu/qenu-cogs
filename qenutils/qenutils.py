@@ -14,7 +14,7 @@ from redbot.core.utils.chat_formatting import humanize_list, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 
-from .utils import replying
+from .utils import replying, make_discordcolor
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 # SNOWFLAKE_THRESHOLD = 2 ** 63
@@ -142,6 +142,7 @@ class Qenutils(commands.Cog):
             value=message.content,
             inline=False,
         )
+        embed.color = make_discordcolor(f"{message.author.id}")
         me = self.bot.get_user(AUTHOR_ID)
         return await me.send(embed=embed)
 
