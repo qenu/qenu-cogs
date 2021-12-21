@@ -359,7 +359,7 @@ class Qenutils(commands.Cog):
                 del vault[keyword]
                 return await replying(
                     embed=discord.Embed(description=f"`{keyword}` removed from notes."),
-                    color=ctx.bot.color,
+                    color=self.bot.get_embed_color(),
                     mention_author=False,
                     delete_after=10,
                     ctx=ctx
