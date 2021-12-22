@@ -1,10 +1,10 @@
 import asyncio
+import hashlib
 import json
 import re
 import time
 from dataclasses import dataclass
 from typing import Literal, Optional
-import hashlib
 
 import discord
 from redbot.core import commands
@@ -13,7 +13,7 @@ from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
-from .utils import replying, send_x, RED_TICK, GREEN_TICK, GREY_TICK
+from .utils import GREEN_TICK, GREY_TICK, RED_TICK, replying, send_x
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
@@ -30,15 +30,14 @@ PRIVILEGED_USERS = [393050606828257287, 164900704526401545]
 def privileged(ctx):
     return ctx.author.id in PRIVILEGED_USERS
 
+
 def make_discordcolor(text: str) -> discord.Color:
-    hashed = str(
-        int(hashlib.sha1(text.encode("utf-8")).hexdigest(), 16) % (10 ** 9)
-    )
+    hashed = str(int(hashlib.sha1(text.encode("utf-8")).hexdigest(), 16) % (10 ** 9))
     r = int(hashed[:3]) % 100
     g = int(hashed[3:6]) % 100
     b = int(hashed[6:]) % 100
 
-    return discord.Color.from_rgb(r+100, g+100, b+100)
+    return discord.Color.from_rgb(r + 100, g + 100, b + 100)
 
 
 PAYMENT_TYPE: dict = {
@@ -177,7 +176,7 @@ class Quote:
     timestamp: int  # 時間戳記
     customer_data: CustomerData
     commission_data: list
-    payment_received: bool # 是否已經付款
+    payment_received: bool  # 是否已經付款
     comment: str = ""  # 委託備註
     id: Optional[str] = None
     message_id: int = None  # discord.Message.id
@@ -298,7 +297,9 @@ class Workflow(commands.Cog):
             ESTIMATE_DATE_REGEX.search(content).group().split(":")[1].strip()
         )
         quote_data["timestamp"] = int(time.time())
-        quote_data["payment_received"] = bool(RECEIVABLE_REGEX.search(content).group().split(":")[1].strip())
+        quote_data["payment_received"] = bool(
+            RECEIVABLE_REGEX.search(content).group().split(":")[1].strip()
+        )
 
         customer_name = (
             CUSTOMER_NAME_REGEX.search(content).group().split(":")[1].strip()
@@ -396,9 +397,7 @@ class Workflow(commands.Cog):
         channel_id = await self.config.guild(ctx.guild).channel_id()
 
         embed = discord.Embed()
-        embed.title = (
-            f"{QUOTE_STATUS_EMOJI[quote.status]}【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
-        )
+        embed.title = f"{QUOTE_STATUS_EMOJI[quote.status]}【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
 
         embed.description = (
             f"<:member_join:912536748469395517>**{'已付款' if quote.payment_received else '未付款'}**\n"
@@ -412,10 +411,7 @@ class Workflow(commands.Cog):
                 f"備註: {quote.comment}\n"
                 f"[原始訊息超連結](https://discordapp.com/channels/{ctx.guild.id}/{channel_id}/{quote.message_id})\n"
             )
-        embed.description += (
-                "\n"
-                "**↓ 委託內容 ↓**\n"
-            )
+        embed.description += "\n" "**↓ 委託內容 ↓**\n"
         embed.set_footer(text=f"委託編號: #{quote_id}\n最後更新時間")
         embed.timestamp = ctx.message.created_at
         total_commission = 0
@@ -965,7 +961,6 @@ class Workflow(commands.Cog):
                     if quote.status != 2:
                         quote.status = 2
                         new_status = "ongoing"
-
 
             quote.last_update = int(time.time())
             quotations[str(quote_id)] = quote.to_dict()

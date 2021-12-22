@@ -11,15 +11,15 @@ GREEN_TICK = "<:greenTick:901080153873068052>"
 GREY_TICK = "<:greyTick:901080154992967691>"
 TYPING = "<:typing:901080160680419419>"
 
+
 def make_discordcolor(text: str) -> discord.Color:
-    hashed = str(
-        int(hashlib.sha1(text.encode("utf-8")).hexdigest(), 16) % (10 ** 9)
-    )
+    hashed = str(int(hashlib.sha1(text.encode("utf-8")).hexdigest(), 16) % (10 ** 9))
     r = int(hashed[:3]) % 100
     g = int(hashed[3:6]) % 100
     b = int(hashed[6:]) % 100
 
-    return discord.Color.from_rgb(r+100, g+100, b+100)
+    return discord.Color.from_rgb(r + 100, g + 100, b + 100)
+
 
 async def replying(
     embed: Optional[discord.Embed] = None,

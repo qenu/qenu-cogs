@@ -2,8 +2,8 @@ import asyncio
 import math
 import re
 from datetime import timezone
-from typing import Literal, Optional
 from random import choice
+from typing import Literal, Optional
 
 import discord
 from redbot.core import commands
@@ -13,7 +13,7 @@ from redbot.core.utils.chat_formatting import humanize_list, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 
-from .utils import replying, make_discordcolor
+from .utils import make_discordcolor, replying
 
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 # SNOWFLAKE_THRESHOLD = 2 ** 63
@@ -23,7 +23,7 @@ AUTHOR_ID = 164900704526401545
 EYES_NAMI = "<:eyes_nami:652251609765511200>"
 EYES_SORAKA = "<:eyes_soraka:549193008726278154>"
 HIGHLIGHT_KEYWORD = ["ba.", " ba "]
-
+HIGHLIGHT_REGEX = re.compile(r"(?i)[\W\0]ba+\W*")
 
 class Qenutils(commands.Cog):
     """
@@ -126,7 +126,10 @@ class Qenutils(commands.Cog):
 
     async def highlighted(self, message: discord.Message):
         embed = discord.Embed()
-        embed.set_author(name=f"{message.author.display_name}", icon_url=message.author.display_avatar.url)
+        embed.set_author(
+            name=f"{message.author.display_name}",
+            icon_url=message.author.display_avatar.url,
+        )
         embed.timestamp = message.created_at
         embed.description = (
             f"**from User** {message.author.name}#{message.author.discriminator}\n"
@@ -135,7 +138,9 @@ class Qenutils(commands.Cog):
         )
         if message.attachments:
             embed.set_image(url=message.attachments[0].url)
-        embed.set_footer(text=f"Guild ID: {message.guild.id} • User ID: {message.author.id}\nSent from Highlight Message")
+        embed.set_footer(
+            text=f"Guild ID: {message.guild.id} • User ID: {message.author.id}\nSent from Highlight Message"
+        )
         embed.add_field(
             name="Content",
             value=message.content,
@@ -153,7 +158,10 @@ class Qenutils(commands.Cog):
             return
         if await self.bot.allowed_by_whitelist_blacklist(who=message.author) is False:
             return
-        if any([term in message.content.lower() for term in HIGHLIGHT_KEYWORD]) or message.content.lower() == "ba":
+        if (
+            re.search(HIGHLIGHT_REGEX, message.content)
+            or message.content.lower() == "ba"
+        ):
             await message.add_reaction(choice([EYES_NAMI, EYES_SORAKA]))
             return await self.highlighted(message=message)
         if not message.channel.permissions_for(message.guild.me).send_messages:
@@ -391,15 +399,17 @@ class Qenutils(commands.Cog):
                     color=ctx.embed_color(),
                     mention_author=False,
                     delete_after=10,
-                    ctx=ctx
+                    ctx=ctx,
                 )
             else:
                 return await replying(
-                    embed=discord.Embed(description=f"Keyword `{keyword}` not in notes."),
+                    embed=discord.Embed(
+                        description=f"Keyword `{keyword}` not in notes."
+                    ),
                     color=0x2F3136,
                     mention_author=False,
                     delete_after=10,
-                    ctx=ctx
+                    ctx=ctx,
                 )
 
     def is_owners(ctx):
