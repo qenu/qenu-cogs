@@ -23,7 +23,7 @@ AUTHOR_ID = 164900704526401545
 EYES_NAMI = "<:eyes_nami:652251609765511200>"
 EYES_SORAKA = "<:eyes_soraka:549193008726278154>"
 HIGHLIGHT_KEYWORD = ["ba.", " ba "]
-HIGHLIGHT_REGEX = re.compile(r"(?i)ba+\W*")
+HIGHLIGHT_REGEX = re.compile(r"(?i)\bba+\b")
 
 class Qenutils(commands.Cog):
     """
