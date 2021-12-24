@@ -402,7 +402,7 @@ class Workflow(commands.Cog):
         embed.title = f"{QUOTE_STATUS_EMOJI[quote.status]}【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
 
         embed.description = (
-            f"{'👌**已付款**' if quote.payment_received else '🤌**未付款**'}\n"
+            # f"{'👌**已付款**' if quote.payment_received else '🤌**未付款**'}\n"
             f"預計開工日期: {quote.estimate_start_date}\n"
             f"委託時間: <t:{int(quote.timestamp)}:D>\n"
         )
@@ -414,7 +414,13 @@ class Workflow(commands.Cog):
                 f"[原始訊息超連結](https://discordapp.com/channels/{ctx.guild.id}/{channel_id}/{quote.message_id})\n"
             )
         embed.description += "\n" "**↓ 委託內容 ↓**\n"
-        embed.set_footer(text=f"委託編號: #{quote_id}\n最後更新時間")
+        embed.set_footer(
+            text=(
+                f"委託編號: #{quote_id}\n"
+                f"付款狀態: {'**已付款** 👌' if quote.payment_received else '**未付款** 🤌'}\n"
+                "最後更新時間"
+            )
+        )
         embed.timestamp = datetime.fromtimestamp(quote.last_update)
         total_commission = 0
         for item in quote.commission_data:
