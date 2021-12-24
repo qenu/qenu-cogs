@@ -5,6 +5,7 @@ import re
 import time
 from dataclasses import dataclass
 from typing import Literal, Optional
+from datetime import date
 
 import discord
 from redbot.core import commands
@@ -414,7 +415,7 @@ class Workflow(commands.Cog):
             )
         embed.description += "\n" "**↓ 委託內容 ↓**\n"
         embed.set_footer(text=f"委託編號: #{quote_id}\n最後更新時間")
-        embed.timestamp = discord.utils.parse_time(quote.last_update)
+        embed.timestamp = date.fromtimestamp(quote.last_update)
         total_commission = 0
         for item in quote.commission_data:
             if item._count != 0:
