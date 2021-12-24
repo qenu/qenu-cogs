@@ -414,10 +414,7 @@ class Workflow(commands.Cog):
             )
         embed.description += "\n" "**↓ 委託內容 ↓**\n"
         embed.set_footer(text=f"委託編號: #{quote_id}\n最後更新時間")
-        if no_update:
-            embed.timestamp = quote.last_update
-        else:
-            embed.timestamp = ctx.message.created_at
+        embed.timestamp = quote.last_update
         total_commission = 0
         for item in quote.commission_data:
             if item._count != 0:
