@@ -162,7 +162,7 @@ class Quote:
         id (str): quotation id
         message_id (int): quotation message id
         status (int): quotation status in QUOTE_STATUS_TYPE key
-        last_update (int): last update timestamp
+        last_update (float): last update timestamp
         estimate_start_date (str): estimated start date
         timestamp (int): quotation creation timestamp
         customer_data (CustomerData): customer's info
@@ -171,7 +171,7 @@ class Quote:
     """
 
     status: int  # 委託狀態
-    last_update: int  # 最後更新時間
+    last_update: float  # 最後更新時間
     estimate_start_date: str  # 預計開始日期
     timestamp: int  # 時間戳記
     customer_data: CustomerData
@@ -292,7 +292,7 @@ class Workflow(commands.Cog):
         quote_status = QUOTE_STATUS_REGEX.search(content).group().split(":")[1].strip()
         quote_data["status"] = int(quote_status)
 
-        quote_data["last_update"] = int(time.time())
+        quote_data["last_update"] = time.time()
         quote_data["estimate_start_date"] = (
             ESTIMATE_DATE_REGEX.search(content).group().split(":")[1].strip()
         )
@@ -414,7 +414,7 @@ class Workflow(commands.Cog):
             )
         embed.description += "\n" "**↓ 委託內容 ↓**\n"
         embed.set_footer(text=f"委託編號: #{quote_id}\n最後更新時間")
-        embed.timestamp = quote.last_update
+        embed.timestamp = discord.utils.parse_time(quote.last_update)
         total_commission = 0
         for item in quote.commission_data:
             if item._count != 0:
@@ -863,7 +863,7 @@ class Workflow(commands.Cog):
                 elif quote.status == 0:
                     new_status = "cancelled"
 
-            quote.last_update = int(time.time())
+            quote.last_update = time.time()
             quotations[str(quote_id)] = quote.to_dict()
 
         if new_status:
@@ -965,7 +965,7 @@ class Workflow(commands.Cog):
                         quote.status = 2
                         new_status = "ongoing"
 
-            quote.last_update = int(time.time())
+            quote.last_update = time.time()
             quotations[str(quote_id)] = quote.to_dict()
 
         if new_status:
