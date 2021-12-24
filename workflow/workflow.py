@@ -416,8 +416,8 @@ class Workflow(commands.Cog):
         embed.description += "\n" "**↓ 委託內容 ↓**\n"
         embed.set_footer(
             text=(
-                f"委託編號: #{quote_id}\n"
-                f"付款狀態: {'**已付款** 👌' if quote.payment_received else '**未付款** 🤌'}\n"
+                f"委託編號: #{quote_id} • "
+                f"{'已付款 👌' if quote.payment_received else '未付款 🤌'}\n"
                 "最後更新時間"
             )
         )
