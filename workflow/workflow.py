@@ -385,6 +385,7 @@ class Workflow(commands.Cog):
         -------
         discord.Embed
         """
+        no_update: bool = kwargs.get("no_update", False)
         quote: Quote = kwargs.get("quote", None)
         if quote is None and (quote_id := kwargs.get("quote_id")) is not None:
             quotes_data: dict = await self.config.guild(ctx.guild).quotations()
@@ -413,7 +414,10 @@ class Workflow(commands.Cog):
             )
         embed.description += "\n" "**↓ 委託內容 ↓**\n"
         embed.set_footer(text=f"委託編號: #{quote_id}\n最後更新時間")
-        embed.timestamp = ctx.message.created_at
+        if no_update:
+            embed.timestamp = quote.last_update
+        else:
+            embed.timestamp = ctx.message.created_at
         total_commission = 0
         for item in quote.commission_data:
             if item._count != 0:
@@ -454,7 +458,7 @@ class Workflow(commands.Cog):
         return embed
 
     async def update_workflow_message(
-        self, ctx: commands.Context, quote_id: int
+        self, ctx: commands.Context, quote_id: int, **kwargs
     ) -> None:
         """
         Update/Creates the workflow embed
@@ -466,6 +470,7 @@ class Workflow(commands.Cog):
         quote_id : int
             The quotation id to update
         """
+        no_update: bool = kwargs.get("no_pdate", False)
         quotes_data: dict = await self.config.guild(ctx.guild).quotations()
         quote_data: dict = quotes_data.get(str(quote_id))
         quote = Quote.from_dict(quote_data)
@@ -487,9 +492,10 @@ class Workflow(commands.Cog):
             return await ctx.send(f"未知錯誤: `{e}`")
 
         await message.edit(
-            content=None, embed=await self.workflow_embed(ctx, quote_id=quote_id)
+            content=None, embed=await self.workflow_embed(ctx, quote_id=quote_id, no_update=no_update)
         )
-        await self.config.guild(ctx.guild).timestamp.set(int(time.time()))
+        if not no_update:
+            await self.config.guild(ctx.guild).timestamp.set(int(time.time()))
 
     @commands.check(privileged)
     @commands.group(name="workflow", aliases=["wf", "排程"], invoke_without_command=True)
