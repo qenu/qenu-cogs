@@ -402,7 +402,6 @@ class Workflow(commands.Cog):
         embed.title = f"{QUOTE_STATUS_EMOJI[quote.status]}【{QUOTE_STATUS_TYPE[quote.status]}】{quote.customer_data.name}的委託"
 
         embed.description = (
-            # f"{'👌**已付款**' if quote.payment_received else '🤌**未付款**'}\n"
             f"預計開工日期: {quote.estimate_start_date}\n"
             f"委託時間: <t:{int(quote.timestamp)}:D>\n"
         )
@@ -417,7 +416,7 @@ class Workflow(commands.Cog):
         embed.set_footer(
             text=(
                 f"委託編號: #{quote_id} • "
-                f"{'已付款 👌' if quote.payment_received else '未付款 🤌'}\n"
+                f"{'已付款 👌' if quote.payment_received else '未付款 🤏'}\n"
                 "最後更新時間"
             )
         )
