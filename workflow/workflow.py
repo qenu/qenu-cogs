@@ -299,7 +299,7 @@ class Workflow(commands.Cog):
         )
         quote_data["timestamp"] = int(time.time())
         quote_data["payment_received"] = bool(
-            RECEIVABLE_REGEX.search(content).group().split(":")[1].strip()
+            int(RECEIVABLE_REGEX.search(content).group().split(":")[1].strip())
         )
 
         customer_name = (
