@@ -420,7 +420,7 @@ class Workflow(commands.Cog):
                 "最後更新時間"
             )
         )
-        embed.timestamp = datetime.fromtimestamp(quote.last_update)
+        embed.timestamp = datetime.fromtimestamp(int(quote.last_update))
         total_commission = 0
         for item in quote.commission_data:
             if item._count != 0:
