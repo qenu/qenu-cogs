@@ -657,11 +657,16 @@ class Workflow(commands.Cog):
         embed.description = "```\n"
         embed.description += str(data)
         embed.description += "\n```"
+        embed.color = await ctx.embed_color()
         return await replying(embed=embed, ctx=ctx)
 
     @workflow_dev.command(name="fromdict")
-    async def workflow_dev_fromdict(self, ctx: commands.Context, quote_id: int) -> None:
-        pass
+    async def workflow_dev_fromdict(self, ctx: commands.Context, quote_id: int, *, content: str) -> None:
+        result = json.loads(content)
+        async with self.config.guild(ctx.guild).quotations() as quotations:
+            quotations[str(quote_id)] = result.to_dict()
+        await ctx.tick()
+
 
     @workflow.command(name="command", aliases=["cmd", "指令"])
     async def workflow_command(self, ctx: commands.Context) -> None:
