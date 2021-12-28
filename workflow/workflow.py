@@ -1057,8 +1057,13 @@ class Workflow(commands.Cog):
             return
         if message.content.startswith("委託人"):
             confirmation = await message.reply(content="請問要增加委託嗎?")
+            start_adding_reactions(confirmation, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(confirmation, user=message.author)
-            await self.bot.wait_for("reaction_add", check=pred)
+            try:
+                await self.bot.wait_for("reaction_add", check=pred, timeout=20)
+            except asyncio.TimeoutError:
+                await confirmation.delete()
+                return
             if pred.result:
                 return await self.bot.invoke(self.bot.get_command("workflow add"), message.content)
             else:
