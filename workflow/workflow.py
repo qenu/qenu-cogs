@@ -1069,6 +1069,7 @@ class Workflow(commands.Cog):
             if pred.result:
                 await confirmation.clear_reactions()
                 ctx: commands.Context = await self.bot.get_context(message)
+                await ctx.send(ctx)
                 await ctx.invoke(self.bot.get_command("workflow add"), message.content)
                 return
             else:
