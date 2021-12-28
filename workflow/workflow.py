@@ -1,4 +1,5 @@
 import asyncio
+import ast
 import hashlib
 import json
 import re
@@ -662,7 +663,7 @@ class Workflow(commands.Cog):
 
     @workflow_dev.command(name="fromdict")
     async def workflow_dev_fromdict(self, ctx: commands.Context, quote_id: int, *, content: str) -> None:
-        result = json.loads(content)
+        result = ast.literal_eval(content)
         async with self.config.guild(ctx.guild).quotations() as quotations:
             quotations[str(quote_id)] = result.to_dict()
         await ctx.tick()
