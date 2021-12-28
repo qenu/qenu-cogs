@@ -650,7 +650,7 @@ class Workflow(commands.Cog):
     @workflow_dev.command(name="todict")
     async def workflow_dev_todict(self, ctx: commands.Context, quote_id: int) -> None:
         """Get a quotations data in dict structure"""
-        data = await self.config.guild(ctx.guild).quotations
+        data = await self.config.guild(ctx.guild).quotations()
         data = data[quote_id]
         embed = discord.Embed()
         embed.title = f"#{quote_id} quote data"
