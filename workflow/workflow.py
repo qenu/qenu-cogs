@@ -8,11 +8,13 @@ from typing import Literal, Optional
 from datetime import datetime
 
 import discord
+from discord import mentions
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify
-from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
+from redbot.core.utils.menus import DEFAULT_CONTROLS, menu, start_adding_reactions
+from redbot.core.utils.predicates import ReactionPredicate
 
 from .utils import GREEN_TICK, GREY_TICK, RED_TICK, replying, send_x
 
@@ -750,8 +752,10 @@ class Workflow(commands.Cog):
             return await ctx.send(f"輸入格式錯誤!\n`{e}`", delete_after=15)
 
         if quote.customer_data.name == "":
+            await fmt_message.delete()
             return await ctx.send("委託人不能為空白", delete_after=15)
         if quote.customer_data.contact_info == "":
+            await fmt_message.delete()
             return await ctx.send("聯絡資訊不能為空白", delete_after=15)
 
         channel_id = await self.config.guild(ctx.guild).channel_id()
@@ -1042,3 +1046,20 @@ class Workflow(commands.Cog):
         """
         await ctx.message.delete(delay=10)
         return await ctx.invoke(self.bot.get_command("workflow add"))
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        if message.author.bot:
+            return
+        if message.author.id not in PRIVILEGED_USERS:
+            return
+        if message.channel.id not in [874511958563491861, 901016201566769152]:
+            return
+        if message.content.startswith("委託人"):
+            confirmation = await message.reply(content="請問要增加委託嗎?")
+            pred = ReactionPredicate.yes_or_no(confirmation, user=message.author)
+            await self.bot.wait_for("reaction_add", check=pred)
+            if pred.result:
+                return await self.bot.invoke(self.bot.get_command("workflow add"), message.content)
+            else:
+                return
