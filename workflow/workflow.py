@@ -1066,7 +1066,7 @@ class Workflow(commands.Cog):
                 return
             if pred.result:
                 await confirmation.clear_reactions()
-                await self.workflow_add(message.channel, message.content)
+                await self.bot.get_context(message).invoke(self.bot.get_command("workflow add"), message.content)
                 return
             else:
                 await confirmation.delete()
