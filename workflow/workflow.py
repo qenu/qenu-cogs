@@ -730,17 +730,19 @@ class Workflow(commands.Cog):
                 embed=e,
             )
 
-            try:
-                msg = await self.bot.wait_for(
-                    "message",
-                    timeout=180,
-                    check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
-                )
-                content = msg.content
-            except asyncio.TimeoutError:
-                return await ctx.send("連線超時，請重新執行指令")
-            else:
-                await msg.delete()
+            await fmt_message.delete(delay=30)
+
+            # try:
+            #     msg = await self.bot.wait_for(
+            #         "message",
+            #         timeout=180,
+            #         check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
+            #     )
+            #     content = msg.content
+            # except asyncio.TimeoutError:
+            #     return await ctx.send("連線超時，請重新執行指令")
+            # else:
+            #     await msg.delete()
 
         try:
             quote: Quote = self.parse_content(content)
@@ -1056,7 +1058,7 @@ class Workflow(commands.Cog):
         if message.channel.id not in [874511958563491861, 901016201566769152]:
             return
         if message.content.startswith("委託人"):
-            confirmation = await message.reply(content="請問要增加委託嗎?")
+            confirmation = await message.reply(content="請問要增加委託嗎?", author_mention=False)
             start_adding_reactions(confirmation, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(confirmation, user=message.author)
             try:
@@ -1066,7 +1068,8 @@ class Workflow(commands.Cog):
                 return
             if pred.result:
                 await confirmation.clear_reactions()
-                await self.bot.get_context(message).invoke(self.bot.get_command("workflow add"), message.content)
+                ctx: commands.Context = await self.bot.get_context(message)
+                await ctx.invoke(self.bot.get_command("workflow add"), message.content)
                 return
             else:
                 await confirmation.delete()
