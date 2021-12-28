@@ -739,10 +739,21 @@ class Workflow(commands.Cog):
         except ValueError as e:
             return await replying(content=f"輸入格式錯誤!\n`{e}`", ctx=ctx)
 
+        missing_content = []
         if quote.customer_data.name == "":
-            return await replying(content="委託人不能為空白", ctx=ctx)
+            missing_content.append("委託人")
         if quote.customer_data.contact_info == "":
-            return await replying(content="聯絡資訊不能為空白", ctx=ctx)
+            missing_content.append("聯絡資訊")
+
+        if missing_content:
+            return await replying(
+                ctx=ctx,
+                embed=discord.Embed(
+                    title="發生錯誤!",
+                    description=
+                    f"缺少必填項目: {[', '.join(missing_content)]}"
+                )
+            )
 
         channel_id = await self.config.guild(ctx.guild).channel_id()
         if channel_id:
