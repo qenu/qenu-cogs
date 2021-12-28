@@ -784,7 +784,7 @@ class Workflow(commands.Cog):
                 guild_data["completed"].append(next_id)
 
         await self.update_workflow_message(ctx, quote.id)
-        await fmt_message.delete()
+        # await fmt_message.delete()
 
     @workflow.command(name="info", aliases=["i", "查看"])
     async def workflow_info(self, ctx: commands.Context, quote_id: int) -> None:
@@ -1058,7 +1058,7 @@ class Workflow(commands.Cog):
         if message.channel.id not in [874511958563491861, 901016201566769152]:
             return
         if message.content.startswith("委託人"):
-            confirmation = await message.reply(content="請問要增加委託嗎?", author_mention=False)
+            confirmation = await message.reply(content="請問要增加委託嗎?", mention_author=False)
             start_adding_reactions(confirmation, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(confirmation, user=message.author)
             try:
