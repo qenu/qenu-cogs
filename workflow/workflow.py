@@ -728,37 +728,21 @@ class Workflow(commands.Cog):
                     "```"
                 ),
                 embed=e,
+                delete_after=20
             )
-
-            return await fmt_message.delete(delay=30)
-
-            # try:
-            #     msg = await self.bot.wait_for(
-            #         "message",
-            #         timeout=180,
-            #         check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
-            #     )
-            #     content = msg.content
-            # except asyncio.TimeoutError:
-            #     return await ctx.send("連線超時，請重新執行指令")
-            # else:
-            #     await msg.delete()
+            return await fmt_message.delete(delay=60)
 
         try:
             quote: Quote = self.parse_content(content)
         except AttributeError as e:
-            await fmt_message.delete()
-            return await ctx.send(f"輸入格式錯誤!\n`{e}`", delete_after=15)
+            return await ctx.send(f"輸入格式錯誤!\n`{e}`")
         except ValueError as e:
-            await fmt_message.delete()
-            return await ctx.send(f"輸入格式錯誤!\n`{e}`", delete_after=15)
+            return await ctx.send(f"輸入格式錯誤!\n`{e}`")
 
         if quote.customer_data.name == "":
-            await fmt_message.delete()
-            return await ctx.send("委託人不能為空白", delete_after=15)
+            return await ctx.send("委託人不能為空白")
         if quote.customer_data.contact_info == "":
-            await fmt_message.delete()
-            return await ctx.send("聯絡資訊不能為空白", delete_after=15)
+            return await ctx.send("聯絡資訊不能為空白")
 
         channel_id = await self.config.guild(ctx.guild).channel_id()
         if channel_id:
@@ -784,7 +768,6 @@ class Workflow(commands.Cog):
                 guild_data["completed"].append(next_id)
 
         await self.update_workflow_message(ctx, quote.id)
-        # await fmt_message.delete()
 
     @workflow.command(name="info", aliases=["i", "查看"])
     async def workflow_info(self, ctx: commands.Context, quote_id: int) -> None:
@@ -862,7 +845,7 @@ class Workflow(commands.Cog):
         async with self.config.guild(ctx.guild).quotations() as quotations:
             quote_data = quotations.get(str(quote_id))
             if not quote_data:
-                return await ctx.send(f"找不到該委託編號 #{quote_id}", delete_after=15)
+                return await ctx.send(f"找不到該委託編號 #{quote_id}")
             quote: Quote = Quote.from_dict(quote_data)
             new_status = None
             if quote.status == 1:
@@ -953,7 +936,7 @@ class Workflow(commands.Cog):
         async with self.config.guild(ctx.guild).quotations() as quotations:
             quote_data = quotations.get(str(quote_id))
             if not quote_data:
-                return await ctx.send(f"找不到該委託編號 #{quote_id}", delete_after=15)
+                return await ctx.send(f"找不到該委託編號 #{quote_id}")
             quote: Quote = Quote.from_dict(quote_data)
             new_status = None
             if content == "等待中":
@@ -1058,19 +1041,17 @@ class Workflow(commands.Cog):
         if message.channel.id not in [874511958563491861, 901016201566769152]:
             return
         if message.content.startswith("委託人"):
-            confirmation = await message.reply(content="請問要增加委託嗎?", mention_author=False)
-            start_adding_reactions(confirmation, ReactionPredicate.YES_OR_NO_EMOJIS)
-            pred = ReactionPredicate.yes_or_no(confirmation, user=message.author)
+            start_adding_reactions(message, ReactionPredicate.YES_OR_NO_EMOJIS)
+            pred = ReactionPredicate.yes_or_no(message, user=message.author)
             try:
                 await self.bot.wait_for("reaction_add", check=pred, timeout=20)
             except asyncio.TimeoutError:
-                await confirmation.delete()
                 return
             if pred.result:
-                await confirmation.clear_reactions()
+                await message.clear_reactions()
                 ctx: commands.Context = await self.bot.get_context(message)
                 await ctx.invoke(self.bot.get_command("workflow add"), content=message.content)
                 return
             else:
-                await confirmation.delete()
+                await message.clear_reactions()
                 return
