@@ -706,7 +706,7 @@ class Workflow(commands.Cog):
                 value=("   1: 已付款\n" "   0: 未付款\n"),
                 inline=True,
             )
-            fmt_message: discord.Message = await ctx.send(
+            return await ctx.send(
                 content=(
                     "```\n"
                     "委託人:\n"
@@ -730,7 +730,6 @@ class Workflow(commands.Cog):
                 embed=e,
                 delete_after=20
             )
-            return await fmt_message.delete(delay=60)
 
         try:
             quote: Quote = self.parse_content(content)
@@ -1053,7 +1052,7 @@ class Workflow(commands.Cog):
             return
         if message.channel.id not in [874511958563491861, 901016201566769152]:
             return
-        if message.content.startswith("委託人"):
+        if message.content.startswith("委託人:"):
             start_adding_reactions(message, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(message, user=message.author)
             try:
