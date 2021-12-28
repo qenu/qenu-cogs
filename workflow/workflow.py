@@ -735,14 +735,14 @@ class Workflow(commands.Cog):
         try:
             quote: Quote = self.parse_content(content)
         except AttributeError as e:
-            return await ctx.send(f"輸入格式錯誤!\n`{e}`")
+            return await replying(content=f"輸入格式錯誤!\n`{e}`", ctx=ctx)
         except ValueError as e:
-            return await ctx.send(f"輸入格式錯誤!\n`{e}`")
+            return await replying(content=f"輸入格式錯誤!\n`{e}`", ctx=ctx)
 
         if quote.customer_data.name == "":
-            return await ctx.send("委託人不能為空白")
+            return await replying(content="委託人不能為空白", ctx=ctx)
         if quote.customer_data.contact_info == "":
-            return await ctx.send("聯絡資訊不能為空白")
+            return await replying(content="聯絡資訊不能為空白", ctx=ctx)
 
         channel_id = await self.config.guild(ctx.guild).channel_id()
         if channel_id:
