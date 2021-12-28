@@ -1066,7 +1066,7 @@ class Workflow(commands.Cog):
                 result = await ctx.invoke(self.bot.get_command("workflow add"), content=message.content)
                 if result is not None:
                     await message.delete(delay=5)
-                    return await message.channel.send(content=f"成功新增委託 #{result}")
+                    return await replying(content=f"成功新增委託 #{result}", ctx=ctx)
                 return
             else:
                 await message.clear_reactions()
