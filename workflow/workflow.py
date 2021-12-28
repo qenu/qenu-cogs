@@ -675,7 +675,7 @@ class Workflow(commands.Cog):
     @workflow.command(name="add", aliases=["a", "新增"])
     async def workflow_add(
         self, ctx: commands.Context, *, content: Optional[str] = None
-    ) -> None:
+    ) -> bool:
         """
         新增排程工作
 
@@ -706,7 +706,7 @@ class Workflow(commands.Cog):
                 value=("   1: 已付款\n" "   0: 未付款\n"),
                 inline=True,
             )
-            fmt_message = await ctx.send(
+            fmt_message: discord.Message = await ctx.send(
                 content=(
                     "```\n"
                     "委託人:\n"
@@ -751,7 +751,8 @@ class Workflow(commands.Cog):
                 embed=discord.Embed(
                     title="發生錯誤!",
                     description=
-                    f"缺少必填項目: {[', '.join(missing_content)]}"
+                    f"缺少必填項目: {', '.join(missing_content)}",
+                    color=await ctx.embed_color()
                 )
             )
 
@@ -779,6 +780,7 @@ class Workflow(commands.Cog):
                 guild_data["completed"].append(next_id)
 
         await self.update_workflow_message(ctx, quote.id)
+        return quote.id
 
     @workflow.command(name="info", aliases=["i", "查看"])
     async def workflow_info(self, ctx: commands.Context, quote_id: int) -> None:
@@ -1061,7 +1063,10 @@ class Workflow(commands.Cog):
             if pred.result:
                 await message.clear_reactions()
                 ctx: commands.Context = await self.bot.get_context(message)
-                await ctx.invoke(self.bot.get_command("workflow add"), content=message.content)
+                result = await ctx.invoke(self.bot.get_command("workflow add"), content=message.content)
+                if result is not None:
+                    await message.delete(delay=5)
+                    return await message.channel.send(content=f"成功新增委託 #{result}")
                 return
             else:
                 await message.clear_reactions()
