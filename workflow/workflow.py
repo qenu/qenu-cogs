@@ -730,7 +730,7 @@ class Workflow(commands.Cog):
                 embed=e,
             )
 
-            await fmt_message.delete(delay=30)
+            return await fmt_message.delete(delay=30)
 
             # try:
             #     msg = await self.bot.wait_for(
