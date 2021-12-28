@@ -290,30 +290,56 @@ class Workflow(commands.Cog):
         quote_data: dict = {}
 
         quote_data["message_id"] = 0
-        quote_status = QUOTE_STATUS_REGEX.search(content).group().split(":")[1].strip()
-        quote_data["status"] = int(quote_status)
-
-        quote_data["last_update"] = time.time()
-        quote_data["estimate_start_date"] = (
-            ESTIMATE_DATE_REGEX.search(content).group().split(":")[1].strip()
-        )
         quote_data["timestamp"] = int(time.time())
-        quote_data["payment_received"] = bool(
-            int(RECEIVABLE_REGEX.search(content).group().split(":")[1].strip())
+        quote_data["last_update"] = time.time()
+
+        quote_status = QUOTE_STATUS_REGEX.search(content)
+        if quote_status is None:
+            raise ValueError("找不到`訂單狀態`。")
+        quote_data["status"] = int(quote_status.group().split(":")[1].strip())
+
+        estimate_start_date = ESTIMATE_DATE_REGEX.search(content)
+        if estimate_start_date is None:
+            raise ValueError("找不到`預計開始日期`。")
+        quote_data["estimate_start_date"] = (
+            estimate_start_date.group().split(":")[1].strip()
         )
 
+        payment_received = RECEIVABLE_REGEX.search(content)
+        if payment_received is None:
+            raise ValueError("找不到`付款狀態`。")
+        quote_data["payment_received"] = bool(
+            int(payment_received.group().split(":")[1].strip())
+        )
+
+        name = CUSTOMER_NAME_REGEX.search(content)
+        if name is None:
+            raise ValueError("找不到`委託人`。")
         customer_name = (
-            CUSTOMER_NAME_REGEX.search(content).group().split(":")[1].strip()
+            name.group().split(":")[1].strip()
         )
+
+        contact = CUSTOMER_CONTACT_REGEX.search(content)
+        if contact is None:
+            raise ValueError("找不到`聯絡方式`。")
         customer_contact = (
-            CUSTOMER_CONTACT_REGEX.search(content).group().split(":")[1].strip()
+            contact.group().split(":")[1].strip()
         )
+
+        contact_info = CUSTOMER_CONTACT_INFO_REGEX.search(content)
+        if contact_info is None:
+            raise ValueError("找不到`聯絡資訊`。")
         customer_contact_info = (
-            CUSTOMER_CONTACT_INFO_REGEX.search(content).group().split(":")[1].strip()
+            contact_info.group().split(":")[1].strip()
         )
+
+        payment = CUSTOMER_PAYMENT_REGEX.search(content)
+        if payment is None:
+            raise ValueError("找不到`付款方式`。")
         customer_payment = (
-            CUSTOMER_PAYMENT_REGEX.search(content).group().split(":")[1].strip()
+            payment.group().split(":")[1].strip()
         )
+
         quote_data["customer_data"] = CustomerData(
             name=customer_name,
             contact=customer_contact,
@@ -347,25 +373,31 @@ class Workflow(commands.Cog):
                 _count=int(commission_list[0]),
             )
 
-        emote = EMOTE_REGEX.search(content).group()
-        subscribe = SUBSCRIBE_REGEX.search(content).group()
-        bits = BITS_REGEX.search(content).group()
-        panel = PANEL_REGEX.search(content).group()
-        layer = LAYER_REGEX.search(content).group()
-        other = OTHER_REGEX.search(content).group()
+        emote = EMOTE_REGEX.search(content)
+        subscribe = SUBSCRIBE_REGEX.search(content)
+        bits = BITS_REGEX.search(content)
+        panel = PANEL_REGEX.search(content)
+        layer = LAYER_REGEX.search(content)
+        other = OTHER_REGEX.search(content)
+
+        if any([result is None for result in [emote, subscribe, bits, panel, layer, other]]):
+            raise ValueError("缺少委託項目，請重新確認。")
 
         commission = []
-        commission.append(convert_commission(emote))
-        commission.append(convert_commission(subscribe))
-        commission.append(convert_commission(bits))
-        commission.append(convert_commission(panel))
-        commission.append(convert_commission(layer))
-        commission.append(convert_commission(other))
+        commission.append(convert_commission(emote.group()))
+        commission.append(convert_commission(subscribe.group()))
+        commission.append(convert_commission(bits.group()))
+        commission.append(convert_commission(panel.group()))
+        commission.append(convert_commission(layer.group()))
+        commission.append(convert_commission(other.group()))
 
         quote_data["commission_data"] = commission
 
+        comment = COMMENT_REGEX.search(content)
+        if comment is None:
+            raise ValueError("找不到`備註`。")
         quote_data["comment"] = (
-            COMMENT_REGEX.search(content).group().split(":")[1].strip()
+            comment.group().split(":")[1].strip()
         )
 
         return Quote(**quote_data)
@@ -711,6 +743,9 @@ class Workflow(commands.Cog):
         try:
             quote: Quote = self.parse_content(content)
         except AttributeError as e:
+            await fmt_message.delete()
+            return await ctx.send(f"輸入格式錯誤!\n`{e}`", delete_after=15)
+        except ValueError as e:
             await fmt_message.delete()
             return await ctx.send(f"輸入格式錯誤!\n`{e}`", delete_after=15)
 
