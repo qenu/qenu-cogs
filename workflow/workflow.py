@@ -647,6 +647,21 @@ class Workflow(commands.Cog):
             await self.config.guild(ctx.guild).channel_id.set(channel.id)
             await send_x(ctx=ctx, content="已設定頻道。")
 
+    @workflow_dev.command(name="todict")
+    async def workflow_dev_todict(self, ctx: commands.Context, quote_id: int) -> None:
+        """Get a quotations data in dict structure"""
+        data = await self.config.guild(ctx.guild).quotations.quote_id()
+        embed = discord.Embed()
+        embed.title = f"#{quote_id} quote data"
+        embed.description = "```\n"
+        embed.description += str(data)
+        embed.description += "\n```"
+        return await replying(embed=embed, ctx=ctx)
+
+    @workflow_dev.command(name="fromdict")
+    async def workflow_dev_fromdict(self, ctx: commands.Context, quote_id: int) -> None:
+        pass
+
     @workflow.command(name="command", aliases=["cmd", "指令"])
     async def workflow_command(self, ctx: commands.Context) -> None:
         """顯示排程指令列表"""
