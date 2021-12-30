@@ -27,7 +27,7 @@ async def replying(ctx: commands.Context, **kwargs: Any):
     try:
         reaction, user = await ctx.bot.wait_for(
             "reaction_add",
-            timeout=60.0,
+            timeout=10.0,
             check=lambda reaction, user: user.id == ctx.author.id
             and str(reaction.emoji) == RED_TICK
             and reaction.message.id == response.id,
@@ -55,7 +55,7 @@ async def send_x(ctx: commands.Context, **kwargs: Any):
     try:
         reaction, user = await ctx.bot.wait_for(
             "reaction_add",
-            timeout=60.0,
+            timeout=10.0,
             check=lambda reaction, user: user.id == ctx.author.id
             and str(reaction.emoji) == RED_TICK
             and reaction.message.id == response.id,
