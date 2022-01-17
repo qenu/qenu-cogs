@@ -668,7 +668,6 @@ class Workflow(commands.Cog):
             quotations[str(quote_id)] = result
         await ctx.tick()
 
-
     @workflow.command(name="command", aliases=["cmd", "指令"])
     async def workflow_command(self, ctx: commands.Context) -> None:
         """顯示排程指令列表"""
@@ -1086,7 +1085,6 @@ class Workflow(commands.Cog):
                 ctx: commands.Context = await self.bot.get_context(message)
                 result = await ctx.invoke(self.bot.get_command("workflow add"), content=message.content)
                 if result is not None:
-                    await message.delete(delay=5)
                     return await replying(content=f"成功新增委託 #{result}", ctx=ctx)
                 return
             else:
